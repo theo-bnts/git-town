@@ -10,4 +10,4 @@ const payload = {
 };
 
 const token = jwt.sign(payload, privateKey, { algorithm: 'RS256' });
-console.log('Generated JWT:', token);
+console.log(token);

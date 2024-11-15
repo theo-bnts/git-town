@@ -1,0 +1,15 @@
+name: gittown
+
+services:
+  postgres:
+    restart: unless-stopped
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - 5432:5432
+    volumes:
+      - ./database/0_tables.sql:/docker-entrypoint-initdb.d/0_tables.sql
+      - ./database/1_data.sql:/docker-entrypoint-initdb.d/1_data.sql
