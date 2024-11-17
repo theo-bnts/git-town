@@ -1,4 +1,4 @@
-name: gittown
+name: ${PROJECT_NAME}
 
 services:
   postgres:
@@ -12,4 +12,5 @@ services:
       - 5432:5432
     volumes:
       - ./database/0_tables.sql:/docker-entrypoint-initdb.d/0_tables.sql
-      - ./database/1_data.sql:/docker-entrypoint-initdb.d/1_data.sql
+      - ./database/1_triggers.sql:/docker-entrypoint-initdb.d/1_triggers.sql
+      - ./database/2_data.sql:/docker-entrypoint-initdb.d/2_data.sql
