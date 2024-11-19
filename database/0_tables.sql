@@ -12,10 +12,11 @@ CREATE TABLE public."user" (
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   email varchar(250) NOT NULL,
-  password_hash char(128) NOT NULL,
-  password_salt char(128) NOT NULL,
+  password_hash char(128) DEFAULT NULL,
+  password_salt char(128) DEFAULT NULL,
   full_name varchar(250) NOT NULL,
   role_id uuid NOT NULL,
+  github_id char(8) DEFAULT NULL,
   CONSTRAINT user_pk PRIMARY KEY (id),
   CONSTRAINT user_fk_role FOREIGN KEY (role_id) REFERENCES public."role"(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT user_unique_email UNIQUE (email)
@@ -26,7 +27,7 @@ CREATE TABLE public.temporary_code (
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   user_id uuid NOT NULL,
-  "code" varchar(6) NOT NULL,
+  "code" char(6) NOT NULL,
   CONSTRAINT temporary_code_pk PRIMARY KEY (id),
   CONSTRAINT temporary_code_fk_user FOREIGN KEY (user_id) REFERENCES public."user"(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
