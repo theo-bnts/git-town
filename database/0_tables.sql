@@ -37,7 +37,7 @@ CREATE TABLE public.temporary_code (
   user_id uuid NOT NULL,
   code char(6) NOT NULL,
   CONSTRAINT temporary_code_pk PRIMARY KEY (id),
-  CONSTRAINT temporary_code_fk_user FOREIGN KEY (user_id) REFERENCES public."user"(id) ON DELETE CASCADE ON UPDATE RESTRICT
+  CONSTRAINT temporary_code_fk_user FOREIGN KEY (user_id) REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE RESTRICT
 );
 
 CREATE TABLE public.promotion_level (

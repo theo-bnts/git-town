@@ -3,9 +3,9 @@ RETURNS TRIGGER AS $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1
-    FROM public."user"
-    JOIN public."role" ON public."user".role_id = public."role".id
-    WHERE public."user".id = NEW.user_id AND public."role".keyword = TG_ARGV[0]
+    FROM public.user
+    JOIN public.role ON public.user.role_id = public.role.id
+    WHERE public.user.id = NEW.user_id AND public.role.keyword = TG_ARGV[0]
   ) THEN
     RAISE EXCEPTION 'User % does not have the % role', NEW.user_id, TG_ARGV[0];
   END IF;
@@ -18,11 +18,7 @@ CREATE OR REPLACE FUNCTION update_handler()
 RETURNS TRIGGER AS $$
 BEGIN
   IF TG_TABLE_NAME = 'repository' THEN
-    IF OLD.archived_at IS NOT NULL AND (
-      NEW.updated_at IS DISTINCT FROM OLD.updated_at OR
-      NEW.archived_at IS DISTINCT FROM OLD.archived_at OR
-      ROW(NEW.*) IS DISTINCT FROM ROW(OLD.*)
-    ) THEN
+    IF OLD.archived_at IS NOT NULL AND NEW.archived_at IS NOT NULL THEN
       RAISE EXCEPTION 'Cannot modify a repository that is archived';
     END IF;
   END IF;
@@ -34,12 +30,12 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER role_update
-BEFORE UPDATE ON public."role"
+BEFORE UPDATE ON public.role
 FOR EACH ROW
 EXECUTE FUNCTION update_handler();
 
 CREATE TRIGGER user_update
-BEFORE UPDATE ON public."user"
+BEFORE UPDATE ON public.user
 FOR EACH ROW
 EXECUTE FUNCTION update_handler();
 
@@ -74,7 +70,7 @@ FOR EACH ROW
 EXECUTE FUNCTION update_handler();
 
 CREATE TRIGGER template_update
-BEFORE UPDATE ON public."template"
+BEFORE UPDATE ON public.template
 FOR EACH ROW
 EXECUTE FUNCTION update_handler();
 
