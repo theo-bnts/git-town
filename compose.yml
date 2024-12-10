@@ -3,7 +3,7 @@ name: ${PROJECT_NAME}
 services:
   postgres:
     restart: unless-stopped
-    image: postgres:13
+    image: postgres:17
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
