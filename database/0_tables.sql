@@ -1,5 +1,3 @@
--- Mettre des on delete cascade quand ca n'a pas d'impact sur GitHub
-
 CREATE TABLE public."role" (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -39,7 +37,7 @@ CREATE TABLE public.temporary_code (
   user_id uuid NOT NULL,
   code char(6) NOT NULL,
   CONSTRAINT temporary_code_pk PRIMARY KEY (id),
-  CONSTRAINT temporary_code_fk_user FOREIGN KEY (user_id) REFERENCES public."user"(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT temporary_code_fk_user FOREIGN KEY (user_id) REFERENCES public."user"(id) ON DELETE CASCADE ON UPDATE RESTRICT
 );
 
 CREATE TABLE public.promotion_level (
@@ -73,8 +71,8 @@ CREATE TABLE public.user_promotion (
   user_id uuid NOT NULL,
   promotion_id uuid NOT NULL,
   CONSTRAINT user_promotion_pk PRIMARY KEY (id),
-  CONSTRAINT user_promotion_fk_user FOREIGN KEY (user_id) REFERENCES public."user"(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT user_promotion_fk_promotion FOREIGN KEY (promotion_id) REFERENCES public.promotion(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT user_promotion_fk_user FOREIGN KEY (user_id) REFERENCES public."user"(id) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT user_promotion_fk_promotion FOREIGN KEY (promotion_id) REFERENCES public.promotion(id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT user_promotion_unique_user_promotion UNIQUE (user_id, promotion_id)
 );
 
@@ -132,7 +130,7 @@ CREATE TABLE public.user_repository (
   repository_id uuid NOT NULL,
   CONSTRAINT user_repository_pk PRIMARY KEY (id),
   CONSTRAINT user_repository_fk_user FOREIGN KEY (user_id) REFERENCES public."user"(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT user_repository_fk_repository FOREIGN KEY (repository_id) REFERENCES public.repository(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT user_repository_fk_repository FOREIGN KEY (repository_id) REFERENCES public.repository(id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT user_repository_unique_user_repository UNIQUE (user_id, repository_id)
 );
 
@@ -154,7 +152,7 @@ CREATE TABLE public.template_milestone (
   template_id uuid NOT NULL,
   milestone_id uuid NOT NULL,
   CONSTRAINT template_milestone_pk PRIMARY KEY (id),
-  CONSTRAINT template_milestone_fk_template FOREIGN KEY (template_id) REFERENCES public."template"(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT template_milestone_fk_milestone FOREIGN KEY (milestone_id) REFERENCES public.milestone(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT template_milestone_fk_template FOREIGN KEY (template_id) REFERENCES public."template"(id) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT template_milestone_fk_milestone FOREIGN KEY (milestone_id) REFERENCES public.milestone(id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT template_milestone_unique_template_milestone UNIQUE (template_id, milestone_id)
 );
