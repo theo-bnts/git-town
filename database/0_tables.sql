@@ -1,4 +1,3 @@
--- Bloquer les textes vides (sauf pour le commentaire)
 -- Mettre des on delete cascade quand ca n'a pas d'impact sur GitHub
 
 CREATE TABLE public."role" (
@@ -9,7 +8,9 @@ CREATE TABLE public."role" (
   name varchar(250) NOT NULL,
   CONSTRAINT role_pk PRIMARY KEY (id),
   CONSTRAINT role_unique_keyword UNIQUE (keyword),
-  CONSTRAINT role_unique_name UNIQUE (name)
+  CONSTRAINT role_check_keyword CHECK (keyword ~ '^[a-z]+$'),
+  CONSTRAINT role_unique_name UNIQUE (name),
+  CONSTRAINT role_check_name CHECK (name <> '')
 );
 
 CREATE TABLE public."user" (
@@ -24,6 +25,8 @@ CREATE TABLE public."user" (
   github_id int8 DEFAULT NULL,
   CONSTRAINT user_pk PRIMARY KEY (id),
   CONSTRAINT user_unique_email UNIQUE (email),
+  CONSTRAINT user_check_email CHECK (email LIKE '_%@u-picardie.fr' OR email LIKE '_%@etud.u-picardie.fr'),
+  CONSTRAINT user_check_full_name CHECK (full_name <> ''),
   CONSTRAINT user_fk_role FOREIGN KEY (role_id) REFERENCES public."role"(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT user_unique_github_id UNIQUE (github_id),
   CONSTRAINT user_check_github_id CHECK (github_id >= 1)
@@ -34,7 +37,7 @@ CREATE TABLE public.temporary_code (
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   user_id uuid NOT NULL,
-  "code" char(6) NOT NULL,
+  code char(6) NOT NULL,
   CONSTRAINT temporary_code_pk PRIMARY KEY (id),
   CONSTRAINT temporary_code_fk_user FOREIGN KEY (user_id) REFERENCES public."user"(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
@@ -47,14 +50,16 @@ CREATE TABLE public.promotion_level (
   name varchar(250) NOT NULL,
   CONSTRAINT promotion_level_pk PRIMARY KEY (id),
   CONSTRAINT promotion_level_unique_initialism UNIQUE (initialism),
-  CONSTRAINT promotion_level_unique_name UNIQUE (name)
+  CONSTRAINT promotion_level_check_initialism CHECK (initialism <> ''),
+  CONSTRAINT promotion_level_unique_name UNIQUE (name),
+  CONSTRAINT promotion_level_check_name CHECK (name <> '')
 );
 
 CREATE TABLE public.promotion (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  "year" int2 DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::int2 NOT NULL,
+  year int2 DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::int2 NOT NULL,
   promotion_level_id uuid NOT NULL,
   CONSTRAINT promotion_pk PRIMARY KEY (id),
   CONSTRAINT promotion_check_year CHECK ((year >= 2000) AND (year <= 2099)),
@@ -69,14 +74,6 @@ CREATE TABLE public.user_promotion (
   promotion_id uuid NOT NULL,
   CONSTRAINT user_promotion_pk PRIMARY KEY (id),
   CONSTRAINT user_promotion_fk_user FOREIGN KEY (user_id) REFERENCES public."user"(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT user_promotion_check_user CHECK (
-    EXISTS (
-      SELECT 1
-      FROM public."user"
-      JOIN public."role" ON public."user".role_id = public."role".id
-      WHERE public."user".id = public.user_promotion.user_id AND public."role".keyword = 'student'
-    )
-  ),
   CONSTRAINT user_promotion_fk_promotion FOREIGN KEY (promotion_id) REFERENCES public.promotion(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT user_promotion_unique_user_promotion UNIQUE (user_id, promotion_id)
 );
@@ -89,14 +86,16 @@ CREATE TABLE public.ue (
   name varchar(250) NOT NULL,
   CONSTRAINT ue_pk PRIMARY KEY (id),
   CONSTRAINT ue_unique_initialism UNIQUE (initialism),
-  CONSTRAINT ue_unique_name UNIQUE (name)
+  CONSTRAINT ue_check_initialism CHECK (initialism <> ''),
+  CONSTRAINT ue_unique_name UNIQUE (name),
+  CONSTRAINT ue_check_name CHECK (name <> '')
 );
 
 CREATE TABLE public."template" (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  "year" int2 DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::int2 NOT NULL,
+  year int2 DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::int2 NOT NULL,
   ue_id uuid NOT NULL,
   CONSTRAINT template_pk PRIMARY KEY (id),
   CONSTRAINT template_check_year CHECK ((year >= 2000) AND (year <= 2099)),
@@ -111,22 +110,14 @@ CREATE TABLE public.repository (
   archived_at timestamp DEFAULT NULL,
   template_id uuid NOT NULL,
   promotion_id uuid NOT NULL,
-  teacher_id uuid NOT NULL,
-  teachers_comment text DEFAULT '' NOT NULL,
+  user_id uuid NOT NULL,
+  comment text DEFAULT '' NOT NULL,
   github_id int8 DEFAULT NULL,
   github_team_id int8 DEFAULT NULL,
   CONSTRAINT repository_pk PRIMARY KEY (id),
   CONSTRAINT repository_fk_template FOREIGN KEY (template_id) REFERENCES public."template"(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT repository_fk_promotion FOREIGN KEY (promotion_id) REFERENCES public.promotion(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT repository_fk_user FOREIGN KEY (teacher_id) REFERENCES public."user"(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT repository_fk_check_user CHECK (
-    EXISTS (
-      SELECT 1
-      FROM public."user"
-      JOIN public."role" ON public."user".role_id = public."role".id
-      WHERE public."user".id = public.repository.teacher_id AND public."role".keyword = 'teacher'
-    )
-  ),
+  CONSTRAINT repository_fk_user FOREIGN KEY (user_id) REFERENCES public."user"(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT repository_unique_github_id UNIQUE (github_id),
   CONSTRAINT repository_check_github_id CHECK (github_id >= 100000000),
   CONSTRAINT repository_unique_github_team_id UNIQUE (github_team_id),
@@ -141,14 +132,6 @@ CREATE TABLE public.user_repository (
   repository_id uuid NOT NULL,
   CONSTRAINT user_repository_pk PRIMARY KEY (id),
   CONSTRAINT user_repository_fk_user FOREIGN KEY (user_id) REFERENCES public."user"(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT user_repository_check_user CHECK (
-    EXISTS (
-      SELECT 1
-      FROM public."user"
-      JOIN public."role" ON public."user".role_id = public."role".id
-      WHERE public."user".id = public.user_repository.user_id AND public."role".keyword = 'student'
-    )
-  ),
   CONSTRAINT user_repository_fk_repository FOREIGN KEY (repository_id) REFERENCES public.repository(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT user_repository_unique_user_repository UNIQUE (user_id, repository_id)
 );
@@ -158,9 +141,10 @@ CREATE TABLE public.milestone (
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   title varchar(250) NOT NULL,
-  "date" date NOT NULL,
+  date date NOT NULL,
   CONSTRAINT milestone_pk PRIMARY KEY (id),
-  CONSTRAINT milestone_unique_title_date UNIQUE (title, "date")
+  CONSTRAINT milestone_check_title CHECK (title <> ''),
+  CONSTRAINT milestone_unique_title_date UNIQUE (title, date)
 );
 
 CREATE TABLE public.template_milestone (
