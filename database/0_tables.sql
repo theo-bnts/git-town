@@ -40,6 +40,19 @@ CREATE TABLE public.temporary_code (
   CONSTRAINT temporary_code_fk_user FOREIGN KEY (user_id) REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE RESTRICT
 );
 
+CREATE TABLE public.diploma (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  initialism varchar(10) NOT NULL,
+  name varchar(250) NOT NULL,
+  CONSTRAINT diploma_pk PRIMARY KEY (id),
+  CONSTRAINT diploma_unique_initialism UNIQUE (initialism),
+  CONSTRAINT diploma_check_initialism CHECK (initialism ~ '^[A-Z0-9_]+$'),
+  CONSTRAINT diploma_unique_name UNIQUE (name),
+  CONSTRAINT diploma_check_name CHECK (name <> '')
+);
+
 CREATE TABLE public.promotion_level (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -58,9 +71,11 @@ CREATE TABLE public.promotion (
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   year int2 DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::int2 NOT NULL,
+  diploma_id uuid NOT NULL,
   promotion_level_id uuid NOT NULL,
   CONSTRAINT promotion_pk PRIMARY KEY (id),
   CONSTRAINT promotion_check_year CHECK ((year >= 2000) AND (year <= 2099)),
+  CONSTRAINT promotion_fk_diploma FOREIGN KEY (diploma_id) REFERENCES public.diploma(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT promotion_fk_promotion_level FOREIGN KEY (promotion_level_id) REFERENCES public.promotion_level(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
@@ -85,7 +100,6 @@ CREATE TABLE public.ue (
   CONSTRAINT ue_pk PRIMARY KEY (id),
   CONSTRAINT ue_unique_initialism UNIQUE (initialism),
   CONSTRAINT ue_check_initialism CHECK (initialism ~ '^[A-Z0-9_]+$'),
-  CONSTRAINT ue_unique_name UNIQUE (name),
   CONSTRAINT ue_check_name CHECK (name <> '')
 );
 

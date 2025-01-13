@@ -7,11 +7,13 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    # Remove the following 2 lines in production
     ports:
       - 5432:5432
     networks:
       - network
     volumes:
+      - volume:/var/lib/postgresql/data
       - ./database/0_tables.sql:/docker-entrypoint-initdb.d/0_tables.sql
       - ./database/1_triggers.sql:/docker-entrypoint-initdb.d/1_triggers.sql
       - ./database/2_data.sql:/docker-entrypoint-initdb.d/2_data.sql
@@ -20,3 +22,7 @@ networks:
   network:
     driver: bridge
     name: git_town_network
+
+volumes:
+  volume:
+    name: git_town_data

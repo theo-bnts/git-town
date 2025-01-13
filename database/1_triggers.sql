@@ -44,6 +44,11 @@ BEFORE UPDATE ON public.temporary_code
 FOR EACH ROW
 EXECUTE FUNCTION update_handler();
 
+CREATE TRIGGER diploma_update
+BEFORE UPDATE ON public.diploma
+FOR EACH ROW
+EXECUTE FUNCTION update_handler();
+
 CREATE TRIGGER promotion_level_update
 BEFORE UPDATE ON public.promotion_level
 FOR EACH ROW
