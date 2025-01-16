@@ -8,7 +8,7 @@ CREATE TABLE public.role (
   CONSTRAINT role_unique_keyword UNIQUE (keyword),
   CONSTRAINT role_check_keyword CHECK (keyword ~ '^[a-z]+$'),
   CONSTRAINT role_unique_name UNIQUE (name),
-  CONSTRAINT role_check_name CHECK (name <> '')
+  CONSTRAINT role_check_name CHECK (trim(name) <> '')
 );
 
 CREATE TABLE public.user (
@@ -24,7 +24,14 @@ CREATE TABLE public.user (
   CONSTRAINT user_pk PRIMARY KEY (id),
   CONSTRAINT user_unique_email UNIQUE (email),
   CONSTRAINT user_check_email CHECK (email LIKE '_%@u-picardie.fr' OR email LIKE '_%@etud.u-picardie.fr'),
-  CONSTRAINT user_check_full_name CHECK (full_name <> ''),
+  CONSTRAINT user_password_hash_check CHECK (password_hash ~ '^[a-f0-9]*$'),
+  CONSTRAINT user_password_salt_check CHECK (password_salt ~ '^[a-f0-9]*$'),
+  CONSTRAINT user_password_hash_and_salt_dependent CHECK (
+    (password_hash IS NULL AND password_salt IS NULL)
+    OR
+    (password_hash IS NOT NULL AND password_salt IS NOT NULL)
+  ),
+  CONSTRAINT user_check_full_name CHECK (trim(full_name) <> ''),
   CONSTRAINT user_fk_role FOREIGN KEY (role_id) REFERENCES public.role(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT user_unique_github_id UNIQUE (github_id),
   CONSTRAINT user_check_github_id CHECK (github_id >= 1)
@@ -37,7 +44,20 @@ CREATE TABLE public.temporary_code (
   user_id uuid NOT NULL,
   code char(6) NOT NULL,
   CONSTRAINT temporary_code_pk PRIMARY KEY (id),
-  CONSTRAINT temporary_code_fk_user FOREIGN KEY (user_id) REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE RESTRICT
+  CONSTRAINT temporary_code_fk_user FOREIGN KEY (user_id) REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT temporary_code_check_code CHECK (code ~ '^[0-9]*$')
+);
+
+CREATE TABLE public.token (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  user_id uuid NOT NULL,
+  token char(128) NOT NULL,
+  CONSTRAINT token_pk PRIMARY KEY (id),
+  CONSTRAINT token_fk_user FOREIGN KEY (user_id) REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT token_unique_token UNIQUE (token),
+  CONSTRAINT token_check_token CHECK (token ~ '^[a-f0-9]*$')
 );
 
 CREATE TABLE public.diploma (
@@ -50,7 +70,7 @@ CREATE TABLE public.diploma (
   CONSTRAINT diploma_unique_initialism UNIQUE (initialism),
   CONSTRAINT diploma_check_initialism CHECK (initialism ~ '^[A-Z0-9_]+$'),
   CONSTRAINT diploma_unique_name UNIQUE (name),
-  CONSTRAINT diploma_check_name CHECK (name <> '')
+  CONSTRAINT diploma_check_name CHECK (trim(name) <> '')
 );
 
 CREATE TABLE public.promotion_level (
@@ -63,7 +83,7 @@ CREATE TABLE public.promotion_level (
   CONSTRAINT promotion_level_unique_initialism UNIQUE (initialism),
   CONSTRAINT promotion_level_check_initialism CHECK (initialism ~ '^[A-Z0-9_]+$'),
   CONSTRAINT promotion_level_unique_name UNIQUE (name),
-  CONSTRAINT promotion_level_check_name CHECK (name <> '')
+  CONSTRAINT promotion_level_check_name CHECK (trim(name) <> '')
 );
 
 CREATE TABLE public.promotion (
@@ -100,7 +120,7 @@ CREATE TABLE public.ue (
   CONSTRAINT ue_pk PRIMARY KEY (id),
   CONSTRAINT ue_unique_initialism UNIQUE (initialism),
   CONSTRAINT ue_check_initialism CHECK (initialism ~ '^[A-Z0-9_]+$'),
-  CONSTRAINT ue_check_name CHECK (name <> '')
+  CONSTRAINT ue_check_name CHECK (trim(name) <> '')
 );
 
 CREATE TABLE public.template (
@@ -122,18 +142,16 @@ CREATE TABLE public.repository (
   archived_at timestamp DEFAULT NULL,
   template_id uuid NOT NULL,
   promotion_id uuid NOT NULL,
-  user_id uuid NOT NULL,
-  comment text DEFAULT '' NOT NULL,
+  comment text,
   github_id int8 DEFAULT NULL,
   github_team_id int8 DEFAULT NULL,
   CONSTRAINT repository_pk PRIMARY KEY (id),
   CONSTRAINT repository_fk_template FOREIGN KEY (template_id) REFERENCES public.template(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT repository_fk_promotion FOREIGN KEY (promotion_id) REFERENCES public.promotion(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT repository_fk_user FOREIGN KEY (user_id) REFERENCES public.user(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT repository_unique_github_id UNIQUE (github_id),
-  CONSTRAINT repository_check_github_id CHECK (github_id >= 100000000),
+  CONSTRAINT repository_check_github_id CHECK (github_id IS NULL OR github_id >= 100000000),
   CONSTRAINT repository_unique_github_team_id UNIQUE (github_team_id),
-  CONSTRAINT repository_check_github_team_id CHECK (github_team_id >= 10000000)
+  CONSTRAINT repository_check_github_team_id CHECK (github_id IS NULL OR github_team_id >= 10000000)
 );
 
 CREATE TABLE public.user_repository (
@@ -155,7 +173,7 @@ CREATE TABLE public.milestone (
   title varchar(250) NOT NULL,
   date date NOT NULL,
   CONSTRAINT milestone_pk PRIMARY KEY (id),
-  CONSTRAINT milestone_check_title CHECK (title <> ''),
+  CONSTRAINT milestone_check_title CHECK (trim(title) <> ''),
   CONSTRAINT milestone_unique_title_date UNIQUE (title, date)
 );
 

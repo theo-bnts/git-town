@@ -39,6 +39,11 @@ BEFORE UPDATE ON public.user
 FOR EACH ROW
 EXECUTE FUNCTION update_handler();
 
+CREATE TRIGGER token_update
+BEFORE UPDATE ON public.token
+FOR EACH ROW
+EXECUTE FUNCTION update_handler();
+
 CREATE TRIGGER temporary_code_update
 BEFORE UPDATE ON public.temporary_code
 FOR EACH ROW
@@ -79,20 +84,10 @@ BEFORE UPDATE ON public.template
 FOR EACH ROW
 EXECUTE FUNCTION update_handler();
 
-CREATE TRIGGER repository_insert_update
-BEFORE INSERT OR UPDATE ON public.repository
-FOR EACH ROW
-EXECUTE FUNCTION insert_update_handler('teacher');
-
 CREATE TRIGGER repository_update
 BEFORE UPDATE ON public.repository
 FOR EACH ROW
 EXECUTE FUNCTION update_handler();
-
-CREATE TRIGGER user_repository_insert_update
-BEFORE INSERT OR UPDATE ON public.user_repository
-FOR EACH ROW
-EXECUTE FUNCTION insert_update_handler('student');
 
 CREATE TRIGGER user_repository_update
 BEFORE UPDATE ON public.user_repository
