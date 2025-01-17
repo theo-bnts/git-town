@@ -98,8 +98,3 @@ CREATE TRIGGER milestone_update
 BEFORE UPDATE ON public.milestone
 FOR EACH ROW
 EXECUTE FUNCTION update_handler();
-
-CREATE TRIGGER template_milestone_update
-BEFORE UPDATE ON public.template_milestone
-FOR EACH ROW
-EXECUTE FUNCTION update_handler();

@@ -171,21 +171,12 @@ CREATE TABLE public.milestone (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  template_id uuid NOT NULL,
   title varchar(250) NOT NULL,
   date date NOT NULL,
   CONSTRAINT milestone_pk PRIMARY KEY (id),
+  CONSTRAINT milestone_fk_template FOREIGN KEY (template_id) REFERENCES public.template(id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT milestone_check_title CHECK (trim(title) <> ''),
-  CONSTRAINT milestone_unique_title_date UNIQUE (title, date)
-);
-
-CREATE TABLE public.template_milestone (
-  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  template_id uuid NOT NULL,
-  milestone_id uuid NOT NULL,
-  CONSTRAINT template_milestone_pk PRIMARY KEY (id),
-  CONSTRAINT template_milestone_fk_template FOREIGN KEY (template_id) REFERENCES public.template(id) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT template_milestone_fk_milestone FOREIGN KEY (milestone_id) REFERENCES public.milestone(id) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT template_milestone_unique_template_milestone UNIQUE (template_id, milestone_id)
+  CONSTRAINT milestone_unique_title_date UNIQUE (template_id, title, date),
+  CONSTRAINT milestone_check_date CHECK (date >= '2000-01-01' AND date <= '2099-12-31')
 );
