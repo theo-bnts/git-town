@@ -34,7 +34,7 @@ CREATE TABLE public.user (
   CONSTRAINT user_check_full_name CHECK (trim(full_name) <> ''),
   CONSTRAINT user_fk_role FOREIGN KEY (role_id) REFERENCES public.role(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT user_unique_github_id UNIQUE (github_id),
-  CONSTRAINT user_check_github_id CHECK (github_id >= 1)
+  CONSTRAINT user_check_github_id CHECK (github_id IS NULL OR github_id >= 1)
 );
 
 CREATE TABLE public.temporary_code (
@@ -90,13 +90,13 @@ CREATE TABLE public.promotion (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  year int2 DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::int2 NOT NULL,
   diploma_id uuid NOT NULL,
   promotion_level_id uuid NOT NULL,
+  year int2 DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::int2 NOT NULL,
   CONSTRAINT promotion_pk PRIMARY KEY (id),
-  CONSTRAINT promotion_check_year CHECK ((year >= 2000) AND (year <= 2099)),
   CONSTRAINT promotion_fk_diploma FOREIGN KEY (diploma_id) REFERENCES public.diploma(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT promotion_fk_promotion_level FOREIGN KEY (promotion_level_id) REFERENCES public.promotion_level(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT promotion_fk_promotion_level FOREIGN KEY (promotion_level_id) REFERENCES public.promotion_level(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT promotion_check_year CHECK ((year >= 2000) AND (year <= 2099))
 );
 
 CREATE TABLE public.user_promotion (
@@ -120,6 +120,7 @@ CREATE TABLE public.ue (
   CONSTRAINT ue_pk PRIMARY KEY (id),
   CONSTRAINT ue_unique_initialism UNIQUE (initialism),
   CONSTRAINT ue_check_initialism CHECK (initialism ~ '^[A-Z0-9_]+$'),
+  CONSTRAINT ue_unique_name UNIQUE (name),
   CONSTRAINT ue_check_name CHECK (trim(name) <> '')
 );
 
@@ -127,11 +128,11 @@ CREATE TABLE public.template (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  year int2 DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::int2 NOT NULL,
   ue_id uuid NOT NULL,
+  year int2 DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::int2 NOT NULL,
   CONSTRAINT template_pk PRIMARY KEY (id),
-  CONSTRAINT template_check_year CHECK ((year >= 2000) AND (year <= 2099)),
   CONSTRAINT template_fk_ue FOREIGN KEY (ue_id) REFERENCES public.ue(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT template_check_year CHECK ((year >= 2000) AND (year <= 2099)),
   CONSTRAINT template_unique_ue_year UNIQUE (ue_id, year)
 );
 
@@ -142,7 +143,7 @@ CREATE TABLE public.repository (
   archived_at timestamp DEFAULT NULL,
   template_id uuid NOT NULL,
   promotion_id uuid NOT NULL,
-  comment text,
+  comment text DEFAULT NULL,
   github_id int8 DEFAULT NULL,
   github_team_id int8 DEFAULT NULL,
   CONSTRAINT repository_pk PRIMARY KEY (id),
@@ -151,7 +152,7 @@ CREATE TABLE public.repository (
   CONSTRAINT repository_unique_github_id UNIQUE (github_id),
   CONSTRAINT repository_check_github_id CHECK (github_id IS NULL OR github_id >= 100000000),
   CONSTRAINT repository_unique_github_team_id UNIQUE (github_team_id),
-  CONSTRAINT repository_check_github_team_id CHECK (github_id IS NULL OR github_team_id >= 10000000)
+  CONSTRAINT repository_check_github_team_id CHECK (github_team_id IS NULL OR github_team_id >= 10000000)
 );
 
 CREATE TABLE public.user_repository (
