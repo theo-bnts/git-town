@@ -24,8 +24,10 @@ CREATE TABLE public.user (
   CONSTRAINT user_pk PRIMARY KEY (id),
   CONSTRAINT user_unique_email UNIQUE (email),
   CONSTRAINT user_check_email CHECK (email LIKE '_%@u-picardie.fr' OR email LIKE '_%@etud.u-picardie.fr'),
-  CONSTRAINT user_password_hash_check CHECK (password_hash ~ '^[a-f0-9]*$'),
-  CONSTRAINT user_password_salt_check CHECK (password_salt ~ '^[a-f0-9]*$'),
+  CONSTRAINT user_unique_password_hash UNIQUE (password_hash),
+  CONSTRAINT user_check_password_hash CHECK (password_hash ~ '^[a-f0-9]*$'),
+  CONSTRAINT user_unique_password_salt UNIQUE (password_salt),
+  CONSTRAINT user_check_password_salt CHECK (password_salt ~ '^[a-f0-9]*$'),
   CONSTRAINT user_password_hash_and_salt_dependent CHECK (
     (password_hash IS NULL AND password_salt IS NULL)
     OR
@@ -96,7 +98,8 @@ CREATE TABLE public.promotion (
   CONSTRAINT promotion_pk PRIMARY KEY (id),
   CONSTRAINT promotion_fk_diploma FOREIGN KEY (diploma_id) REFERENCES public.diploma(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT promotion_fk_promotion_level FOREIGN KEY (promotion_level_id) REFERENCES public.promotion_level(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT promotion_check_year CHECK ((year >= 2000) AND (year <= 2099))
+  CONSTRAINT promotion_check_year CHECK ((year >= 2000) AND (year <= 2099)),
+  CONSTRAINT promotion_unique_diploma_promotion_level_year UNIQUE (diploma_id, promotion_level_id, year)
 );
 
 CREATE TABLE public.user_promotion (
@@ -177,6 +180,7 @@ CREATE TABLE public.milestone (
   CONSTRAINT milestone_pk PRIMARY KEY (id),
   CONSTRAINT milestone_fk_template FOREIGN KEY (template_id) REFERENCES public.template(id) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT milestone_check_title CHECK (trim(title) <> ''),
-  CONSTRAINT milestone_unique_title_date UNIQUE (template_id, title, date),
-  CONSTRAINT milestone_check_date CHECK (date >= '2000-01-01' AND date <= '2099-12-31')
+  CONSTRAINT milestone_check_date CHECK (date >= '2000-01-01' AND date <= '2099-12-31'),
+  CONSTRAINT milestone_unique_template_title UNIQUE (template_id, title),
+  CONSTRAINT milestone_unique_template_date UNIQUE (template_id, date)
 );
