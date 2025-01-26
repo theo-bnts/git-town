@@ -3,26 +3,50 @@ services:
     image: postgres:17-alpine
     container_name: git_town_postgres
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - ./postgres/.env
     # Remove the following 2 lines in production
     ports:
       - 5432:5432
     networks:
-      - network
+      - postgres_network
     volumes:
-      - volume:/var/lib/postgresql/data
-      - ./database/0_tables.sql:/docker-entrypoint-initdb.d/0_tables.sql
-      - ./database/1_triggers.sql:/docker-entrypoint-initdb.d/1_triggers.sql
-      - ./database/2_data.sql:/docker-entrypoint-initdb.d/2_data.sql
+      - postgres_data_volume:/var/lib/postgresql/data:rw
+      - ./postgres:/docker-entrypoint-initdb.d:ro
+  fastify:
+    depends_on:
+      - postgres
+    image: node:22-alpine
+    container_name: git_town_fastify
+    restart: unless-stopped
+    working_dir: /app
+    command: >
+      sh -c "
+        npm install --no-save &&
+        npm run debug
+      "
+    env_file:
+      - ./fastify/.env
+    # Remove the following 2 lines in production
+    ports:
+      - 8080:80
+    networks:
+      - fastify_network
+      - postgres_network
+    volumes:
+      - ./fastify:/app:ro
+      - fastify_node_modules:/app/node_modules:rw
 
 networks:
-  network:
+  postgres_network:
     driver: bridge
-    name: git_town_network
+    name: git_town_postgres_network
+  fastify_network:
+    driver: bridge
+    name: git_town_fastify_network
 
 volumes:
-  volume:
-    name: git_town_data
+  postgres_data_volume:
+    name: git_town_postgres_data_volume
+  fastify_node_modules:
+    name: git_town_fastify_node_modules
