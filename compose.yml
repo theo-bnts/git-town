@@ -3,13 +3,11 @@ services:
     image: postgres:17-alpine
     container_name: git_town_postgres
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
     # Remove the following 2 lines in production
     ports:
       - 5432:5432
+    env_file:
+      - ./postgres/.env
     networks:
       - network
     volumes:
