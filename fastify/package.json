@@ -2,10 +2,10 @@
   "name": "fastify",
   "main": "index.js",
   "scripts": {
+    "dev": "npm run format && nodemon",
+    "start": "node index.js",
     "lint": "eslint --ext .js .",
-    "format": "eslint --ext .js --fix .",
-    "debug": "npm run format && nodemon",
-    "start": " node index.js"
+    "format": "eslint --ext .js --fix ."
   },
   "dependencies": {
     "@fastify/autoload": "6",
