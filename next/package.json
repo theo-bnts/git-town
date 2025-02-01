@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "npm run format && next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "start": "npm run build && next start",
     "lint": "next lint",
     "format": "eslint --fix ./app"
   },
