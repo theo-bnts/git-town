@@ -12,20 +12,22 @@ class DatabasePool {
       user: process.env.DATABASE_USER_NAME,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      connectionLimit: process.env.DATABASE_CONNECTION_LIMIT,
-      waitForConnections: true,
+      max: process.env.DATABASE_CONNECTIONS_LIMIT,
     });
+
+    /* eslint-disable no-undef */
+    pg.types.setTypeParser(pg.types.builtins.INT8, BigInt);
   }
 
   async getConnection() {
-    return this.Pool.getConnection();
+    return this.Pool.connect();
   }
 
   async execute(query, values) {
     const connection = await this.getConnection();
-    const [rows] = await connection.execute(query, values);
+    const result = await connection.query(query, values);
     connection.release();
-    return rows;
+    return result.rows;
   }
 }
 

@@ -10,7 +10,7 @@ export default async function route(app) {
         properties: {
           email_address: {
             type: 'string',
-            maxLength: parseInt(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH, 10),
+            maxLength: Number(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH),
             format: 'email',
           },
         },

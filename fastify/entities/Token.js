@@ -4,78 +4,92 @@ import User from './User.js';
 class Token {
   Id;
 
-  Value;
+  CreatedAt;
 
-  Expiration;
+  UpdatedAt;
 
   User;
 
-  constructor(id, value, expiration, user) {
+  Token;
+
+  constructor(id, createdAt, updatedAt, user, token) {
     this.Id = id;
-    this.Value = value;
-    this.Expiration = expiration;
+    this.CreatedAt = createdAt;
+    this.UpdatedAt = updatedAt;
     this.User = user;
+    this.Token = token;
   }
 
   isValid() {
-    return this.Expiration === null || this.Expiration > new Date();
+    const expirationSeconds = Number(process.env.TOKEN_EXPIRATION_SECONDS);
+    const expirationDate = new Date(this.CreatedAt.getTime() + expirationSeconds * 1000);
+    return expirationDate > new Date();
   }
 
   async insert() {
-    const result = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-                INSERT INTO TOKEN (VALUE_, EXPIRATION, ID_USER)
-                VALUES (?, ?, ?)
-            `,
-      [this.Value, this.Expiration, this.User.Id],
+        INSERT INTO token (user_id, token)
+        VALUES ($1::uuid, $2::text)
+        RETURNING id, created_at, updated_at
+      `,
+      [this.User.Id, this.Token],
     );
 
-    this.Id = result.insertId;
+    this.Id = row.id;
+    this.CreatedAt = row.created_at;
+    this.UpdatedAt = row.updated_at;
   }
 
-  async expire() {
-    this.Expiration = new Date();
-
+  async delete() {
     await DatabasePool.Instance.execute(
       /* sql */ `
-                UPDATE TOKEN
-                SET EXPIRATION = ?
-                WHERE VALUE_ = ?
-            `,
-      [this.Expiration, this.Value],
+        DELETE FROM token
+        WHERE id = $1::uuid
+      `,
+      [this.Id],
     );
+
+    this.Id = null;
   }
 
   static async isValidValue(value) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-                SELECT COUNT(*) AS COUNT
-                FROM TOKEN
-                WHERE VALUE_ = ?
-            `,
+        SELECT COUNT(*) AS count
+        FROM public.token
+        WHERE token = $1::text
+      `,
       [value],
     );
 
-    return row.COUNT === 1;
+    return row.count === 1n;
   }
 
   static async fromValue(value) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-                SELECT
-                    ID_TOKEN,
-                    EXPIRATION,
-                    ID_USER
-                FROM TOKEN
-                WHERE VALUE_ = ?
-            `,
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          user_id,
+          token
+        FROM public.token
+        WHERE token = $1::text
+      `,
       [value],
     );
 
-    const user = await User.fromId(row.ID_USER);
+    const user = await User.fromId(row.user_id);
 
-    /* eslint-disable-next-line no-underscore-dangle */
-    return new this(row.ID_TOKEN, value, row.EXPIRATION, user);
+    return new this(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      user,
+      row.token,
+    );
   }
 }
 

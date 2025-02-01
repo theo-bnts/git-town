@@ -12,17 +12,17 @@ export default async function route(app) {
         properties: {
           email_address: {
             type: 'string',
-            maxLength: parseInt(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH, 10),
+            maxLength: Number(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH),
             format: 'email',
           },
           password: {
             type: 'string',
-            minLength: parseInt(process.env.USER_PASSWORD_MIN_LENGTH, 10),
+            minLength: Number(process.env.USER_PASSWORD_MIN_LENGTH),
           },
           temporary_code: {
             type: 'string',
-            minLength: parseInt(process.env.TEMPORARY_CODE_LENGTH, 10),
-            maxLength: parseInt(process.env.TEMPORARY_CODE_LENGTH, 10),
+            minLength: Number(process.env.TEMPORARY_CODE_LENGTH),
+            maxLength: Number(process.env.TEMPORARY_CODE_LENGTH),
             pattern: '^[0-9]*$',
           },
         },
@@ -48,7 +48,7 @@ export default async function route(app) {
 
       await TemporaryCode.expireAll(user);
 
-      const passwordHashSalt = Security.generateSaltValue();
+      const passwordHashSalt = Security.generateHashSaltValue();
 
       user.PasswordHash = Security.hashPassword(password, passwordHashSalt);
       user.PasswordHashSalt = passwordHashSalt;

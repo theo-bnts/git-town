@@ -12,12 +12,13 @@ export default async function route(app) {
         properties: {
           email_address: {
             type: 'string',
-            maxLength: parseInt(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH, 10),
+            maxLength: Number(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH),
             format: 'email',
+            pattern: process.env.USER_EMAIL_ADDRESS_PATTERN,
           },
           password: {
             type: 'string',
-            minLength: parseInt(process.env.USER_PASSWORD_MIN_LENGTH, 10),
+            minLength: Number(process.env.USER_PASSWORD_MIN_LENGTH),
           },
         },
         required: ['email_address', 'password'],
@@ -38,26 +39,15 @@ export default async function route(app) {
 
       const token = new Token(
         null,
-        Security.generateTokenValue(),
-        new Date(
-          Date.now()
-            + parseInt(process.env.TOKEN_EXPIRATION_SECONDS, 10) * 1000,
-        ),
+        null,
+        null,
         user,
-        false,
+        Security.generateTokenValue(),
       );
 
       await token.insert();
 
-      const formattedToken = {
-        value: token.Value,
-        expiration: token.Expiration,
-      };
-
-      return {
-        success: true,
-        datas: formattedToken,
-      };
+      return token;
     },
   });
 }

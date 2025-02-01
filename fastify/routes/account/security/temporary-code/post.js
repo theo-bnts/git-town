@@ -13,7 +13,7 @@ export default async function route(app) {
         properties: {
           email_address: {
             type: 'string',
-            maxLength: parseInt(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH, 10),
+            maxLength: Number(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH),
             format: 'email',
           },
         },
@@ -34,7 +34,7 @@ export default async function route(app) {
         Security.generateTemporaryCodeValue(),
         new Date(
           Date.now()
-            + parseInt(process.env.TEMPORARY_CODE_EXPIRATION_SECONDS, 10) * 1000,
+            + Number(process.env.TEMPORARY_CODE_EXPIRATION_SECONDS) * 1000,
         ),
         user,
       );
