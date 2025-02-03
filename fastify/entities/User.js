@@ -11,9 +11,9 @@ class User {
 
   EmailAddress;
 
-  PasswordHash;
-
   PasswordHashSalt;
+
+  PasswordHash;
 
   FullName;
 
@@ -26,8 +26,8 @@ class User {
     createdAt,
     updatedAt,
     emailAddress,
-    passwordHash,
     passwordHashSalt,
+    passwordHash,
     fullName,
     role,
     gitHubId,
@@ -36,8 +36,8 @@ class User {
     this.CreatedAt = createdAt;
     this.UpdatedAt = updatedAt;
     this.EmailAddress = emailAddress;
-    this.PasswordHash = passwordHash;
     this.PasswordHashSalt = passwordHashSalt;
+    this.PasswordHash = passwordHash;
     this.FullName = fullName;
     this.Role = role;
     this.GitHubId = gitHubId;
@@ -53,10 +53,10 @@ class User {
   async insert() {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-        INSERT INTO user (
+        INSERT INTO public.user (
           email_address,
-          password_hash,
           password_hash_salt,
+          password_hash,
           full_name,
           role_id,
           github_id
@@ -67,14 +67,14 @@ class User {
           $3::text,
           $4::text,
           $5::uuid,
-          $6::text
+          $6::bigint
         )
         RETURNING id, created_at, updated_at
       `,
       [
         this.EmailAddress,
-        this.PasswordHash,
         this.PasswordHashSalt,
+        this.PasswordHash,
         this.FullName,
         this.Role.Id,
         this.GitHubId,
@@ -89,20 +89,20 @@ class User {
   async update() {
     await DatabasePool.Instance.execute(
       /* sql */ `
-        UPDATE USER_
+        UPDATE public.user
         SET
           email_address = $1::text,
-          password_hash = $2::text,
-          password_hash_salt = $3::text,
+          password_hash_salt = $2::text,
+          password_hash = $3::text,
           full_name = $4::text,
           role_id = $5::uuid,
-          github_id = $6::text
-          WHERE id_user = $7::uuid
+          github_id = $6::bigint
+          WHERE id = $7::uuid
       `,
       [
         this.EmailAddress,
-        this.PasswordHash,
         this.PasswordHashSalt,
+        this.PasswordHash,
         this.FullName,
         this.Role.Id,
         this.GitHubId,
@@ -131,8 +131,8 @@ class User {
           created_at,
           updated_at,
           email_address,
-          password_hash,
           password_hash_salt,
+          password_hash,
           full_name,
           role_id,
           github_id
@@ -149,8 +149,8 @@ class User {
       row.created_at,
       row.updated_at,
       row.email_address,
-      row.password_hash,
       row.password_hash_salt,
+      row.password_hash,
       row.full_name,
       role,
       row.github_id,
@@ -164,8 +164,8 @@ class User {
           id,
           created_at,
           updated_at,
-          password_hash,
           password_hash_salt,
+          password_hash,
           full_name,
           role_id,
           github_id
@@ -182,12 +182,24 @@ class User {
       row.created_at,
       row.updated_at,
       emailAddress,
-      row.password_hash,
       row.password_hash_salt,
+      row.password_hash,
       row.full_name,
       role,
       row.github_id,
     );
+  }
+
+  toJSON() {
+    return {
+      Id: this.Id,
+      CreatedAt: this.CreatedAt,
+      UpdatedAt: this.UpdatedAt,
+      EmailAddress: this.EmailAddress,
+      FullName: this.FullName,
+      Role: this.Role,
+      GitHubId: this.GitHubId,
+    };
   }
 }
 

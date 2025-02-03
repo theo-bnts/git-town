@@ -10,6 +10,7 @@ class MailTransporter {
       host: process.env.SMTP_HOST,
       port: process.env.SMTP_PORT,
       secure: /true/i.test(process.env.SMTP_SECURE),
+      authMethod: process.env.SMTP_AUTH_METHOD,
       auth: {
         user: process.env.SMTP_USER_NAME,
         pass: process.env.SMTP_PASSWORD,
@@ -32,7 +33,7 @@ class MailTransporter {
       'Code temporaire',
       process.env.MAIL_BODY.replace(
         '%CONTENT%',
-        `Votre code temporaire est <b>${temporaryCode.Value}</b>.<br>Il expirera dans ${process.env.TEMPORARY_CODE_EXPIRATION_SECONDS / 60} minutes.`,
+        `Votre code temporaire est <b>${temporaryCode.Code}</b>.<br>Il expirera dans ${process.env.TEMPORARY_CODE_EXPIRATION_SECONDS / 60} minutes.`,
       ),
     );
   }

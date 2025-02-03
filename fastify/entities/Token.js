@@ -33,7 +33,7 @@ class Token {
   async insert() {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-        INSERT INTO token (user_id, token)
+        INSERT INTO public.token (user_id, token)
         VALUES ($1::uuid, $2::text)
         RETURNING id, created_at, updated_at
       `,
@@ -48,7 +48,7 @@ class Token {
   async delete() {
     await DatabasePool.Instance.execute(
       /* sql */ `
-        DELETE FROM token
+        DELETE FROM public.token
         WHERE id = $1::uuid
       `,
       [this.Id],

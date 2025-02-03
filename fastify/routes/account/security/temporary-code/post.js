@@ -15,6 +15,7 @@ export default async function route(app) {
             type: 'string',
             maxLength: Number(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH),
             format: 'email',
+            pattern: process.env.USER_EMAIL_ADDRESS_PATTERN,
           },
         },
         required: ['email_address'],
@@ -31,12 +32,10 @@ export default async function route(app) {
 
       const temporaryCode = new TemporaryCode(
         null,
-        Security.generateTemporaryCodeValue(),
-        new Date(
-          Date.now()
-            + Number(process.env.TEMPORARY_CODE_EXPIRATION_SECONDS) * 1000,
-        ),
+        null,
+        null,
         user,
+        Security.generateTemporaryCodeValue(),
       );
 
       await temporaryCode.insert();
@@ -46,12 +45,7 @@ export default async function route(app) {
         temporaryCode,
       );
 
-      return {
-        success: true,
-        datas: {
-          expiration: temporaryCode.Expiration,
-        },
-      };
+      return temporaryCode;
     },
   });
 }

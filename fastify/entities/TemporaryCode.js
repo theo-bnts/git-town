@@ -22,7 +22,7 @@ class TemporaryCode {
   async insert() {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-        INSERT INTO temporary_code (user_id, code)
+        INSERT INTO public.temporary_code (user_id, code)
         VALUES ($1::uuid, $2::text)
         RETURNING id, created_at, updated_at
       `,
@@ -34,18 +34,18 @@ class TemporaryCode {
     this.UpdatedAt = row.updated_at;
   }
 
-  static async isValidValue(user, code) {
+  static async isValidValue(code, user) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.temporary_code tc
-        WHERE tc.id_user = $1::uuid
+        WHERE tc.user_id = $1::uuid
         AND tc.code = $2::text
-        AND WHERE (tc.created_at + ($3::int * INTERVAL '1 second')) > NOW()
+        AND (tc.created_at + ($3::int * INTERVAL '1 second')) > NOW()
         AND NOT EXISTS (
           SELECT 1
           FROM public.temporary_code tc2
-          WHERE tc2.id_user = tc.id_user
+          WHERE tc2.user_id = tc.user_id
           AND tc2.created_at > tc.created_at
         )
       `,
@@ -58,11 +58,20 @@ class TemporaryCode {
   static async deleteAll(user) {
     await DatabasePool.Instance.execute(
       /* sql */ `
-        DELETE FROM temporary_code
-        WHERE id_user = $1::uuid
+        DELETE FROM public.temporary_code
+        WHERE user_id = $1::uuid
       `,
       [user.Id],
     );
+  }
+
+  toJSON() {
+    return {
+      id: this.Id,
+      created_at: this.CreatedAt,
+      updated_at: this.UpdatedAt,
+      user: this.User,
+    };
   }
 }
 

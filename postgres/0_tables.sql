@@ -16,22 +16,22 @@ CREATE TABLE public.user (
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   email_address varchar(250) NOT NULL,
-  password_hash char(128) DEFAULT NULL,
   password_hash_salt char(128) DEFAULT NULL,
+  password_hash char(128) DEFAULT NULL,
   full_name varchar(250) NOT NULL,
   role_id uuid NOT NULL,
   github_id int8 DEFAULT NULL,
   CONSTRAINT user_pk PRIMARY KEY (id),
   CONSTRAINT user_unique_email_address UNIQUE (email_address),
   CONSTRAINT user_check_email_address CHECK (email_address LIKE '_%@u-picardie.fr' OR email_address LIKE '_%@etud.u-picardie.fr'),
-  CONSTRAINT user_unique_password_hash UNIQUE (password_hash),
-  CONSTRAINT user_check_password_hash CHECK (password_hash ~ '^[a-f0-9]*$'),
   CONSTRAINT user_unique_password_hash_salt UNIQUE (password_hash_salt),
   CONSTRAINT user_check_password_hash_salt CHECK (password_hash_salt ~ '^[a-f0-9]*$'),
-  CONSTRAINT user_password_hash_and_salt_dependent CHECK (
-    (password_hash IS NULL AND password_hash_salt IS NULL)
+  CONSTRAINT user_unique_password_hash UNIQUE (password_hash),
+  CONSTRAINT user_check_password_hash CHECK (password_hash ~ '^[a-f0-9]*$'),
+  CONSTRAINT user_password_hash_salt_and_password_hash_dependent CHECK (
+    (password_hash_salt IS NULL AND password_hash IS NULL)
     OR
-    (password_hash IS NOT NULL AND password_hash_salt IS NOT NULL)
+    (password_hash_salt IS NOT NULL AND password_hash IS NOT NULL)
   ),
   CONSTRAINT user_check_full_name CHECK (trim(full_name) <> ''),
   CONSTRAINT user_fk_role FOREIGN KEY (role_id) REFERENCES public.role(id) ON DELETE RESTRICT ON UPDATE RESTRICT,

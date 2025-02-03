@@ -34,7 +34,7 @@ export default async function route(app) {
       const user = await User.fromEmailAddress(emailAddress);
 
       if (!user.isValidPassword(password)) {
-        // throw { statusCode: 403, code: 'INVALID_PASSWORD' };
+        throw { statusCode: 403, code: 'INVALID_PASSWORD' };
       }
 
       const token = new Token(
