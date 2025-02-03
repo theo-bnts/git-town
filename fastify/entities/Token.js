@@ -21,8 +21,12 @@ class Token {
   }
 
   isValid() {
+    if (this.CreatedAt === null) {
+      return false;
+    }
+
     const expirationSeconds = Number(process.env.TOKEN_EXPIRATION_SECONDS);
-    const expirationDate = new Date(this.CreatedAt.getTime() + expirationSeconds * 1000);
+    const expirationDate = new Date(this.CreatedAt.getTime() + (expirationSeconds * 1000));
     return expirationDate > new Date();
   }
 
@@ -51,6 +55,8 @@ class Token {
     );
 
     this.Id = null;
+    this.CreatedAt = null;
+    this.UpdatedAt = null;
   }
 
   static async isValidValue(value) {

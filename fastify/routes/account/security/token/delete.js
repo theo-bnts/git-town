@@ -20,9 +20,7 @@ export default async function route(app) {
     handler: async function handler(request) {
       const token = await Request.getUsedToken(request);
 
-      await token.expire();
-
-      return { success: true };
+      await token.delete();
     },
   });
 }
