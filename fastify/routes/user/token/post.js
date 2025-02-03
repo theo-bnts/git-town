@@ -1,11 +1,11 @@
-import Security from '../../../../entities/tools/Security.js';
-import Token from '../../../../entities/Token.js';
-import User from '../../../../entities/User.js';
+import Security from '../../../entities/tools/Security.js';
+import Token from '../../../entities/Token.js';
+import User from '../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/account/security/token',
+    url: '/user/token',
     schema: {
       body: {
         type: 'object',

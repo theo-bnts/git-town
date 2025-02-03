@@ -4,7 +4,7 @@ import User from '../../entities/User.js';
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/account',
+    url: '/user',
     schema: {
       headers: {
         type: 'object',
@@ -21,13 +21,7 @@ export default async function route(app) {
     handler: async function handler(request) {
       const user = await Request.getAuthentifiedUser(request, User);
 
-      return {
-        success: true,
-        datas: {
-          email_address: user.EmailAddress,
-          user_name: user.UserName,
-        },
-      };
+      return user;
     },
   });
 }

@@ -41,6 +41,29 @@ class Role {
       row.name,
     );
   }
+
+  static async fromKeyword(keyword) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          name
+        FROM role
+        WHERE keyword = $1::text
+      `,
+      [keyword],
+    );
+
+    return new Role(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      keyword,
+      row.name,
+    );
+  }
 }
 
 export default Role;

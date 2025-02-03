@@ -1,9 +1,9 @@
-import Request from '../../../../entities/tools/Request.js';
+import Request from '../../../entities/tools/Request.js';
 
 export default async function route(app) {
   app.route({
     method: 'DELETE',
-    url: '/account/security/token',
+    url: '/user/token',
     schema: {
       headers: {
         type: 'object',

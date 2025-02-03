@@ -10,14 +10,14 @@ class Token {
 
   User;
 
-  Token;
+  Value;
 
-  constructor(id, createdAt, updatedAt, user, token) {
+  constructor(id, createdAt, updatedAt, user, value) {
     this.Id = id;
     this.CreatedAt = createdAt;
     this.UpdatedAt = updatedAt;
     this.User = user;
-    this.Token = token;
+    this.Value = value;
   }
 
   isValid() {
@@ -33,11 +33,11 @@ class Token {
   async insert() {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-        INSERT INTO public.token (user_id, token)
+        INSERT INTO public.token (user_id, value)
         VALUES ($1::uuid, $2::text)
         RETURNING id, created_at, updated_at
       `,
-      [this.User.Id, this.Token],
+      [this.User.Id, this.Value],
     );
 
     this.Id = row.id;
@@ -64,7 +64,7 @@ class Token {
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.token
-        WHERE token = $1::text
+        WHERE value = $1::text
       `,
       [value],
     );
@@ -79,10 +79,9 @@ class Token {
           id,
           created_at,
           updated_at,
-          user_id,
-          token
+          user_id
         FROM public.token
-        WHERE token = $1::text
+        WHERE value = $1::text
       `,
       [value],
     );
@@ -94,7 +93,7 @@ class Token {
       row.created_at,
       row.updated_at,
       user,
-      row.token,
+      value,
     );
   }
 }

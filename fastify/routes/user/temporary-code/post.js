@@ -1,12 +1,12 @@
-import MailTransporter from '../../../../entities/tools/MailTransporter.js';
-import Security from '../../../../entities/tools/Security.js';
-import TemporaryCode from '../../../../entities/TemporaryCode.js';
-import User from '../../../../entities/User.js';
+import MailTransporter from '../../../entities/tools/MailTransporter.js';
+import Security from '../../../entities/tools/Security.js';
+import TemporaryCode from '../../../entities/TemporaryCode.js';
+import User from '../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/account/security/temporary-code',
+    url: '/user/temporary-code',
     schema: {
       body: {
         type: 'object',

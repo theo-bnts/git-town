@@ -1,11 +1,11 @@
-import Security from '../../../../entities/tools/Security.js';
-import TemporaryCode from '../../../../entities/TemporaryCode.js';
-import User from '../../../../entities/User.js';
+import Security from '../../../entities/tools/Security.js';
+import TemporaryCode from '../../../entities/TemporaryCode.js';
+import User from '../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/account/security/password',
+    url: '/user/password',
     schema: {
       body: {
         type: 'object',

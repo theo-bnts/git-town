@@ -23,7 +23,7 @@ CREATE TABLE public.user (
   github_id int8 DEFAULT NULL,
   CONSTRAINT user_pk PRIMARY KEY (id),
   CONSTRAINT user_unique_email_address UNIQUE (email_address),
-  CONSTRAINT user_check_email_address CHECK (email_address LIKE '_%@u-picardie.fr' OR email_address LIKE '_%@etud.u-picardie.fr'),
+  CONSTRAINT user_check_email_address CHECK (email_address ~ '^.+@(?:etud\.)?u-picardie.fr$'),
   CONSTRAINT user_unique_password_hash_salt UNIQUE (password_hash_salt),
   CONSTRAINT user_check_password_hash_salt CHECK (password_hash_salt ~ '^[a-f0-9]*$'),
   CONSTRAINT user_unique_password_hash UNIQUE (password_hash),
@@ -44,10 +44,10 @@ CREATE TABLE public.temporary_code (
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   user_id uuid NOT NULL,
-  code char(6) NOT NULL,
+  value char(6) NOT NULL,
   CONSTRAINT temporary_code_pk PRIMARY KEY (id),
   CONSTRAINT temporary_code_fk_user FOREIGN KEY (user_id) REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT temporary_code_check_code CHECK (code ~ '^[0-9]*$')
+  CONSTRAINT temporary_code_check_value CHECK (value ~ '^[0-9]*$')
 );
 
 CREATE TABLE public.token (
@@ -55,11 +55,11 @@ CREATE TABLE public.token (
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   user_id uuid NOT NULL,
-  token char(128) NOT NULL,
+  value char(128) NOT NULL,
   CONSTRAINT token_pk PRIMARY KEY (id),
   CONSTRAINT token_fk_user FOREIGN KEY (user_id) REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT token_unique_token UNIQUE (token),
-  CONSTRAINT token_check_token CHECK (token ~ '^[a-f0-9]*$')
+  CONSTRAINT token_unique_value UNIQUE (value),
+  CONSTRAINT token_check_value CHECK (value ~ '^[a-f0-9]*$')
 );
 
 CREATE TABLE public.diploma (
