@@ -1,35 +1,55 @@
 import React from 'react';
 import ActionButton from './ActionButton';
 
-const TableCell = ({ value }) => {
-  // Classes communes pour <td>
-  const tdClasses = "py-2 px-4 border-b border-gray-200";
+const TableCell = ({ value, columnKey }) => {
+  // On utilise ici le même padding horizontal que dans le header (px-6)
+  const baseClasses = "py-4 px-6 border-b border-gray-200";
+  // On ajoute également text-left pour forcer l'alignement à gauche
+  const contentClasses = "min-h-[32px] flex items-center text-left";
+  // Si c'est une cellule d'email, on ajoute le soulignement en pointillé gris
+  const emailDecoration =
+    columnKey === 'email'
+      ? "underline underline-offset-4 decoration-dotted decoration-gray-400"
+      : "";
 
+  // Si la valeur est un tableau...
   if (Array.isArray(value)) {
-    const isStringArray = value.every(item => typeof item === 'string');
-
-    if (isStringArray) {
+    const isTextArray = value.every((item) => typeof item === 'string');
+    if (isTextArray) {
       return (
-        <td className={tdClasses}>
-          <ul className="list-disc list-inside">
-            {value.map((text, index) => (
-              <li key={index}>{text}</li>
-            ))}
-          </ul>
+        <td className={`${baseClasses} ${columnKey !== 'actions' ? 'min-w-[150px]' : ''}`}>
+          <div className={`${contentClasses} ${columnKey !== 'actions' ? '' : 'whitespace-nowrap'}`}>
+            {/* On supprime les puces en utilisant list-none */}
+            <ul className="list-none">
+              {value.map((text, index) => (
+                <li key={index}>{text}</li>
+              ))}
+            </ul>
+          </div>
         </td>
       );
     } else {
+      // Pour un tableau d'actions (boutons)
       return (
-        <td className={tdClasses}>
-          {value.map((action, index) => (
-            <ActionButton key={index} icon={action.icon} onClick={action.onClick} />
-          ))}
+        <td className={`${baseClasses} whitespace-nowrap`}>
+          <div className={contentClasses}>
+            {value.map((action, index) => (
+              <ActionButton key={index} icon={action.icon} onClick={action.onClick} />
+            ))}
+          </div>
         </td>
       );
     }
   }
 
-  return <td className={tdClasses}>{value}</td>;
+  // Pour une valeur textuelle simple
+  return (
+    <td className={`${baseClasses} ${columnKey !== 'actions' ? 'min-w-[150px]' : 'whitespace-nowrap'}`}>
+      <div className={`${contentClasses} ${emailDecoration}`}>
+        {value}
+      </div>
+    </td>
+  );
 };
 
 export default TableCell;

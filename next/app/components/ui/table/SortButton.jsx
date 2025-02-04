@@ -6,12 +6,12 @@ const SortButton = ({ isActive, direction }) => {
     <span className="inline-flex items-center ml-1 cursor-pointer">
       {isActive ? (
         direction === 'asc' ? (
-          <TriangleUpIcon size={20} />
+          <TriangleUpIcon size={22} />
         ) : (
-          <TriangleDownIcon size={20} />
+          <TriangleDownIcon size={22}/>
         )
       ) : (
-        <TriangleDownIcon size={20} />
+        <TriangleDownIcon size={22} />
       )}
     </span>
   );

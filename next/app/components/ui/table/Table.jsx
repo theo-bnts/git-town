@@ -3,6 +3,12 @@
 import React, { useState } from 'react';
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
+import { 
+  MoveToStartIcon, 
+  MoveToEndIcon, 
+  ArrowLeftIcon, 
+  ArrowRightIcon 
+} from '@primer/octicons-react';
 
 const Table = ({ columns, data, rowsPerPage = 5 }) => {
   const [sortColumn, setSortColumn] = useState(null);
@@ -30,7 +36,7 @@ const Table = ({ columns, data, rowsPerPage = 5 }) => {
 
   return (
     <>
-      <table className="w-full border-collapse">
+      <table className="border-collapse table-auto w-auto">
         <TableHeader
           columns={columns}
           onSort={handleSort}
@@ -44,26 +50,51 @@ const Table = ({ columns, data, rowsPerPage = 5 }) => {
         </tbody>
       </table>
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center mt-4 gap-2">
-          <button
-            onClick={() => setCurrentPage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-300"
-          >
-            ⬅ Précédent
-          </button>
-          <span className="font-bold">Page {currentPage} sur {totalPages}</span>
-          <button
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-300"
-          >
-            Suivant ➡
-          </button>
-        </div>
-      )}
+    {/* Pagination Controls */}
+    {totalPages > 1 && (
+    <div className="flex items-center justify-center mt-2 gap-2 text-base text-gray-600">
+        {/* Bouton aller à la première page */}
+        <button
+        onClick={() => setCurrentPage(1)}
+        disabled={currentPage === 1}
+        className="p-2 rounded disabled:text-gray-400 transition-colors duration-200 hover:bg-gray-200"
+        >
+        <MoveToStartIcon size={20} />
+        </button>
+
+        {/* Bouton page précédente */}
+        <button
+        onClick={() => setCurrentPage(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="p-2 rounded disabled:text-gray-400 transition-colors duration-200 hover:bg-gray-200"
+        >
+        <ArrowLeftIcon size={20} />
+        </button>
+
+        {/* Texte indicateur de page */}
+        <span className="px-2">
+        {currentPage} / {totalPages}
+        </span>
+
+        {/* Bouton page suivante */}
+        <button
+        onClick={() => setCurrentPage(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="p-2 rounded disabled:text-gray-400 transition-colors duration-200 hover:bg-gray-200"
+        >
+        <ArrowRightIcon size={20} />
+        </button>
+
+        {/* Bouton aller à la dernière page */}
+        <button
+        onClick={() => setCurrentPage(totalPages)}
+        disabled={currentPage === totalPages}
+        className="p-2 rounded disabled:text-gray-400 transition-colors duration-200 hover:bg-gray-200"
+        >
+        <MoveToEndIcon size={20} />
+        </button>
+    </div>
+    )}
     </>
   );
 };
