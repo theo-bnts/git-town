@@ -23,7 +23,7 @@ CREATE TABLE public.user (
   github_id int8 DEFAULT NULL,
   CONSTRAINT user_pk PRIMARY KEY (id),
   CONSTRAINT user_unique_email_address UNIQUE (email_address),
-  CONSTRAINT user_check_email_address CHECK (email_address ~ '^.+@(?:etud\.)?u-picardie.fr$'),
+  CONSTRAINT user_check_email_address CHECK (email_address ~ '^[a-zA-Z0-9\._%+-]+@(?:etud\.)?u-picardie.fr$'),
   CONSTRAINT user_unique_password_hash_salt UNIQUE (password_hash_salt),
   CONSTRAINT user_check_password_hash_salt CHECK (password_hash_salt ~ '^[a-f0-9]*$'),
   CONSTRAINT user_unique_password_hash UNIQUE (password_hash),

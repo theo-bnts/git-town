@@ -4,12 +4,7 @@ import Role from '../../entities/Role.js';
 // TODO: Replace role_keyword with role.keyword
 // TODO: Add schema validation for full_name and role_keyword
 // TODO: Add value validation for role_keyword
-// TODO: Vérifier que le rôle soit administrateur
-/* eslint-disable max-len */
-// TODO: En base: Trimmer les valeurs des champs (pas d'espace en début, en fin et pas de double espace)
-/* eslint-disable max-len */
-// TODO: En base: Pas d'autres caractères spéciaux que les lettres (accentuées également), les chiffres, les espaces, les tirets hauts et bas, les apostrophes, les points, les 2 points et les arobases
-// TODO: En base: Vérifier qu'aucune valeur ne soit vide (null possible, mais pas de chaîne vide)
+// TODO: Check that user role is administrator
 
 export default async function route(app) {
   app.route({
