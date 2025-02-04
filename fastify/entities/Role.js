@@ -19,6 +19,19 @@ class Role {
     this.Name = name;
   }
 
+  static async isKeywordInserted(keyword) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM role
+        WHERE keyword = $1::text
+      `,
+      [keyword],
+    );
+
+    return row.count === 1n;
+  }
+
   static async fromId(id) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `

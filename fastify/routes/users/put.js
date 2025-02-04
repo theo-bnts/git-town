@@ -1,9 +1,8 @@
 import User from '../../entities/User.js';
 import Role from '../../entities/Role.js';
 
-// TODO: Replace role_keyword with role.keyword
-// TODO: Add schema validation for full_name and role_keyword
-// TODO: Add value validation for role_keyword
+// TODO: Dans les autres routes, reformater le schéma avec les majuscules
+// TODO: Add default value validation
 // TODO: Check that user role is administrator
 
 export default async function route(app) {
@@ -14,27 +13,44 @@ export default async function route(app) {
       body: {
         type: 'object',
         properties: {
-          email_address: {
+          EmailAddress: {
             type: 'string',
             maxLength: Number(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH),
             format: 'email',
+            pattern: process.env.USER_EMAIL_ADDRESS_PATTERN,
+          },
+          FullName: {
+            type: 'string',
+            maxLength: Number(process.env.USER_FULL_NAME_MAX_LENGTH),
+          },
+          Role: {
+            type: 'object',
+            properties: {
+              Keyword: {
+                type: 'string',
+                maxLength: Number(process.env.ROLE_KEYWORD_MAX_LENGTH),
+                pattern: process.env.ROLE_KEYWORD_PATTERN,
+              },
+            },
+            required: ['Keyword'],
           },
         },
-        required: ['email_address'],
+        required: ['EmailAddress', 'FullName', 'Role'],
       },
     },
     handler: async function handler(request) {
-      const {
-        email_address: emailAddress,
-        full_name: fullName,
-        role_keyword: roleKeyword,
-      } = request.body;
+      const { EmailAddress: emailAddress, FullName: fullName } = request.body;
+      const { Keyword: roleKeyword } = request.body.Role;
 
       if (await User.isEmailAddressInserted(emailAddress)) {
         throw { statusCode: 409, code: 'EMAIL_ADDRESS_ALREADY_EXISTS' };
       }
 
-      const role = Role.fromKeyword(roleKeyword);
+      if (!(await Role.isKeywordInserted(roleKeyword))) {
+        throw { statusCode: 404, code: 'ROLE_NOT_FOUND' };
+      }
+
+      const role = await Role.fromKeyword(roleKeyword);
 
       const user = new User(
         null,
