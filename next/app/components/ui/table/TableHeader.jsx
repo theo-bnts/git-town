@@ -1,20 +1,25 @@
 import React from 'react';
 import SortButton from './SortButton';
-import styles from './table.module.css';
 
 const TableHeader = ({ columns, onSort, sortColumn, sortOrder }) => {
-    return (
-        <thead className={styles.header}>
-            <tr>
-                {columns.map((col) => (
-                    <th key={col.key} onClick={() => onSort(col.key)}>
-                        {col.title}
-                        {col.sortable && <SortButton isActive={sortColumn === col.key} direction={sortOrder} />}
-                    </th>
-                ))}
-            </tr>
-        </thead>
-    );
+  return (
+    <thead className="bg-gray-100">
+      <tr>
+        {columns.map((col) => (
+          <th
+            key={col.key}
+            onClick={() => onSort(col.key)}
+            className="text-left cursor-pointer py-2 px-4 border-b-2 border-gray-300 select-none"
+          >
+            {col.title}
+            {col.sortable && (
+              <SortButton isActive={sortColumn === col.key} direction={sortOrder} />
+            )}
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
 };
 
 export default TableHeader;
