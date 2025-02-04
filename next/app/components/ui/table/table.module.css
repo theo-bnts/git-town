@@ -1,0 +1,22 @@
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.header th {
+    text-align: left;
+    cursor: pointer;
+    padding: 10px;
+    border-bottom: 2px solid #ccc;
+}
+
+.row td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
