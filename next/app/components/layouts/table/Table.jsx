@@ -1,95 +1,60 @@
 "use client";
 
-import React, { useState } from 'react';
-import TableHeader from './TableHeader';
-import TableRow from './TableRow';
-import { 
-  MoveToStartIcon, 
-  MoveToEndIcon, 
-  ArrowLeftIcon, 
-  ArrowRightIcon 
-} from '@primer/octicons-react';
+import React, { useState, useEffect, useRef } from "react";
+import TableHeader from "./TableHeader";
+import TableRow from "./TableRow";
 
-const Table = ({ columns, data, rowsPerPage = 5 }) => {
-  const [sortColumn, setSortColumn] = useState(null);
-  const [sortOrder, setSortOrder] = useState('asc');
-  const [currentPage, setCurrentPage] = useState(1);
+const Table = ({ columns, data, rowsPerPage = 10 }) => {
+  const [visibleRows, setVisibleRows] = useState(data.slice(0, rowsPerPage));
+  const [loading, setLoading] = useState(false);
+  const observerRef = useRef(null);
 
-  const handleSort = (columnKey) => {
-    const newOrder = sortColumn === columnKey && sortOrder === 'asc' ? 'desc' : 'asc';
-    setSortColumn(columnKey);
-    setSortOrder(newOrder);
+  useEffect(() => {
+    if (!observerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const lastEntry = entries[0];
+        if (lastEntry.isIntersecting && !loading) {
+          loadMoreRows();
+        }
+      },
+      { threshold: 1 }
+    );
+
+    observer.observe(observerRef.current);
+
+    return () => observer.disconnect();
+  }, [loading]);
+
+  const loadMoreRows = () => {
+    if (visibleRows.length >= data.length) return;
+    setLoading(true);
+
+    setTimeout(() => {
+      setVisibleRows((prevRows) =>
+        data.slice(0, prevRows.length + rowsPerPage)
+      );
+      setLoading(false);
+    }, 500);
   };
 
-  const sortedData = [...data].sort((a, b) => {
-    if (!sortColumn) return 0;
-    return sortOrder === 'asc'
-      ? a[sortColumn] > b[sortColumn] ? 1 : -1
-      : a[sortColumn] < b[sortColumn] ? 1 : -1;
-  });
-
-  // Pagination
-  const indexOfLastRow = currentPage * rowsPerPage;
-  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = sortedData.slice(indexOfFirstRow, indexOfLastRow);
-  const totalPages = Math.ceil(data.length / rowsPerPage);
-
   return (
-    <>
-      {/* Conteneur qui limite la largeur du tableau et permet le scroll horizontal si besoin */}
-      <div className="max-w-screen-xl mx-auto overflow-x-auto">
-        <table className="border-collapse table-auto w-auto">
-          <TableHeader
-            columns={columns}
-            onSort={handleSort}
-            sortColumn={sortColumn}
-            sortOrder={sortOrder}
-          />
-          <tbody>
-            {currentRows.map((row, index) => (
-              <TableRow key={index} rowData={row} columns={columns} />
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center mt-2 gap-2 text-base text-gray-600">
-          <button
-            onClick={() => setCurrentPage(1)}
-            disabled={currentPage === 1}
-            className="p-2 rounded disabled:text-gray-400 transition-colors duration-200 hover:bg-gray-200"
-          >
-            <MoveToStartIcon size={20} />
-          </button>
-          <button
-            onClick={() => setCurrentPage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="p-2 rounded disabled:text-gray-400 transition-colors duration-200 hover:bg-gray-200"
-          >
-            <ArrowLeftIcon size={20} />
-          </button>
-          <span className="px-2">
-            {currentPage} / {totalPages}
-          </span>
-          <button
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="p-2 rounded disabled:text-gray-400 transition-colors duration-200 hover:bg-gray-200"
-          >
-            <ArrowRightIcon size={20} />
-          </button>
-          <button
-            onClick={() => setCurrentPage(totalPages)}
-            disabled={currentPage === totalPages}
-            className="p-2 rounded disabled:text-gray-400 transition-colors duration-200 hover:bg-gray-200"
-          >
-            <MoveToEndIcon size={20} />
-          </button>
-        </div>
-      )}
-    </>
+    <div className="max-w-screen-xl mx-auto overflow-x-auto">
+      <table className="border-collapse table-auto w-auto">
+        <TableHeader columns={columns} />
+        <tbody>
+          {visibleRows.map((row, index) => (
+            <TableRow key={index} rowData={row} columns={columns} />
+          ))}
+          <tr ref={observerRef}>
+            <td colSpan={columns.length} className="py-4 text-center text-gray-500">
+              {loading ? "Chargement..." : ""}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   );
 };
 
