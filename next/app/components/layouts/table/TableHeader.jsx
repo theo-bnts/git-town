@@ -26,8 +26,6 @@ const TableHeader = ({ columns, onSort, sortColumn, sortOrder }) => {
               style={colStyle}
               className="py-4 px-6 text-left align-middle select-none"
             >
-              {/* Ici, le conteneur gère à la fois le clic et l'effet de survol.
-                  On ajoute hover:scale-105 pour agrandir légèrement le contenu au survol. */}
               <div
                 onClick={() => onSort(col.key)}
                 className="group cursor-pointer hover:scale-105 active:scale-105 transition-transform duration-200 inline-flex items-center"

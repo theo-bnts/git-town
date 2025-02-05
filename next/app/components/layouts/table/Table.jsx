@@ -6,6 +6,8 @@ import TableRow from "./TableRow";
 
 const Table = ({ columns, data, rowsPerPage = 10 }) => {
   const [visibleRows, setVisibleRows] = useState(data.slice(0, rowsPerPage));
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortOrder, setSortOrder] = useState("asc");
   const [loading, setLoading] = useState(false);
   const observerRef = useRef(null);
 
@@ -39,21 +41,43 @@ const Table = ({ columns, data, rowsPerPage = 10 }) => {
     }, 500);
   };
 
+  const handleSort = (columnKey) => {
+    const newOrder =
+      sortColumn === columnKey && sortOrder === "asc" ? "desc" : "asc";
+    setSortColumn(columnKey);
+    setSortOrder(newOrder);
+
+    const sortedData = [...data].sort((a, b) => {
+      if (!columnKey) return 0;
+      return newOrder === "asc"
+        ? a[columnKey] > b[columnKey]
+          ? 1
+          : -1
+        : a[columnKey] < b[columnKey]
+        ? 1
+        : -1;
+    });
+
+    setVisibleRows(sortedData.slice(0, visibleRows.length)); 
+  };
+
   return (
-    <div className="max-w-screen-xl mx-auto overflow-x-auto">
-      <table className="border-collapse table-auto w-auto">
-        <TableHeader columns={columns} />
-        <tbody>
-          {visibleRows.map((row, index) => (
-            <TableRow key={index} rowData={row} columns={columns} />
-          ))}
-          <tr ref={observerRef}>
-            <td colSpan={columns.length} className="py-4 text-center text-gray-500">
-              {loading ? "Chargement..." : ""}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div className="max-w-screen-xl mx-auto px-4">
+      <div className="overflow-x-auto">
+        <table className="border-collapse w-full table-auto mx-auto">
+          <TableHeader columns={columns} onSort={handleSort} sortColumn={sortColumn} sortOrder={sortOrder} />
+          <tbody>
+            {visibleRows.map((row, index) => (
+              <TableRow key={index} rowData={row} columns={columns} />
+            ))}
+            <tr ref={observerRef}>
+              <td colSpan={columns.length} className="py-4 text-center text-gray-500">
+                {loading ? "Chargement..." : ""}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
