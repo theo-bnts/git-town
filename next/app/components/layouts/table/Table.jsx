@@ -36,8 +36,8 @@ const Table = ({ columns, data, rowsPerPage = 5 }) => {
 
   return (
     <>
-      {/* Container avec overflow-x-auto pour activer le scroll horizontal si nécessaire */}
-      <div className="overflow-x-auto">
+      {/* Conteneur qui limite la largeur du tableau et permet le scroll horizontal si besoin */}
+      <div className="max-w-screen-xl mx-auto overflow-x-auto">
         <table className="border-collapse table-auto w-auto">
           <TableHeader
             columns={columns}

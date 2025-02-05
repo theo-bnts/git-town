@@ -41,13 +41,16 @@ const TableCell = ({ value, columnKey }) => {
       );
     }
   }
-
+  
   // Pour une valeur textuelle simple
   return (
     <td className={`${baseClasses} ${columnKey !== 'actions' ? 'min-w-[150px]' : 'whitespace-nowrap'}`}>
       <div className={contentClasses}>
         {columnKey === 'email' ? (
-          <a href={`mailto:${value}`} className={emailDecoration}>
+          <a
+            href={`mailto:${value}`}
+            className={`${emailDecoration} transition-transform duration-200 hover:scale-105 hover:text-[var(--accent-color)]`}
+          >
             {value}
           </a>
         ) : (
