@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import Image from "next/image";
 import LoginForm from "../components/layout/LoginForm";
 import gittownlogo from "../../public/assets/pictures/gittown.svg";
