@@ -45,8 +45,14 @@ const TableCell = ({ value, columnKey }) => {
   // Pour une valeur textuelle simple
   return (
     <td className={`${baseClasses} ${columnKey !== 'actions' ? 'min-w-[150px]' : 'whitespace-nowrap'}`}>
-      <div className={`${contentClasses} ${emailDecoration}`}>
-        {value}
+      <div className={contentClasses}>
+        {columnKey === 'email' ? (
+          <a href={`mailto:${value}`} className={emailDecoration}>
+            {value}
+          </a>
+        ) : (
+          value
+        )}
       </div>
     </td>
   );
