@@ -1,3 +1,4 @@
+'use client';
 // app/components/ui/Input.jsx
 import React, { useState } from "react";
 import { inputStyles } from "../../styles/tailwindStyles";
@@ -23,9 +24,8 @@ const Input = ({ variant, placeholder, value: propValue, onChange, disabled, ...
         disabled={disabled}
         {...props}
       />
-      {/* Affichage du placeholder en overlay si le champ est vide */}
       {!value && (
-        <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none select-none whitespace-nowrap">
           {placeholder}
         </div>
       )}

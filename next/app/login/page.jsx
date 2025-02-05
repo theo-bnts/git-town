@@ -1,4 +1,3 @@
-// app/login/page.jsx
 "use client";
 import Image from "next/image";
 import LoginForm from "../components/layout/LoginForm";
@@ -7,20 +6,44 @@ import miageLogo from "../../public/assets/pictures/miage.png";
 
 export default function LoginPage() {
   return (
-    <div className="flex flex-col h-screen">
-      <div className="flex flex-1 justify-between p-16">
-        {/* Colonne gauche */}
-        <div className="flex flex-col items-center justify-center flex-1">
-          <Image src={gittownlogo} alt="Gittown logo" width={300} height={300} />
+    <div className="flex flex-col min-h-screen">
+      {/* Logo en haut SEULEMENT sur mobile */}
+      <div className="md:hidden flex justify-center pt-2">
+        <Image
+          src={gittownlogo}
+          alt="Gittown logo"
+          width={400}
+          height={200}
+        />
+      </div>
+
+      <div className="flex-1 flex flex-col md:flex-row items-center justify-center py-6 max-w-screen-lg mx-auto w-full px-4">
+        {/* Logo Gittown affiché uniquement sur md+ */}
+        <div className="hidden md:flex flex-1 items-center justify-center">
+          <Image
+            src={gittownlogo}
+            alt="Gittown logo"
+            width={400}
+            height={400}
+          />
         </div>
-        {/* Colonne droite */}
-        <div className="flex flex-col items-center justify-center flex-1">
-          <LoginForm />
+
+        {/* Formulaire qui prend toute la largeur sur mobile */}
+        <div className="flex-1 flex items-center justify-center w-full">
+          <div className="w-full sm:max-w-md">
+            <LoginForm />
+          </div>
         </div>
       </div>
-      {/* Pied de page */}
-      <div className="flex justify-center pb-8">
-        <Image src={miageLogo} alt="Miage logo" width={200} height={200} />
+
+      {/* Logo Miage en bas */}
+      <div className="flex justify-center pb-2">
+        <Image
+          src={miageLogo}
+          alt="Miage logo"
+          width={300}
+          height={300}
+        />
       </div>
     </div>
   );

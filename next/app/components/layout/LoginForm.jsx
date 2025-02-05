@@ -6,9 +6,6 @@ import Input from "../ui/Input";
 import Text from "../ui/Text";
 
 const LoginForm = () => {
-  // mode === null : étape initiale (saisie e-mail)
-  // mode === "login" : e-mail existant => connexion
-  // mode === "signup" : e-mail inexistant => inscription
   const [mode, setMode] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +18,6 @@ const LoginForm = () => {
       alert("Veuillez saisir votre adresse e-mail universitaire");
       return;
     }
-    // Simulation de vérification de l'existence de l'e-mail
     if (email.trim() === "test@test.fr") {
       setMode("login");
     } else {
@@ -30,7 +26,6 @@ const LoginForm = () => {
   };
 
   const handlePrev = () => {
-    // Retour à l'étape initiale
     setMode(null);
     setPassword("");
     setCode("");
@@ -39,20 +34,6 @@ const LoginForm = () => {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    if (mode === "login") {
-      // Ici la logique de connexion (backend)
-      alert(`Connexion:\nEmail: ${email}\nMot de passe: ${password}`);
-    } else if (mode === "signup") {
-      if (newPassword !== confirmPassword) {
-        alert("Les mots de passe ne correspondent pas");
-        return;
-      }
-      // Ici la logique d'inscription (backend)
-      alert(
-        `Inscription:\nEmail: ${email}\nCode: ${code}\nNouveau Mot de passe: ${newPassword}`
-      );
-    }
   };
 
   return (
@@ -93,7 +74,7 @@ const LoginForm = () => {
             </div>
             <div className="flex justify-between">
               <Button variant="outline" onClick={handlePrev}>
-                <Text variant="boldWhite">Précédent</Text>
+                <Text variant="bold">Précédent</Text>
               </Button>
               <Button variant="default" type="submit">
                 <Text variant="boldWhite">Connexion</Text>
@@ -134,7 +115,7 @@ const LoginForm = () => {
             </div>
             <div className="flex justify-between">
               <Button variant="outline" onClick={handlePrev}>
-                <Text variant="boldWhite">Précédent</Text>
+                <Text variant="bold">Précédent</Text>
               </Button>
               <Button variant="default" type="submit">
                 <Text variant="boldWhite">Inscription</Text>
