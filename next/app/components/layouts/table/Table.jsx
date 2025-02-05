@@ -31,14 +31,9 @@ const Table = ({ columns, data, rowsPerPage = 10 }) => {
 
   const loadMoreRows = () => {
     if (visibleRows.length >= data.length) return;
-    setLoading(true);
-
-    setTimeout(() => {
-      setVisibleRows((prevRows) =>
+    setVisibleRows((prevRows) =>
         data.slice(0, prevRows.length + rowsPerPage)
-      );
-      setLoading(false);
-    }, 500);
+    );
   };
 
   const handleSort = (columnKey) => {
