@@ -1,5 +1,5 @@
 import React from 'react';
-import ActionButton from './ActionButton';
+import ActionButton from '../../ui/ActionButton';
 
 const TableCell = ({ value, columnKey }) => {
   // On utilise ici le même padding horizontal que dans le header (px-6)

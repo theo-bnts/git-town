@@ -1,5 +1,5 @@
 import React from 'react';
-import SortButton from './SortButton';
+import SortButton from '../../ui/SortButton';
 
 const TableHeader = ({ columns, onSort, sortColumn, sortOrder }) => {
   // On considère que la colonne avec des boutons est identifiée par "actions"

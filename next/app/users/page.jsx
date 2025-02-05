@@ -1,6 +1,6 @@
 "use client";
 
-import { Table } from '@/app/components/ui/table';
+import { Table } from '@/app/components/layouts/table';
 
 import { PencilIcon, MarkGithubIcon } from '@primer/octicons-react';
 
@@ -35,7 +35,7 @@ const data = [
     ]},
     { name: 'JEAN-LUC GUÉRIN', email: 'jean-luc.guerin@u-picardie.fr', role: 'Enseignant', promotions: ['-'], actions: [
         { icon: <PencilIcon size={16} />, onClick: () => console.log('Edit Jean-Luc') },
-        { icon: <MarkGithubIcon size={16} />, onClick: () => console.log('GitHub Jean-Luc') }
+        // { icon: <MarkGithubIcon size={16} />, onClick: () => console.log('GitHub Jean-Luc') }
     ]},
     { name: 'LAPUJADE ANNE', email: 'anne.lapujade@u-picardie.fr', role: 'Administrateur', promotions: ['-'], actions: [
         { icon: <PencilIcon size={16} />, onClick: () => console.log('Edit Anne') },
