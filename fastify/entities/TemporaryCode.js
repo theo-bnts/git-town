@@ -34,6 +34,15 @@ class TemporaryCode {
     this.UpdatedAt = row.updated_at;
   }
 
+  toJSON() {
+    return {
+      Id: this.Id,
+      CreatedAt: this.CreatedAt,
+      UpdatedAt: this.UpdatedAt,
+      User: this.User,
+    };
+  }
+
   static async isValidValue(value, user) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
@@ -63,15 +72,6 @@ class TemporaryCode {
       `,
       [user.Id],
     );
-  }
-
-  toJSON() {
-    return {
-      id: this.Id,
-      created_at: this.CreatedAt,
-      updated_at: this.UpdatedAt,
-      user: this.User,
-    };
   }
 }
 

@@ -1,21 +1,30 @@
 import User from '../../entities/User.js';
+import Request from '../../entities/tools/Request.js';
 import Role from '../../entities/Role.js';
 
-// TODO: Dans les autres routes, reformater le schéma avec les majuscules
-// TODO: Add default value validation
-// TODO: Check that user role is administrator
+// TODO: Use generic pattern for non patterned values
+// TODO: Use https://www.npmjs.com/package/@fastify/rate-limit
 
 export default async function route(app) {
   app.route({
     method: 'PUT',
     url: '/users',
     schema: {
+      headers: {
+        type: 'object',
+        properties: {
+          authorization: {
+            type: 'string',
+            pattern: process.env.TOKEN_PATTERN,
+          },
+        },
+        required: ['authorization'],
+      },
       body: {
         type: 'object',
         properties: {
           EmailAddress: {
             type: 'string',
-            maxLength: Number(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH),
             format: 'email',
             pattern: process.env.USER_EMAIL_ADDRESS_PATTERN,
           },
@@ -28,7 +37,6 @@ export default async function route(app) {
             properties: {
               Keyword: {
                 type: 'string',
-                maxLength: Number(process.env.ROLE_KEYWORD_MAX_LENGTH),
                 pattern: process.env.ROLE_KEYWORD_PATTERN,
               },
             },
@@ -37,6 +45,9 @@ export default async function route(app) {
         },
         required: ['EmailAddress', 'FullName', 'Role'],
       },
+    },
+    preHandler: async (request) => {
+      await Request.handleAuthentified(request, 'administrator');
     },
     handler: async function handler(request) {
       const { EmailAddress: emailAddress, FullName: fullName } = request.body;

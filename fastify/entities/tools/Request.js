@@ -1,9 +1,10 @@
 import authHeader from 'auth-header';
 
 import Token from '../Token.js';
+import Role from '../Role.js';
 
 class Request {
-  static async handleAuthentified(request) {
+  static async handleAuthentified(request, requiredRoleKeyword) {
     const auth = authHeader.parse(request.headers.authorization);
 
     if (!(await Token.isValidValue(auth.token))) {
@@ -11,9 +12,12 @@ class Request {
     }
 
     const token = await Token.fromValue(auth.token);
+    const userRole = token.User.Role;
 
-    if (!token.isValid()) {
-      throw { statusCode: 403, code: 'TOKEN_EXPIRED' };
+    const requiredRole = await Role.fromKeyword(requiredRoleKeyword);
+
+    if (userRole.HierarchyLevel < requiredRole.HierarchyLevel) {
+      throw { statusCode: 403, code: 'INSUFFICIENT_PERMISSIONS' };
     }
   }
 

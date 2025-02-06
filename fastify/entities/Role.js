@@ -11,12 +11,15 @@ class Role {
 
   Name;
 
-  constructor(id, createdAt, updatedAt, keyword, name) {
+  HierarchyLevel;
+
+  constructor(id, createdAt, updatedAt, keyword, name, hierarchyLevel) {
     this.Id = id;
     this.CreatedAt = createdAt;
     this.UpdatedAt = updatedAt;
     this.Keyword = keyword;
     this.Name = name;
+    this.HierarchyLevel = hierarchyLevel;
   }
 
   static async isKeywordInserted(keyword) {
@@ -39,7 +42,8 @@ class Role {
           created_at,
           updated_at,
           keyword,
-          name
+          name,
+          hierarchy_level
         FROM role
         WHERE id = $1::uuid
       `,
@@ -52,6 +56,7 @@ class Role {
       row.updated_at,
       row.keyword,
       row.name,
+      row.hierarchy_level,
     );
   }
 
@@ -62,7 +67,8 @@ class Role {
           id,
           created_at,
           updated_at,
-          name
+          name,
+          hierarchy_level
         FROM role
         WHERE keyword = $1::text
       `,
@@ -75,6 +81,7 @@ class Role {
       row.updated_at,
       keyword,
       row.name,
+      row.hierarchy_level,
     );
   }
 }

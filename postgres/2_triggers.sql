@@ -55,7 +55,7 @@ $$
           RAISE EXCEPTION '% column has forbidden spacing (leading, trailing or multiple consecutive spaces)', record_.column_name;
         END IF;
 
-        IF NOT (column_value ~ '^[[:alnum:] @\-_,\.\:''"]*$') THEN
+        IF NOT (column_value ~ '^[[:alnum:][:punct:][:space:]]+$') THEN
           RAISE EXCEPTION '% column contains invalid characters', record_.column_name;
         END IF;
       END IF;

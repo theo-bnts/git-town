@@ -10,28 +10,29 @@ export default async function route(app) {
       body: {
         type: 'object',
         properties: {
-          email_address: {
+          EmailAddress: {
             type: 'string',
-            maxLength: Number(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH),
             format: 'email',
             pattern: process.env.USER_EMAIL_ADDRESS_PATTERN,
           },
-          temporary_code: {
+          TemporaryCode: {
             type: 'string',
-            minLength: Number(process.env.TEMPORARY_CODE_LENGTH),
-            maxLength: Number(process.env.TEMPORARY_CODE_LENGTH),
             pattern: process.env.TEMPORARY_CODE_PATTERN,
           },
-          password: {
+          Password: {
             type: 'string',
             minLength: Number(process.env.USER_PASSWORD_MIN_LENGTH),
           },
         },
-        required: ['email_address', 'temporary_code', 'password'],
+        required: ['EmailAddress', 'TemporaryCode', 'Password'],
       },
     },
     handler: async function handler(request) {
-      const { email_address: emailAddress, password, temporary_code: temporaryCode } = request.body;
+      const {
+        EmailAddress: emailAddress,
+        Password: password,
+        TemporaryCode: temporaryCode,
+      } = request.body;
 
       if (!(await User.isEmailAddressInserted(emailAddress))) {
         throw { statusCode: 401, code: 'UNKNOWN_EMAIL_ADDRESS' };

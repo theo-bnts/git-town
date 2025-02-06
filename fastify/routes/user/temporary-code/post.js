@@ -11,18 +11,17 @@ export default async function route(app) {
       body: {
         type: 'object',
         properties: {
-          email_address: {
+          EmailAddress: {
             type: 'string',
-            maxLength: Number(process.env.USER_EMAIL_ADDRESS_MAX_LENGTH),
             format: 'email',
             pattern: process.env.USER_EMAIL_ADDRESS_PATTERN,
           },
         },
-        required: ['email_address'],
+        required: ['EmailAddress'],
       },
     },
     handler: async function handler(request) {
-      const { email_address: emailAddress } = request.body;
+      const { EmailAddress: emailAddress } = request.body;
 
       if (!(await User.isEmailAddressInserted(emailAddress))) {
         throw { statusCode: 401, code: 'UNKNOWN_EMAIL_ADDRESS' };

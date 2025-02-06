@@ -33,7 +33,7 @@ class MailTransporter {
       'Code temporaire',
       process.env.MAIL_BODY.replace(
         '%CONTENT%',
-        `Votre code temporaire est <b>${temporaryCode.Code}</b>.<br>Il expirera dans ${process.env.TEMPORARY_CODE_EXPIRATION_SECONDS / 60} minutes.`,
+        `Votre code temporaire est <b>${temporaryCode.Value}</b>.<br>Il expirera dans ${process.env.TEMPORARY_CODE_EXPIRATION_SECONDS / 60} minutes.`,
       ),
     );
   }

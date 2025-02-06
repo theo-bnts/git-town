@@ -4,11 +4,13 @@ CREATE TABLE public.role (
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   keyword varchar(20) NOT NULL,
   name varchar(250) NOT NULL,
+  hierarchy_level int2 DEFAULT 1 NOT NULL,
   CONSTRAINT role_pk PRIMARY KEY (id),
   CONSTRAINT role_unique_keyword UNIQUE (keyword),
   CONSTRAINT role_check_keyword CHECK (keyword ~ '^[a-z]+$'),
   CONSTRAINT role_unique_name UNIQUE (name),
-  CONSTRAINT role_check_name CHECK (trim(name) <> '')
+  CONSTRAINT role_check_name CHECK (trim(name) <> ''),
+  CONSTRAINT role_check_hierarchy_level CHECK (hierarchy_level >= 1)
 );
 
 CREATE TABLE public.user (

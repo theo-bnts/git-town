@@ -11,13 +11,15 @@ export default async function route(app) {
         properties: {
           authorization: {
             type: 'string',
-            pattern: `${process.env.TOKEN_TYPE} [a-f0-9]{${process.env.TOKEN_LENGTH}}`,
+            pattern: process.env.TOKEN_PATTERN,
           },
         },
         required: ['authorization'],
       },
     },
-    preHandler: Request.handleAuthentified,
+    preHandler: async (request) => {
+      await Request.handleAuthentified(request, 'student');
+    },
     handler: async function handler(request) {
       const user = await Request.getAuthentifiedUser(request, User);
 

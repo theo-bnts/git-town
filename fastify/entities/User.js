@@ -111,6 +111,18 @@ class User {
     );
   }
 
+  toJSON() {
+    return {
+      Id: this.Id,
+      CreatedAt: this.CreatedAt,
+      UpdatedAt: this.UpdatedAt,
+      EmailAddress: this.EmailAddress,
+      FullName: this.FullName,
+      Role: this.Role,
+      GitHubId: this.GitHubId,
+    };
+  }
+
   static async isEmailAddressInserted(emailAddress) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
@@ -188,18 +200,6 @@ class User {
       role,
       row.github_id,
     );
-  }
-
-  toJSON() {
-    return {
-      Id: this.Id,
-      CreatedAt: this.CreatedAt,
-      UpdatedAt: this.UpdatedAt,
-      EmailAddress: this.EmailAddress,
-      FullName: this.FullName,
-      Role: this.Role,
-      GitHubId: this.GitHubId,
-    };
   }
 }
 
