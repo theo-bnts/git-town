@@ -34,7 +34,7 @@ const Table = ({ columns, data, rowsPerPage = 10 }) => {
     setVisibleRows((prevRows) =>
         data.slice(0, prevRows.length + rowsPerPage)
     );
-  };
+};
 
   const handleSort = (columnKey) => {
     const newOrder =
@@ -65,10 +65,8 @@ const Table = ({ columns, data, rowsPerPage = 10 }) => {
             {visibleRows.map((row, index) => (
               <TableRow key={index} rowData={row} columns={columns} />
             ))}
-            <tr ref={observerRef}>
-              <td colSpan={columns.length} className="py-4 text-center text-gray-500">
-                {loading ? "Chargement..." : ""}
-              </td>
+            <tr ref={observerRef} className="h-0 overflow-hidden">
+              <td colSpan={columns.length}></td>
             </tr>
           </tbody>
         </table>

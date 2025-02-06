@@ -4,31 +4,29 @@ import SortButton from '../../ui/SortButton';
 const TableHeader = ({ columns, onSort, sortColumn, sortOrder }) => {
   // On considère que la colonne avec des boutons est identifiée par "actions"
   const textColumnsCount = columns.filter(col => col.key !== 'actions').length;
-  
+
   return (
-    <thead>
+    <thead className="sticky top-0 bg-white shadow">
       <tr className="border-b border-gray-300">
         {columns.map((col) => {
           const isSelected = sortColumn === col.key;
-          const baseClasses = "transition-colors duration-300";
+          const baseClasses = "transition-colors duration-300 whitespace-nowrap";
           const titleClasses = isSelected
             ? `font-bold underline underline-offset-4 text-[var(--accent-color)] ${baseClasses}`
             : `${baseClasses} group-hover:text-[var(--accent-color)]`;
 
-          // Si la colonne n'est pas "actions", on lui attribue une largeur égale.
-          const colStyle = col.key !== 'actions'
-            ? { width: `${100 / textColumnsCount}%` }
-            : {};
-          
           return (
             <th
               key={col.key}
-              style={colStyle}
               className="py-4 px-6 text-left align-middle select-none"
+              style={{
+                width: `${100 / textColumnsCount}%`, // Égalise les largeurs de colonnes
+                minWidth: "150px", // Empêche des tailles trop petites
+              }}
             >
               <div
                 onClick={() => onSort(col.key)}
-                className="group cursor-pointer hover:scale-105 active:scale-105 transition-transform duration-200 inline-flex items-center"
+                className="group cursor-pointer hover:scale-105 active:scale-105 transition-transform duration-200 inline-flex items-center gap-1"
               >
                 <span className={`relative inline-block ${titleClasses}`}>
                   {col.title}
