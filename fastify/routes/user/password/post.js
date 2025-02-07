@@ -22,9 +22,17 @@ export default async function route(app) {
           Password: {
             type: 'string',
             minLength: Number(process.env.USER_PASSWORD_MIN_LENGTH),
+            pattern: process.env.GENERIC_PATTERN,
           },
         },
         required: ['EmailAddress', 'TemporaryCode', 'Password'],
+      },
+    },
+    config: {
+      rateLimit: {
+        max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
+        allowList: false,
+        keyGenerator: (request) => `${request.routerPath}-${request.body.EmailAddress}`,
       },
     },
     handler: async function handler(request) {

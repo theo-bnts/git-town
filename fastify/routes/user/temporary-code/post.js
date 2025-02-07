@@ -20,6 +20,13 @@ export default async function route(app) {
         required: ['EmailAddress'],
       },
     },
+    config: {
+      rateLimit: {
+        max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
+        allowList: false,
+        keyGenerator: (request) => `${request.routerPath}-${request.body.EmailAddress}`,
+      },
+    },
     handler: async function handler(request) {
       const { EmailAddress: emailAddress } = request.body;
 

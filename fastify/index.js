@@ -1,10 +1,11 @@
 import AutoLoad from '@fastify/autoload';
 import Fastify from 'fastify';
 import { join } from 'desm';
-import MultiPart from '@fastify/multipart';
+import RateLimit from '@fastify/rate-limit';
 
 import DatabasePool from './entities/tools/DatabasePool.js';
 import MailTransporter from './entities/tools/MailTransporter.js';
+import Request from './entities/tools/Request.js';
 
 DatabasePool.Instance = new DatabasePool();
 MailTransporter.Instance = new MailTransporter();
@@ -20,11 +21,19 @@ app.listen(
   },
 );
 
-app.register(MultiPart, {
-  attachFieldsToBody: 'keyValues',
-  limits: {
-    fileSize: process.env.UPLOAD_MAX_SIZE_MB * 1024 * 1024,
+app.register(RateLimit, {
+  max: process.env.RATE_LIMIT_AUTHENTICATED_MAX,
+  timeWindow: process.env.RATE_LIMIT_TIME_WINDOW,
+  hook: 'preHandler',
+  allowList: async (request) => !(await Request.isAuthenticated(request)),
+  keyGenerator: async (request) => {
+    const token = await Request.getUsedToken(request);
+    return token.User.Id;
   },
+  errorResponseBuilder: () => ({
+    statusCode: 429,
+    code: 'RATE_LIMIT_EXCEEDED',
+  }),
 });
 
 app.register(AutoLoad, {

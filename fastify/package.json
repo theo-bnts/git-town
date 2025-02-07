@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@fastify/autoload": "6",
-    "@fastify/multipart": "9",
+    "@fastify/rate-limit": "10",
     "auth-header": "1",
     "axios": "1.7",
     "desm": "1.3",

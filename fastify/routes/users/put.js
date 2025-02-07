@@ -2,9 +2,6 @@ import User from '../../entities/User.js';
 import Request from '../../entities/tools/Request.js';
 import Role from '../../entities/Role.js';
 
-// TODO: Use generic pattern for non patterned values
-// TODO: Use https://www.npmjs.com/package/@fastify/rate-limit
-
 export default async function route(app) {
   app.route({
     method: 'PUT',
@@ -31,6 +28,7 @@ export default async function route(app) {
           FullName: {
             type: 'string',
             maxLength: Number(process.env.USER_FULL_NAME_MAX_LENGTH),
+            pattern: process.env.GENERIC_PATTERN,
           },
           Role: {
             type: 'object',
@@ -47,7 +45,7 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Request.handleAuthentified(request, 'administrator');
+      await Request.handleAuthenticatedWithRole(request, 'administrator');
     },
     handler: async function handler(request) {
       const { EmailAddress: emailAddress, FullName: fullName } = request.body;

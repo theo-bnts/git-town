@@ -99,7 +99,7 @@ FOR EACH ROW
 EXECUTE FUNCTION text_normalization_and_check();
 
 CREATE TRIGGER user_text_normalization_and_check
-BEFORE INSERT OR UPDATE ON public."user"
+BEFORE INSERT OR UPDATE ON public.user
 FOR EACH ROW
 EXECUTE FUNCTION text_normalization_and_check();
 
