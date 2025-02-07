@@ -18,7 +18,7 @@ class Request {
     return Token.isValidValue(auth.token);
   }
 
-  static async handleAuthenticatedWithRole(request, requiredRoleKeyword) {
+  static async handleAuthenticationWithRole(request, requiredRoleKeyword) {
     if (!await Request.isAuthenticated(request)) {
       throw { statusCode: 401, code: 'INVALID_TOKEN' };
     }

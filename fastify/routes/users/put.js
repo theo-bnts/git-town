@@ -45,7 +45,7 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Request.handleAuthenticatedWithRole(request, 'administrator');
+      await Request.handleAuthenticationWithRole(request, 'administrator');
     },
     handler: async function handler(request) {
       const { EmailAddress: emailAddress, FullName: fullName } = request.body;

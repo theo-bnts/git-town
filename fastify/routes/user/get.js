@@ -18,7 +18,7 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Request.handleAuthenticatedWithRole(request, 'student');
+      await Request.handleAuthenticationWithRole(request, 'student');
     },
     handler: async function handler(request) {
       const user = await Request.getAuthenticatedUser(request, User);
