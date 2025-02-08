@@ -201,6 +201,38 @@ class User {
       row.github_id,
     );
   }
+
+  static async all() {
+    const rows = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          email_address,
+          password_hash_salt,
+          password_hash,
+          full_name,
+          role_id,
+          github_id
+        FROM public.user
+      `,
+    );
+
+    const roles = await Role.all();
+
+    return rows.map((row) => new this(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      row.email_address,
+      row.password_hash_salt,
+      row.password_hash,
+      row.full_name,
+      roles.find((role) => role.Id === row.role_id),
+      row.github_id,
+    ));
+  }
 }
 
 export default User;

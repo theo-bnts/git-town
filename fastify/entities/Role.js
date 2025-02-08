@@ -84,6 +84,30 @@ class Role {
       row.hierarchy_level,
     );
   }
+
+  static async all() {
+    const rows = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          keyword,
+          name,
+          hierarchy_level
+        FROM role
+      `,
+    );
+
+    return rows.map((row) => new Role(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      row.keyword,
+      row.name,
+      row.hierarchy_level,
+    ));
+  }
 }
 
 export default Role;
