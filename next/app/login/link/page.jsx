@@ -1,4 +1,5 @@
 'use client';
+// app/login/link/page.jsx
 import Image from 'next/image';
 
 import gittownhublogo from '../../../public/assets/pictures/gittownhub.svg';
@@ -19,7 +20,6 @@ export default function LinkPage() {
       </div>
 
       <div className="flex-1 flex flex-col md:flex-row items-center justify-center max-w-screen-2xl mx-auto w-full px-4">
-        {/* Logo Gittown affiché uniquement sur md+ */}
         <div className="hidden md:flex flex-1 items-center justify-center">
           <Image
             src={gittownhublogo}

@@ -1,3 +1,4 @@
+// app/components/layout/LoginForm.jsx
 import React, { useState } from 'react';
 
 import Button from '../ui/Button';
@@ -13,15 +14,37 @@ const LoginForm = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!email.trim()) {
       alert("Veuillez saisir votre adresse e-mail universitaire");
       return;
     }
-    if (email.trim() === "test@test.fr") {
-      setMode("login");
+
+    // --- NOUVELLE LOGIQUE INVERSEE ---
+    // Si c’est l’email de Dorian => on appelle l’API et on passe en mode "signup"
+    if (email.trim() === "dorian.descamps@etud.u-picardie.fr") {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/temporary-code`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ EmailAddress: email.trim() }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération du code temporaire');
+        }
+
+        // Si tout va bien, on passe en mode "signup"
+        setMode("signup");
+      } catch (error) {
+        console.error(error);
+        alert("Une erreur s'est produite en récupérant le code temporaire.");
+      }
     } else {
-      setMode("signup");
+      // Sinon, on passe en mode "login"
+      setMode("login");
     }
   };
 
@@ -34,6 +57,22 @@ const LoginForm = () => {
   };
 
   const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (mode === 'login') {
+      // Logique de connexion
+      console.log('Soumission du formulaire de connexion :', { email, password });
+      // Ex : POST /user/login ...
+    } else if (mode === 'signup') {
+      // Logique de "nouveau mot de passe"
+      console.log('Soumission du formulaire d’inscription :', {
+        email,
+        code,
+        newPassword,
+        confirmPassword
+      });
+      // Ex : POST /user/signup ...
+    }
   };
 
   return (
@@ -47,7 +86,7 @@ const LoginForm = () => {
             placeholder="Saisir votre adresse e-mail universitaire"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            disabled={mode ? true : false}
+            disabled={!!mode}
           />
         </div>
 
@@ -60,7 +99,7 @@ const LoginForm = () => {
           </div>
         )}
 
-        {/* Cas connexion */}
+        {/* Cas "login" */}
         {mode === "login" && (
           <>
             <div>
@@ -83,7 +122,7 @@ const LoginForm = () => {
           </>
         )}
 
-        {/* Cas inscription */}
+        {/* Cas "signup" */}
         {mode === "signup" && (
           <>
             <div>
