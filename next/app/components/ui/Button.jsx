@@ -1,6 +1,6 @@
 // app/components/ui/Button.jsx
-import React from "react";
-import { buttonStyles } from "../../styles/tailwindStyles";
+import React from 'react';
+import { buttonStyles } from '../../styles/tailwindStyles';
 
 const Button = ({ variant, children, ...props }) => {
   return (

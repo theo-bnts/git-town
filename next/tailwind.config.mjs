@@ -13,5 +13,9 @@ export default {
       },
     },
   },
+
+  // set max-w-screen-lg to 1024px
+  // set max-w-screen-xl to 1280px
+  
   plugins: [],
 };

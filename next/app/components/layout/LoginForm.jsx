@@ -1,17 +1,17 @@
-// app/components/layout/LoginForm.jsx
-import React, { useState } from "react";
-import Button from "../ui/Button";
-import Card from "../ui/Card";
-import Input from "../ui/Input";
-import Text from "../ui/Text";
+import React, { useState } from 'react';
+
+import Button from '../ui/Button';
+import Card from '../ui/Card';
+import Input from '../ui/Input';
+import Text from '../ui/Text';
 
 const LoginForm = () => {
   const [mode, setMode] = useState(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [code, setCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleNext = () => {
     if (!email.trim()) {
@@ -27,10 +27,10 @@ const LoginForm = () => {
 
   const handlePrev = () => {
     setMode(null);
-    setPassword("");
-    setCode("");
-    setNewPassword("");
-    setConfirmPassword("");
+    setPassword('');
+    setCode('');
+    setNewPassword('');
+    setConfirmPassword('');
   };
 
   const handleSubmit = (e) => {
@@ -43,7 +43,7 @@ const LoginForm = () => {
         <div>
           <Text variant="bold">Adresse e-mail universitaire</Text>
           <Input
-            variant={mode ? "disabled" : "default"}
+            variant={mode ? "disabled" : email ? "selected" : "default"}
             placeholder="Saisir votre adresse e-mail universitaire"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -55,7 +55,7 @@ const LoginForm = () => {
         {mode === null && (
           <div className="flex justify-center">
             <Button variant="default" onClick={handleNext}>
-              <Text variant="boldWhite">Suivant</Text>
+              <Text variant="defaultBold">Suivant</Text>
             </Button>
           </div>
         )}
@@ -66,7 +66,7 @@ const LoginForm = () => {
             <div>
               <Text variant="bold">Mot de passe</Text>
               <Input
-                variant="default"
+                variant={password ? "selected" : "default"}
                 placeholder="Saisir le mot de passe"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -89,7 +89,7 @@ const LoginForm = () => {
             <div>
               <Text variant="bold">Code reçu par e-mail</Text>
               <Input
-                variant="default"
+                variant={code ? "selected" : "default"}
                 placeholder="Saisir le code reçu par e-mail"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
@@ -98,7 +98,7 @@ const LoginForm = () => {
             <div>
               <Text variant="bold">Nouveau mot de passe</Text>
               <Input
-                variant="default"
+                variant={newPassword ? "selected" : "default"}
                 placeholder="Saisir votre nouveau mot de passe"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -107,7 +107,7 @@ const LoginForm = () => {
             <div>
               <Text variant="bold">Confirmation mot de passe</Text>
               <Input
-                variant="default"
+                variant={confirmPassword ? "selected" : "default"}
                 placeholder="Saisir votre nouveau mot de passe"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
