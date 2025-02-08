@@ -2,38 +2,37 @@ import React from 'react';
 import SortButton from '../../ui/SortButton';
 
 const TableHeader = ({ columns, onSort, sortColumn, sortOrder }) => {
-  // On considère que la colonne avec des boutons est identifiée par "actions"
   const textColumnsCount = columns.filter(col => col.key !== 'actions').length;
+  const thBaseClasses = "py-4 px-6 text-left align-middle select-none";
+  const baseTransitionClasses = "transition-colors duration-300 whitespace-nowrap";
+  const clickableContainerClasses = "group cursor-pointer hover:scale-105 active:scale-105 transition-transform duration-200 inline-flex items-center gap-1";
+  const sortButtonWrapperClasses = "ml-1 flex items-center transition-colors duration-300";
 
   return (
     <thead className="sticky top-0 bg-white shadow">
       <tr className="border-b border-gray-300">
-        {columns.map((col) => {
+        {columns.map(col => {
           const isSelected = sortColumn === col.key;
-          const baseClasses = "transition-colors duration-300 whitespace-nowrap";
           const titleClasses = isSelected
-            ? `font-bold underline underline-offset-4 text-[var(--accent-color)] ${baseClasses}`
-            : `${baseClasses} group-hover:text-[var(--accent-color)]`;
+            ? `font-bold underline underline-offset-4 text-[var(--accent-color)] ${baseTransitionClasses}`
+            : `${baseTransitionClasses} group-hover:text-[var(--accent-color)]`;
 
           return (
             <th
               key={col.key}
-              className="py-4 px-6 text-left align-middle select-none"
+              className={thBaseClasses}
               style={{
-                width: `${100 / textColumnsCount}%`, // Égalise les largeurs de colonnes
-                minWidth: "150px", // Empêche des tailles trop petites
+                width: `${100 / textColumnsCount}%`,
+                minWidth: "150px",
               }}
             >
-              <div
-                onClick={() => onSort(col.key)}
-                className="group cursor-pointer hover:scale-105 active:scale-105 transition-transform duration-200 inline-flex items-center gap-1"
-              >
+              <div onClick={() => onSort(col.key)} className={clickableContainerClasses}>
                 <span className={`relative inline-block ${titleClasses}`}>
                   {col.title}
                 </span>
                 {col.sortable && (
                   <span
-                    className={`ml-1 flex items-center transition-colors duration-300 ${
+                    className={`${sortButtonWrapperClasses} ${
                       isSelected
                         ? "text-[var(--accent-color)]"
                         : "group-hover:text-[var(--accent-color)]"

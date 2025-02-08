@@ -10,7 +10,8 @@ const Table = ({ columns, data }) => {
   const [sortOrder, setSortOrder] = useState("asc");
 
   const handleSort = (columnKey) => {
-    const newOrder = sortColumn === columnKey && sortOrder === "asc" ? "desc" : "asc";
+    const newOrder =
+      sortColumn === columnKey && sortOrder === "asc" ? "desc" : "asc";
     setSortColumn(columnKey);
     setSortOrder(newOrder);
 
@@ -34,13 +35,13 @@ const Table = ({ columns, data }) => {
 
   return (
     <div className="max-w-screen-xl mx-auto px-4">
-      <div className="overflow-x-auto">
-        <table className="border-collapse w-full table-auto mx-auto">
-          <TableHeader 
-            columns={columns} 
-            onSort={handleSort} 
-            sortColumn={sortColumn} 
-            sortOrder={sortOrder} 
+      <div className="overflow-auto" style={{ maxHeight: "calc(100vh - 50px)" }}>
+        <table className="border-collapse w-full table-auto">
+          <TableHeader
+            columns={columns}
+            onSort={handleSort}
+            sortColumn={sortColumn}
+            sortOrder={sortOrder}
           />
           <tbody>
             {sortedData.map((row, index) => (
