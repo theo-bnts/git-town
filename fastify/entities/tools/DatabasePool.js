@@ -1,6 +1,6 @@
 import pg from 'pg';
 
-class DatabasePool {
+export default class DatabasePool {
   Pool;
 
   static Instance = null;
@@ -30,5 +30,3 @@ class DatabasePool {
     return result.rows;
   }
 }
-
-export default DatabasePool;

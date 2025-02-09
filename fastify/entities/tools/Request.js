@@ -3,7 +3,7 @@ import authHeader from 'auth-header';
 import Token from '../Token.js';
 import Role from '../Role.js';
 
-class Request {
+export default class Request {
   static async isAuthenticated(request) {
     if (request.headers.authorization === undefined || request.headers.authorization === null) {
       return false;
@@ -46,5 +46,3 @@ class Request {
     return token.User;
   }
 }
-
-export default Request;

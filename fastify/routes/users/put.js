@@ -59,7 +59,7 @@ export default async function route(app) {
       }
 
       if (!(await Role.isKeywordInserted(roleKeyword))) {
-        throw { statusCode: 404, code: 'ROLE_NOT_FOUND' };
+        throw { statusCode: 404, code: 'UNKNOWN_ROLE_KEYWORD' };
       }
 
       const role = await Role.fromKeyword(roleKeyword);

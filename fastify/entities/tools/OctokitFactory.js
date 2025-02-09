@@ -2,7 +2,7 @@ import { Octokit } from 'octokit';
 import { createOAuthAppAuth, createOAuthUserAuth } from '@octokit/auth-oauth-app';
 import { createAppAuth } from '@octokit/auth-app';
 
-class OctokitAuth {
+export default class OctokitAuth {
   static async user(oAuthCode) {
     const oAuthAppAuth = createOAuthAppAuth({
       clientId: process.env.GITHUB_OAUTH_APP_CLIENT_ID,
@@ -33,5 +33,3 @@ class OctokitAuth {
     });
   }
 }
-
-export default OctokitAuth;

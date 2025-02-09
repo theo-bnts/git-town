@@ -1,6 +1,6 @@
 import DatabasePool from './tools/DatabasePool.js';
 
-class TemporaryCode {
+export default class TemporaryCode {
   Id;
 
   CreatedAt;
@@ -74,5 +74,3 @@ class TemporaryCode {
     );
   }
 }
-
-export default TemporaryCode;

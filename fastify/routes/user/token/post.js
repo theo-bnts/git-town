@@ -35,13 +35,13 @@ export default async function route(app) {
       const { EmailAddress: emailAddress, Password: password } = request.body;
 
       if (!(await User.isEmailAddressInserted(emailAddress))) {
-        throw { statusCode: 401, code: 'UNKNOWN_EMAIL_ADDRESS' };
+        throw { statusCode: 404, code: 'UNKNOWN_EMAIL_ADDRESS' };
       }
 
       const user = await User.fromEmailAddress(emailAddress);
 
       if (!user.isValidPassword(password)) {
-        throw { statusCode: 403, code: 'INVALID_PASSWORD' };
+        throw { statusCode: 401, code: 'INVALID_PASSWORD' };
       }
 
       const token = new Token(

@@ -2,7 +2,7 @@ import DatabasePool from './tools/DatabasePool.js';
 import Role from './Role.js';
 import Security from './tools/Security.js';
 
-class User {
+export default class User {
   Id;
 
   CreatedAt;
@@ -234,5 +234,3 @@ class User {
     ));
   }
 }
-
-export default User;

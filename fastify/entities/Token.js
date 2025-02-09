@@ -1,7 +1,7 @@
 import DatabasePool from './tools/DatabasePool.js';
 import User from './User.js';
 
-class Token {
+export default class Token {
   Id;
 
   CreatedAt;
@@ -97,5 +97,3 @@ class Token {
     );
   }
 }
-
-export default Token;

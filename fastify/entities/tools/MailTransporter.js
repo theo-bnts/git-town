@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-class MailTransporter {
+export default class MailTransporter {
   Transporter;
 
   static Instance = null;
@@ -38,5 +38,3 @@ class MailTransporter {
     );
   }
 }
-
-export default MailTransporter;

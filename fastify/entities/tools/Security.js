@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-class Security {
+export default class Security {
   static generateRandomIntegerFigure() {
     return Math.floor(crypto.randomBytes(1)[0] / 25.5);
   }
@@ -28,5 +28,3 @@ class Security {
       .digest('hex');
   }
 }
-
-export default Security;

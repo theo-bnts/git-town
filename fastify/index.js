@@ -30,10 +30,7 @@ app.register(RateLimit, {
     const token = await Request.getUsedToken(request);
     return token.User.Id;
   },
-  errorResponseBuilder: () => ({
-    statusCode: 429,
-    code: 'RATE_LIMIT_EXCEEDED',
-  }),
+  errorResponseBuilder: () => ({ statusCode: 429, code: 'RATE_LIMIT_EXCEEDED' }),
 });
 
 app.register(AutoLoad, {

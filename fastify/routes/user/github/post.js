@@ -37,10 +37,7 @@ export default async function route(app) {
       try {
         userOctokit = await OctokitFactory.user(oAuthCode);
       } catch (error) {
-        throw {
-          statusCode: 401,
-          code: 'INVALID_OAUTH_APP_CODE',
-        };
+        throw { statusCode: 401, code: 'INVALID_OAUTH_APP_CODE' };
       }
 
       const { data: { id: githubId } } = await userOctokit.rest.users.getAuthenticated();

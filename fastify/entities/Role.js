@@ -1,6 +1,6 @@
 import DatabasePool from './tools/DatabasePool.js';
 
-class Role {
+export default class Role {
   Id;
 
   CreatedAt;
@@ -109,5 +109,3 @@ class Role {
     ));
   }
 }
-
-export default Role;
