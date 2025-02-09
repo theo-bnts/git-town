@@ -31,18 +31,23 @@ export default async function route(app) {
       await Request.handleAuthenticationWithRole(request, 'student');
     },
     handler: async function handler(request) {
+      await OctokitFactory.app();
       const { OAuthCode: oAuthCode } = request.body;
+
+      const user = await Request.getAuthenticatedUser(request);
+
+      if (user.GitHubId !== null) {
+        throw { statusCode: 409, error: 'GITHUB_ID_ALREADY_DEFINED' };
+      }
 
       let userOctokit;
       try {
         userOctokit = await OctokitFactory.user(oAuthCode);
       } catch (error) {
-        throw { statusCode: 401, code: 'INVALID_OAUTH_APP_CODE' };
+        throw { statusCode: 401, error: 'INVALID_OAUTH_APP_CODE' };
       }
 
       const { data: { id: githubId } } = await userOctokit.rest.users.getAuthenticated();
-
-      const user = await Request.getAuthenticatedUser(request);
 
       user.GitHubId = githubId;
       await user.update();

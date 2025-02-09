@@ -28,7 +28,7 @@ export default async function route(app) {
       const { EmailAddress: emailAddress } = request.query;
 
       if (!(await User.isEmailAddressInserted(emailAddress))) {
-        throw { statusCode: 404, code: 'UNKNOWN_EMAIL_ADDRESS' };
+        throw { statusCode: 404, error: 'UNKNOWN_EMAIL_ADDRESS' };
       }
 
       const { PasswordHash: passwordHash } = await User.fromEmailAddress(emailAddress);

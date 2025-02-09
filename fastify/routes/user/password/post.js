@@ -43,13 +43,13 @@ export default async function route(app) {
       } = request.body;
 
       if (!(await User.isEmailAddressInserted(emailAddress))) {
-        throw { statusCode: 404, code: 'UNKNOWN_EMAIL_ADDRESS' };
+        throw { statusCode: 404, error: 'UNKNOWN_EMAIL_ADDRESS' };
       }
 
       const user = await User.fromEmailAddress(emailAddress);
 
       if (!(await TemporaryCode.isValidValue(temporaryCode, user))) {
-        throw { statusCode: 401, code: 'INVALID_TEMPORARY_CODE' };
+        throw { statusCode: 401, error: 'INVALID_TEMPORARY_CODE' };
       }
 
       await TemporaryCode.deleteAll(user);

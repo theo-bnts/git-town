@@ -51,15 +51,15 @@ export default async function route(app) {
       const {
         EmailAddress: emailAddress,
         FullName: fullName,
-        Role: { Keyword: roleKeyword }
+        Role: { Keyword: roleKeyword },
       } = request.body;
 
       if (await User.isEmailAddressInserted(emailAddress)) {
-        throw { statusCode: 409, code: 'EMAIL_ADDRESS_ALREADY_EXISTS' };
+        throw { statusCode: 409, error: 'EMAIL_ADDRESS_ALREADY_EXISTS' };
       }
 
       if (!(await Role.isKeywordInserted(roleKeyword))) {
-        throw { statusCode: 404, code: 'UNKNOWN_ROLE_KEYWORD' };
+        throw { statusCode: 404, error: 'UNKNOWN_ROLE_KEYWORD' };
       }
 
       const role = await Role.fromKeyword(roleKeyword);

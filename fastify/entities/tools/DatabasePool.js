@@ -15,7 +15,7 @@ export default class DatabasePool {
       max: process.env.DATABASE_CONNECTIONS_LIMIT,
     });
 
-    /* eslint-disable no-undef */
+    /* eslint-disable-next-line no-undef */
     pg.types.setTypeParser(pg.types.builtins.INT8, BigInt);
   }
 

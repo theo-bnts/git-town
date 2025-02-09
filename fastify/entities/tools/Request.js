@@ -20,7 +20,7 @@ export default class Request {
 
   static async handleAuthenticationWithRole(request, requiredRoleKeyword) {
     if (!await Request.isAuthenticated(request)) {
-      throw { statusCode: 401, code: 'INVALID_TOKEN' };
+      throw { statusCode: 401, error: 'INVALID_TOKEN' };
     }
 
     const auth = authHeader.parse(request.headers.authorization);
@@ -30,7 +30,7 @@ export default class Request {
     const requiredRole = await Role.fromKeyword(requiredRoleKeyword);
 
     if (userRole.HierarchyLevel < requiredRole.HierarchyLevel) {
-      throw { statusCode: 403, code: 'INSUFFICIENT_PERMISSIONS' };
+      throw { statusCode: 403, error: 'INSUFFICIENT_PERMISSIONS' };
     }
   }
 
