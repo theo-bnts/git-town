@@ -31,7 +31,6 @@ export default async function route(app) {
       await Request.handleAuthenticationWithRole(request, 'student');
     },
     handler: async function handler(request) {
-      await OctokitFactory.app();
       const { OAuthCode: oAuthCode } = request.body;
 
       const user = await Request.getAuthenticatedUser(request);
