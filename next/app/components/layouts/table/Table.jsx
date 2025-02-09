@@ -1,13 +1,52 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import TableHeader from "./TableHeader";
 import TableRow from "./TableRow";
 
 const Table = ({ columns, data }) => {
   const [sortedData, setSortedData] = useState(data);
+
+  const [visibleCount, setVisibleCount] = useState(0);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
+
+  const containerRef = useRef(null);
+  const sentinelRef = useRef(null);
+
+  const rowHeight = 50;
+
+  const loadMoreRows = () => {
+    if (containerRef.current) {
+      const containerHeight = containerRef.current.clientHeight;
+      const rowsToAdd = Math.ceil(containerHeight / rowHeight);
+      setVisibleCount((prev) => Math.min(sortedData.length, prev + rowsToAdd));
+    }
+  };
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const containerHeight = containerRef.current.clientHeight;
+      const initialRows = Math.ceil(containerHeight / rowHeight);
+      setVisibleCount(initialRows);
+    }
+  }, [containerRef, sortedData]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const lastEntry = entries[0];
+        if (lastEntry.isIntersecting) {
+          loadMoreRows();
+        }
+      },
+      { threshold: 0.1, rootMargin: "0px 0px 20px 0px" }
+    );
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+    return () => observer.disconnect();
+  }, [sentinelRef, sortedData, visibleCount]);
 
   const handleSort = (columnKey) => {
     const newOrder =
@@ -25,17 +64,30 @@ const Table = ({ columns, data }) => {
         ? 1
         : -1;
     });
-
     setSortedData(sorted);
+    if (containerRef.current) {
+      const containerHeight = containerRef.current.clientHeight;
+      const initialRows = Math.ceil(containerHeight / rowHeight);
+      setVisibleCount(initialRows);
+    }
   };
 
   useEffect(() => {
     setSortedData(data);
+    if (containerRef.current) {
+      const containerHeight = containerRef.current.clientHeight;
+      const initialRows = Math.ceil(containerHeight / rowHeight);
+      setVisibleCount(initialRows);
+    }
   }, [data]);
 
   return (
     <div className="max-w-screen-xl mx-auto px-4">
-      <div className="overflow-auto" style={{ maxHeight: "calc(100vh - 50px)" }}>
+      <div
+        ref={containerRef}
+        className="overflow-auto"
+        style={{ maxHeight: "calc(100vh - 50px)" }}
+      >
         <table className="border-collapse w-full table-auto">
           <TableHeader
             columns={columns}
@@ -44,9 +96,12 @@ const Table = ({ columns, data }) => {
             sortOrder={sortOrder}
           />
           <tbody>
-            {sortedData.map((row, index) => (
+            {sortedData.slice(0, visibleCount).map((row, index) => (
               <TableRow key={index} rowData={row} columns={columns} />
             ))}
+            <tr ref={sentinelRef}>
+              <td colSpan={columns.length}></td>
+            </tr>
           </tbody>
         </table>
       </div>
