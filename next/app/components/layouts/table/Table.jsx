@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import TableHeader from "./TableHeader";
 import TableRow from "./TableRow";
+import EmptyTableCard from "./EmptyTableCard";
 
 const Table = ({ columns, data }) => {
   const [sortedData, setSortedData] = useState(data);
@@ -96,12 +97,22 @@ const Table = ({ columns, data }) => {
             sortOrder={sortOrder}
           />
           <tbody>
-            {sortedData.slice(0, visibleCount).map((row, index) => (
-              <TableRow key={index} rowData={row} columns={columns} />
-            ))}
-            <tr ref={sentinelRef}>
-              <td colSpan={columns.length}></td>
-            </tr>
+            {sortedData.length > 0 ? (
+              <>
+                {sortedData.slice(0, visibleCount).map((row, index) => (
+                  <TableRow key={index} rowData={row} columns={columns} />
+                ))}
+                <tr ref={sentinelRef}>
+                  <td colSpan={columns.length}></td>
+                </tr>
+              </>
+            ) : (
+              <tr>
+                <td colSpan={columns.length} className="py-4">
+                  <EmptyTableCard message="Aucune donnée disponible" />
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
