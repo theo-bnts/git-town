@@ -1,65 +1,76 @@
 import DatabasePool from './tools/DatabasePool.js';
 
-class TemporaryCode {
+export default class TemporaryCode {
   Id;
 
-  Value;
+  CreatedAt;
 
-  Expiration;
+  UpdatedAt;
 
   User;
 
-  constructor(id, value, expiration, user) {
+  Value;
+
+  constructor(id, createdAt, updatedAt, user, value) {
     this.Id = id;
-    this.Value = value;
-    this.Expiration = expiration;
+    this.CreatedAt = createdAt;
+    this.UpdatedAt = updatedAt;
     this.User = user;
+    this.Value = value;
   }
 
   async insert() {
-    const result = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-                INSERT INTO TEMPORARY_CODE (VALUE_, EXPIRATION, ID_USER)
-                VALUES (?, ?, ?)
-            `,
-      [this.Value, this.Expiration, this.User.Id],
+        INSERT INTO public.temporary_code (user_id, value)
+        VALUES ($1::uuid, $2::text)
+        RETURNING id, created_at, updated_at
+      `,
+      [this.User.Id, this.Value],
     );
 
-    this.Id = result.insertId;
+    this.Id = row.id;
+    this.CreatedAt = row.created_at;
+    this.UpdatedAt = row.updated_at;
+  }
+
+  toJSON() {
+    return {
+      Id: this.Id,
+      CreatedAt: this.CreatedAt,
+      UpdatedAt: this.UpdatedAt,
+      User: this.User,
+    };
   }
 
   static async isValidValue(value, user) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-                SELECT COUNT(*) AS COUNT
-                FROM TEMPORARY_CODE TC
-                WHERE TC.EXPIRATION > NOW()
-                AND TC.VALUE_ = ?
-                AND TC.ID_USER = ?
-                AND NOT EXISTS (
-                    SELECT 1
-                    FROM TEMPORARY_CODE TC2
-                    WHERE TC2.ID_USER = TC.ID_USER
-                    AND TC2.EXPIRATION > TC.EXPIRATION
-                )
-            `,
-      [value, user.Id],
+        SELECT COUNT(*) AS count
+        FROM public.temporary_code tc
+        WHERE tc.user_id = $1::uuid
+        AND tc.value = $2::text
+        AND (tc.created_at + ($3::int * INTERVAL '1 second')) > NOW()
+        AND NOT EXISTS (
+          SELECT 1
+          FROM public.temporary_code tc2
+          WHERE tc2.user_id = tc.user_id
+          AND tc2.created_at > tc.created_at
+        )
+      `,
+      [user.Id, value, process.env.TEMPORARY_CODE_EXPIRATION_SECONDS],
     );
 
-    return row.COUNT === 1;
+    return row.count === 1n;
   }
 
-  static async expireAll(user) {
+  static async deleteAll(user) {
     await DatabasePool.Instance.execute(
       /* sql */ `
-                UPDATE TEMPORARY_CODE
-                SET EXPIRATION = NOW()
-                WHERE EXPIRATION > NOW()
-                AND ID_USER = ?
-            `,
+        DELETE FROM public.temporary_code
+        WHERE user_id = $1::uuid
+      `,
       [user.Id],
     );
   }
 }
-
-export default TemporaryCode;

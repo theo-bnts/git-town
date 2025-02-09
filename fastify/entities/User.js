@@ -1,142 +1,236 @@
 import DatabasePool from './tools/DatabasePool.js';
+import Role from './Role.js';
 import Security from './tools/Security.js';
 
-class User {
+export default class User {
   Id;
+
+  CreatedAt;
+
+  UpdatedAt;
 
   EmailAddress;
 
-  PasswordHash;
-
   PasswordHashSalt;
 
-  UserName;
+  PasswordHash;
 
-  constructor(id, emailAddress, passwordHash, passwordHashSalt, userName) {
+  FullName;
+
+  Role;
+
+  GitHubId;
+
+  constructor(
+    id,
+    createdAt,
+    updatedAt,
+    emailAddress,
+    passwordHashSalt,
+    passwordHash,
+    fullName,
+    role,
+    gitHubId,
+  ) {
     this.Id = id;
+    this.CreatedAt = createdAt;
+    this.UpdatedAt = updatedAt;
     this.EmailAddress = emailAddress;
-    this.PasswordHash = passwordHash;
     this.PasswordHashSalt = passwordHashSalt;
-    this.UserName = userName;
+    this.PasswordHash = passwordHash;
+    this.FullName = fullName;
+    this.Role = role;
+    this.GitHubId = gitHubId;
   }
 
   isValidPassword(password) {
     return (
       this.PasswordHash !== null
-      && Security.hashPassword(password, this.PasswordHashSalt)
-        === this.PasswordHash
+      && Security.hashPassword(password, this.PasswordHashSalt) === this.PasswordHash
     );
   }
 
   async insert() {
-    const result = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-        INSERT INTO USER_ (EMAIL_ADDRESS, PASSWORD_HASH, PASSWORD_HASH_SALT, USER_NAME)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO public.user (
+          email_address,
+          password_hash_salt,
+          password_hash,
+          full_name,
+          role_id,
+          github_id
+        )
+        VALUES (
+          $1::text,
+          $2::text,
+          $3::text,
+          $4::text,
+          $5::uuid,
+          $6::bigint
+        )
+        RETURNING id, created_at, updated_at
       `,
       [
         this.EmailAddress,
-        this.PasswordHash,
         this.PasswordHashSalt,
-        this.UserName,
+        this.PasswordHash,
+        this.FullName,
+        this.Role.Id,
+        this.GitHubId,
       ],
     );
 
-    this.Id = result.insertId;
+    this.Id = row.id;
+    this.CreatedAt = row.created_at;
+    this.UpdatedAt = row.updated_at;
   }
 
   async update() {
     await DatabasePool.Instance.execute(
       /* sql */ `
-                UPDATE USER_
-                SET
-                  EMAIL_ADDRESS = ?,
-                  PASSWORD_HASH = ?,
-                  PASSWORD_HASH_SALT = ?,
-                  USER_NAME = ?
-                WHERE ID_USER = ?
+        UPDATE public.user
+        SET
+          email_address = $1::text,
+          password_hash_salt = $2::text,
+          password_hash = $3::text,
+          full_name = $4::text,
+          role_id = $5::uuid,
+          github_id = $6::bigint
+          WHERE id = $7::uuid
       `,
       [
         this.EmailAddress,
-        this.PasswordHash,
         this.PasswordHashSalt,
-        this.UserName,
+        this.PasswordHash,
+        this.FullName,
+        this.Role.Id,
+        this.GitHubId,
         this.Id,
       ],
     );
   }
 
+  toJSON() {
+    return {
+      Id: this.Id,
+      CreatedAt: this.CreatedAt,
+      UpdatedAt: this.UpdatedAt,
+      EmailAddress: this.EmailAddress,
+      FullName: this.FullName,
+      Role: this.Role,
+      GitHubId: this.GitHubId,
+    };
+  }
+
   static async isEmailAddressInserted(emailAddress) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-                SELECT COUNT(*) AS COUNT
-                FROM USER_
-                WHERE EMAIL_ADDRESS = ?
-            `,
+        SELECT COUNT(*) AS count
+        FROM public.user
+        WHERE email_address = $1::text
+      `,
       [emailAddress],
     );
 
-    return row.COUNT === 1;
-  }
-
-  static async isUserNameInserted(userName) {
-    const [row] = await DatabasePool.Instance.execute(
-      /* sql */ `
-                SELECT COUNT(*) AS COUNT
-                FROM USER_
-                WHERE USER_NAME = ?
-            `,
-      [userName],
-    );
-
-    return row.COUNT === 1;
+    return row.count === 1n;
   }
 
   static async fromId(id) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-                SELECT
-                    EMAIL_ADDRESS,
-                    PASSWORD_HASH,
-                    PASSWORD_HASH_SALT,
-                    USER_NAME
-                FROM USER_
-                WHERE ID_USER = ?
-            `,
+        SELECT
+          created_at,
+          updated_at,
+          email_address,
+          password_hash_salt,
+          password_hash,
+          full_name,
+          role_id,
+          github_id
+        FROM public.user
+        WHERE id = $1::uuid
+      `,
       [id],
     );
 
+    const role = await Role.fromId(row.role_id);
+
     return new this(
       id,
-      row.EMAIL_ADDRESS,
-      row.PASSWORD_HASH,
-      row.PASSWORD_HASH_SALT,
-      row.USER_NAME,
+      row.created_at,
+      row.updated_at,
+      row.email_address,
+      row.password_hash_salt,
+      row.password_hash,
+      row.full_name,
+      role,
+      row.github_id,
     );
   }
 
   static async fromEmailAddress(emailAddress) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-                SELECT
-                    ID_USER,
-                    PASSWORD_HASH,
-                    PASSWORD_HASH_SALT,
-                    USER_NAME
-                FROM USER_
-                WHERE EMAIL_ADDRESS = ?
-            `,
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          password_hash_salt,
+          password_hash,
+          full_name,
+          role_id,
+          github_id
+        FROM public.user
+        WHERE email_address = $1::text
+      `,
       [emailAddress],
     );
 
+    const role = await Role.fromId(row.role_id);
+
     return new this(
-      row.ID_USER,
+      row.id,
+      row.created_at,
+      row.updated_at,
       emailAddress,
-      row.PASSWORD_HASH,
-      row.PASSWORD_HASH_SALT,
-      row.USER_NAME,
+      row.password_hash_salt,
+      row.password_hash,
+      row.full_name,
+      role,
+      row.github_id,
     );
   }
-}
 
-export default User;
+  static async all() {
+    const rows = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          email_address,
+          password_hash_salt,
+          password_hash,
+          full_name,
+          role_id,
+          github_id
+        FROM public.user
+      `,
+    );
+
+    const roles = await Role.all();
+
+    return rows.map((row) => new this(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      row.email_address,
+      row.password_hash_salt,
+      row.password_hash,
+      row.full_name,
+      roles.find((role) => role.Id === row.role_id),
+      row.github_id,
+    ));
+  }
+}
