@@ -1,6 +1,4 @@
-import { Octokit } from 'octokit';
-import { createOAuthAppAuth, createOAuthUserAuth } from '@octokit/auth-oauth-app';
-
+import OctokitFactory from '../../../entities/tools/OctokitFactory.js';
 import Request from '../../../entities/tools/Request.js';
 
 export default async function route(app) {
@@ -23,7 +21,7 @@ export default async function route(app) {
         properties: {
           OAuthCode: {
             type: 'string',
-            pattern: process.env.GITHUB_OAUTH_CODE_PATTERN,
+            pattern: process.env.GITHUB_OAUTH_APP_CODE_PATTERN,
           },
         },
         required: ['OAuthCode'],
@@ -35,31 +33,17 @@ export default async function route(app) {
     handler: async function handler(request) {
       const { OAuthCode: oAuthCode } = request.body;
 
-      //TODO: Utiliser la décomposition à 2 niveaux dans les autres routes
-
-      const oAuthAppAuth = createOAuthAppAuth({
-        clientId: process.env.GITHUB_OAUTH_CLIENT_ID,
-        clientSecret: process.env.GITHUB_OAUTH_CLIENT_SECRET,
-      });
-
-      let oAuthUserAuth;
+      let userOctokit;
       try {
-        oAuthUserAuth = await oAuthAppAuth({
-          code: oAuthCode,
-        });
+        userOctokit = await OctokitFactory.user(oAuthCode);
       } catch (error) {
         throw {
           statusCode: 401,
-          code: 'INVALID_OAUTH_CODE',
+          code: 'INVALID_OAUTH_APP_CODE',
         };
       }
 
-      const octokit = new Octokit({
-        authStrategy: createOAuthUserAuth,
-        auth: oAuthUserAuth,
-      });
-
-      const { data: { id: githubId } } = await octokit.rest.users.getAuthenticated();
+      const { data: { id: githubId } } = await userOctokit.rest.users.getAuthenticated();
 
       const user = await Request.getAuthenticatedUser(request);
 

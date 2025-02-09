@@ -48,8 +48,11 @@ export default async function route(app) {
       await Request.handleAuthenticationWithRole(request, 'administrator');
     },
     handler: async function handler(request) {
-      const { EmailAddress: emailAddress, FullName: fullName } = request.body;
-      const { Keyword: roleKeyword } = request.body.Role;
+      const {
+        EmailAddress: emailAddress,
+        FullName: fullName,
+        Role: { Keyword: roleKeyword }
+      } = request.body;
 
       if (await User.isEmailAddressInserted(emailAddress)) {
         throw { statusCode: 409, code: 'EMAIL_ADDRESS_ALREADY_EXISTS' };
