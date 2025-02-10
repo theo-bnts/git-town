@@ -1,41 +1,41 @@
 services:
-  postgres:
-    image: postgres:17-alpine
-    container_name: git_town_postgres
-    restart: unless-stopped
-    env_file:
-      - ./postgres/.env
-    volumes:
-      - postgres_data_volume:/var/lib/postgresql/data:rw
-      - ./postgres:/docker-entrypoint-initdb.d:ro
-    networks:
-      - postgres_network
-    # Remove the following 2 lines in production
-    ports:
-      - 5432:5432
-  fastify:
-    depends_on:
-      - postgres
-    image: node:22-slim
-    container_name: git_town_fastify
-    restart: unless-stopped
-    working_dir: /app
-    command: >
-      sh -c "
-        npm install --no-save &&
-        npm run dev
-      "
-    env_file:
-      - ./fastify/.env
-    volumes:
-      - ./fastify:/app:ro
-      - fastify_node_modules:/app/node_modules:rw
-    networks:
-      - fastify_network
-      - postgres_network
-    # Remove the following 2 lines in production
-    ports:
-      - 8080:80
+  # postgres:
+  #   image: postgres:17-alpine
+  #   container_name: git_town_postgres
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./postgres/.env
+  #   volumes:
+  #     - postgres_data_volume:/var/lib/postgresql/data:rw
+  #     - ./postgres:/docker-entrypoint-initdb.d:ro
+  #   networks:
+  #     - postgres_network
+  #   # Remove the following 2 lines in production
+  #   ports:
+  #     - 5432:5432
+  # fastify:
+  #   depends_on:
+  #     - postgres
+  #   image: node:22-slim
+  #   container_name: git_town_fastify
+  #   restart: unless-stopped
+  #   working_dir: /app
+  #   command: >
+  #     sh -c "
+  #       npm install --no-save &&
+  #       npm run dev
+  #     "
+  #   env_file:
+  #     - ./fastify/.env
+  #   volumes:
+  #     - ./fastify:/app:ro
+  #     - fastify_node_modules:/app/node_modules:rw
+  #   networks:
+  #     - fastify_network
+  #     - postgres_network
+  #   # Remove the following 2 lines in production
+  #   ports:
+  #     - 8080:80
   next:
     image: node:22-slim
     container_name: git_town_next
