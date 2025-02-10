@@ -1,28 +1,28 @@
-import Request from '../../../../entities/tools/Request.js';
+import Request from '../../../entities/tools/Request.js';
 
 export default async function route(app) {
   app.route({
     method: 'DELETE',
-    url: '/account/security/token',
+    url: '/user/token',
     schema: {
       headers: {
         type: 'object',
         properties: {
           authorization: {
             type: 'string',
-            pattern: `${process.env.TOKEN_TYPE} [a-f0-9]{${process.env.TOKEN_LENGTH}}`,
+            pattern: process.env.TOKEN_PATTERN,
           },
         },
         required: ['authorization'],
       },
     },
-    preHandler: Request.handleAuthentified,
+    preHandler: async (request) => {
+      await Request.handleAuthenticationWithRole(request, 'student');
+    },
     handler: async function handler(request) {
       const token = await Request.getUsedToken(request);
 
-      await token.expire();
-
-      return { success: true };
+      await token.delete();
     },
   });
 }

@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-class MailTransporter {
+export default class MailTransporter {
   Transporter;
 
   static Instance = null;
@@ -10,6 +10,7 @@ class MailTransporter {
       host: process.env.SMTP_HOST,
       port: process.env.SMTP_PORT,
       secure: /true/i.test(process.env.SMTP_SECURE),
+      authMethod: process.env.SMTP_AUTH_METHOD,
       auth: {
         user: process.env.SMTP_USER_NAME,
         pass: process.env.SMTP_PASSWORD,
@@ -37,5 +38,3 @@ class MailTransporter {
     );
   }
 }
-
-export default MailTransporter;

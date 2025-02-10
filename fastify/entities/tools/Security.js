@@ -1,12 +1,12 @@
 import crypto from 'crypto';
 
-class Security {
+export default class Security {
   static generateRandomIntegerFigure() {
     return Math.floor(crypto.randomBytes(1)[0] / 25.5);
   }
 
   static generateTemporaryCodeValue() {
-    return Array(parseInt(process.env.TEMPORARY_CODE_LENGTH, 10))
+    return Array(Number(process.env.TEMPORARY_CODE_LENGTH))
       .fill(0)
       .map(() => this.generateRandomIntegerFigure())
       .join('');
@@ -16,8 +16,8 @@ class Security {
     return crypto.randomBytes(process.env.TOKEN_LENGTH / 2).toString('hex');
   }
 
-  static generateSaltValue() {
-    return crypto.randomBytes(process.env.SALT_LENGTH / 2).toString('hex');
+  static generateHashSaltValue() {
+    return crypto.randomBytes(process.env.USER_PASSWORD_HASH_SALT_LENGTH / 2).toString('hex');
   }
 
   static hashPassword(password, salt) {
@@ -27,10 +27,4 @@ class Security {
       .update(crypto.createHash('sha512').update(salt).digest('hex'))
       .digest('hex');
   }
-
-  static generateUploadFileName() {
-    return crypto.randomBytes(process.env.UPLOAD_NAME_LENGTH / 2).toString('hex');
-  }
 }
-
-export default Security;

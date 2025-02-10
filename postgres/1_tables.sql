@@ -4,34 +4,36 @@ CREATE TABLE public.role (
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   keyword varchar(20) NOT NULL,
   name varchar(250) NOT NULL,
+  hierarchy_level int2 DEFAULT 1 NOT NULL,
   CONSTRAINT role_pk PRIMARY KEY (id),
   CONSTRAINT role_unique_keyword UNIQUE (keyword),
   CONSTRAINT role_check_keyword CHECK (keyword ~ '^[a-z]+$'),
   CONSTRAINT role_unique_name UNIQUE (name),
-  CONSTRAINT role_check_name CHECK (trim(name) <> '')
+  CONSTRAINT role_check_name CHECK (trim(name) <> ''),
+  CONSTRAINT role_check_hierarchy_level CHECK (hierarchy_level >= 1)
 );
 
 CREATE TABLE public.user (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  email varchar(250) NOT NULL,
+  email_address varchar(250) NOT NULL,
+  password_hash_salt char(128) DEFAULT NULL,
   password_hash char(128) DEFAULT NULL,
-  password_salt char(128) DEFAULT NULL,
   full_name varchar(250) NOT NULL,
   role_id uuid NOT NULL,
   github_id int8 DEFAULT NULL,
   CONSTRAINT user_pk PRIMARY KEY (id),
-  CONSTRAINT user_unique_email UNIQUE (email),
-  CONSTRAINT user_check_email CHECK (email LIKE '_%@u-picardie.fr' OR email LIKE '_%@etud.u-picardie.fr'),
+  CONSTRAINT user_unique_email_address UNIQUE (email_address),
+  CONSTRAINT user_check_email_address CHECK (email_address ~ '^[a-zA-Z0-9\._%+-]+@(?:etud\.)?u-picardie.fr$'),
+  CONSTRAINT user_unique_password_hash_salt UNIQUE (password_hash_salt),
+  CONSTRAINT user_check_password_hash_salt CHECK (password_hash_salt ~ '^[a-f0-9]*$'),
   CONSTRAINT user_unique_password_hash UNIQUE (password_hash),
   CONSTRAINT user_check_password_hash CHECK (password_hash ~ '^[a-f0-9]*$'),
-  CONSTRAINT user_unique_password_salt UNIQUE (password_salt),
-  CONSTRAINT user_check_password_salt CHECK (password_salt ~ '^[a-f0-9]*$'),
-  CONSTRAINT user_password_hash_and_salt_dependent CHECK (
-    (password_hash IS NULL AND password_salt IS NULL)
+  CONSTRAINT user_password_hash_salt_and_password_hash_dependent CHECK (
+    (password_hash_salt IS NULL AND password_hash IS NULL)
     OR
-    (password_hash IS NOT NULL AND password_salt IS NOT NULL)
+    (password_hash_salt IS NOT NULL AND password_hash IS NOT NULL)
   ),
   CONSTRAINT user_check_full_name CHECK (trim(full_name) <> ''),
   CONSTRAINT user_fk_role FOREIGN KEY (role_id) REFERENCES public.role(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
@@ -44,10 +46,10 @@ CREATE TABLE public.temporary_code (
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   user_id uuid NOT NULL,
-  code char(6) NOT NULL,
+  value char(6) NOT NULL,
   CONSTRAINT temporary_code_pk PRIMARY KEY (id),
   CONSTRAINT temporary_code_fk_user FOREIGN KEY (user_id) REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT temporary_code_check_code CHECK (code ~ '^[0-9]*$')
+  CONSTRAINT temporary_code_check_value CHECK (value ~ '^[0-9]*$')
 );
 
 CREATE TABLE public.token (
@@ -55,11 +57,11 @@ CREATE TABLE public.token (
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   user_id uuid NOT NULL,
-  token char(128) NOT NULL,
+  value char(128) NOT NULL,
   CONSTRAINT token_pk PRIMARY KEY (id),
   CONSTRAINT token_fk_user FOREIGN KEY (user_id) REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT token_unique_token UNIQUE (token),
-  CONSTRAINT token_check_token CHECK (token ~ '^[a-f0-9]*$')
+  CONSTRAINT token_unique_value UNIQUE (value),
+  CONSTRAINT token_check_value CHECK (value ~ '^[a-f0-9]*$')
 );
 
 CREATE TABLE public.diploma (
