@@ -20,7 +20,7 @@ export default async function route(app) {
       rateLimit: {
         max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
         allowList: false,
-        keyGenerator: (request) => `${request.routeOptions.url}-${request.query.EmailAddress}`,
+        keyGenerator: (request) => `${request.query.EmailAddress}-${request.routeOptions.url}`,
       },
     },
     handler: async (request) => {

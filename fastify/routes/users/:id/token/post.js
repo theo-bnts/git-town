@@ -35,7 +35,7 @@ export default async function route(app) {
       rateLimit: {
         max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
         allowList: false,
-        keyGenerator: (request) => `${request.routeOptions.url}-${request.params.Id}`,
+        keyGenerator: (request) => `${request.params.Id}-${request.routeOptions.url}`,
       },
     },
     preHandler: async (request) => Middleware.assertUserIdExists(request),
