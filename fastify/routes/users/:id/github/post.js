@@ -1,10 +1,11 @@
-import OctokitFactory from '../../../entities/tools/OctokitFactory.js';
-import Request from '../../../entities/tools/Request.js';
+import Middleware from '../../../../entities/tools/Middleware.js';
+import OctokitFactory from '../../../../entities/tools/OctokitFactory.js';
+import User from '../../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/user/github',
+    url: '/users/:Id/github',
     schema: {
       headers: {
         type: 'object',
@@ -16,6 +17,16 @@ export default async function route(app) {
         },
         required: ['authorization'],
       },
+      params: {
+        type: 'object',
+        properties: {
+          Id: {
+            type: 'string',
+            pattern: process.env.UUID_PATTERN,
+          },
+        },
+        additionalProperties: false,
+      },
       body: {
         type: 'object',
         properties: {
@@ -24,16 +35,19 @@ export default async function route(app) {
             pattern: process.env.GITHUB_OAUTH_APP_CODE_PATTERN,
           },
         },
+        additionalProperties: false,
         required: ['OAuthCode'],
       },
     },
     preHandler: async (request) => {
-      await Request.handleAuthenticationWithRole(request, 'student');
+      await Middleware.assertAuthentication(request);
+      await Middleware.assertUserIdMatch(request);
     },
-    handler: async function handler(request) {
+    handler: async (request) => {
+      const { Id: id } = request.params;
       const { OAuthCode: oAuthCode } = request.body;
 
-      const user = await Request.getAuthenticatedUser(request);
+      const user = await User.fromId(id);
 
       if (user.GitHubId !== null) {
         throw { statusCode: 409, error: 'GITHUB_ID_ALREADY_DEFINED' };
@@ -46,9 +60,9 @@ export default async function route(app) {
         throw { statusCode: 401, error: 'INVALID_OAUTH_APP_CODE' };
       }
 
-      const { data: { id: githubId } } = await userOctokit.rest.users.getAuthenticated();
+      const { data: { Id: gitHubId } } = await userOctokit.rest.users.getAuthenticated();
 
-      user.GitHubId = githubId;
+      user.GitHubId = BigInt(gitHubId);
       await user.update();
 
       return user;

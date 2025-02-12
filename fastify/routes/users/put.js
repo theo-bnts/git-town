@@ -1,5 +1,5 @@
+import Middleware from '../../entities/tools/Middleware.js';
 import User from '../../entities/User.js';
-import Request from '../../entities/tools/Request.js';
 import Role from '../../entities/Role.js';
 
 export default async function route(app) {
@@ -38,16 +38,19 @@ export default async function route(app) {
                 pattern: process.env.ROLE_KEYWORD_PATTERN,
               },
             },
+            additionalProperties: false,
             required: ['Keyword'],
           },
         },
+        additionalProperties: false,
         required: ['EmailAddress', 'FullName', 'Role'],
       },
     },
     preHandler: async (request) => {
-      await Request.handleAuthenticationWithRole(request, 'administrator');
+      await Middleware.assertAuthentication(request);
+      await Middleware.assertSufficientUserRole(request, 'administrator');
     },
-    handler: async function handler(request) {
+    handler: async (request) => {
       const {
         EmailAddress: emailAddress,
         FullName: fullName,
@@ -55,7 +58,7 @@ export default async function route(app) {
       } = request.body;
 
       if (await User.isEmailAddressInserted(emailAddress)) {
-        throw { statusCode: 409, error: 'EMAIL_ADDRESS_ALREADY_EXISTS' };
+        throw { statusCode: 409, error: 'DUPLICATE_EMAIL_ADDRESS' };
       }
 
       if (!(await Role.isKeywordInserted(roleKeyword))) {

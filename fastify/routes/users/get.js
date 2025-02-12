@@ -1,5 +1,5 @@
+import Middleware from '../../entities/tools/Middleware.js';
 import User from '../../entities/User.js';
-import Request from '../../entities/tools/Request.js';
 
 export default async function route(app) {
   app.route({
@@ -18,9 +18,10 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Request.handleAuthenticationWithRole(request, 'teacher');
+      await Middleware.assertAuthentication(request);
+      await Middleware.assertSufficientUserRole(request, 'administrator');
     },
-    handler: async function handler() {
+    handler: async () => {
       const users = await User.all();
 
       return users;
