@@ -3,37 +3,39 @@ import User from '../../../entities/User.js';
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/user/password',
+    url: '/users/:EmailAddress/public',
     schema: {
-      querystring: {
+      params: {
         type: 'object',
         properties: {
           EmailAddress: {
             type: 'string',
-            format: 'email',
             pattern: process.env.USER_EMAIL_ADDRESS_PATTERN,
           },
         },
-        required: ['EmailAddress'],
+        additionalProperties: false,
       },
     },
     config: {
       rateLimit: {
         max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
         allowList: false,
-        keyGenerator: (request) => `${request.routerPath}-${request.query.EmailAddress}`,
+        keyGenerator: (request) => `${request.routeOptions.url}-${request.query.EmailAddress}`,
       },
     },
-    handler: async function handler(request) {
-      const { EmailAddress: emailAddress } = request.query;
+    handler: async (request) => {
+      const { EmailAddress: emailAddress } = request.params;
 
       if (!(await User.isEmailAddressInserted(emailAddress))) {
         throw { statusCode: 404, error: 'UNKNOWN_EMAIL_ADDRESS' };
       }
 
-      const { PasswordHash: passwordHash } = await User.fromEmailAddress(emailAddress);
+      const user = await User.fromEmailAddress(emailAddress);
 
-      return { Defined: passwordHash !== null };
+      return {
+        Id: user.Id,
+        PasswordDefined: user.isPasswordDefined(),
+      };
     },
   });
 }
