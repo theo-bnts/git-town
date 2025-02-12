@@ -6,8 +6,7 @@ import Card from '../ui/Card';
 import Text from '../ui/Text';
 
 const LinkForm = () => {
-  const [githubLinked, setGithubLinked] = useState(false);
-  const [orgJoined, setOrgJoined] = useState(false);
+  const [githubLinked, orgJoined] = useState(false);
 
   const handleGithubLink = () => {
     window.location.href = process.env.NEXT_PUBLIC_GITHUB_OAUTH_URL;

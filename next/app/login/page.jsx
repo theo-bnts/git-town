@@ -1,4 +1,5 @@
 'use client';
+// app/login/page.jsx
 import Image from 'next/image';
 
 import gittownlogo from '../../public/assets/pictures/gittown.svg';
