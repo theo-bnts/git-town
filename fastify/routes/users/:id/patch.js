@@ -27,7 +27,6 @@ export default async function route(app) {
           },
         },
         additionalProperties: false,
-        required: ['id'],
       },
       body: {
         type: 'object',
@@ -64,13 +63,11 @@ export default async function route(app) {
     },
     handler: async (request) => {
       const { Id: id } = request.params;
-      const {
-        EmailAddress: emailAddress,
-        FullName: fullName,
-        Role: role,
-      } = request.body;
+      const { EmailAddress: emailAddress, FullName: fullName, Role: role } = request.body;
 
-      const authenticatedUser = await Request.getAuthenticatedUser(request);
+      const token = await Request.getUsedToken(request);
+      const authenticatedUser = token.User;
+
       const requestedUser = await User.fromId(id);
 
       if (emailAddress !== undefined) {
