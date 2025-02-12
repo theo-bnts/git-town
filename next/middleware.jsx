@@ -5,7 +5,7 @@ export async function middleware(request) {
   const token = request.cookies.get("token")?.value;
   const { pathname } = request.nextUrl;
 
-  if (pathname === "/login") {
+  /*if (pathname === "/login") {
     if (token) {
       const apiResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user`, {
         method: "GET",
@@ -48,9 +48,9 @@ export async function middleware(request) {
     }
   }
 
-  return NextResponse.next();
+  return NextResponse.next();*/
 }
 
-export const config = {
+/*export const config = {
   matcher: ["/", "/login", "/home", "/login/authorize", "/login/link"],
-};
+};*/

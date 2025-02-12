@@ -7,8 +7,6 @@ import Card from '../ui/Card';
 import Input from '../ui/Input';
 import Text from '../ui/Text';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-
 const LoginForm = () => {
   // Modes possibles : null, 'login', 'signup'
   const [mode, setMode] = useState(null);
@@ -30,21 +28,47 @@ const LoginForm = () => {
   };
 
   /**
-   * Vérifie l'adresse e-mail auprès du backend et gère les erreurs via un switch-case
+   * Récupère la valeur d'un cookie par son nom
+   * @param {string} name
+   * @returns {string|null}
+   */
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  };
+
+  /**
+   * Supprime un cookie en lui assignant une date d'expiration passée
+   * @param {string} name
+   */
+  const removeCookie = (name) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+  };
+
+  /**
+   * Vérifie l'adresse e-mail auprès du backend
+   * Nouvelle route : GET ${process.env.NEXT_PUBLIC_BACKEND_URL}/users/{{EMAIL_ADDRESS}}/public
+   * 
+   * Réponses attendues :
+   * - 200 : { "Id": "...", "PasswordDefined": false|true }
+   * - 404 : { "statusCode": 404, "error": "UNKNOWN_EMAIL_ADDRESS" }
+   * - 400 : { "statusCode": 400, "code": "FST_ERR_VALIDATION", … }
+   * 
    * @param {string} emailAddress
    * @returns {Promise<Object>}
    */
   const fetchEmailDefinition = async (emailAddress) => {
     const response = await fetch(
-      `${BACKEND_URL}/user/password?EmailAddress=${encodeURIComponent(emailAddress)}`
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${encodeURIComponent(emailAddress)}/public`
     );
 
+    console.log(response);
     if (response.ok) {
       return response.json();
     }
-
     const data = await response.json();
-
     switch (response.status) {
       case 400:
         if (data.code === 'FST_ERR_VALIDATION') {
@@ -53,11 +77,8 @@ const LoginForm = () => {
           );
         }
         throw new Error(`Erreur 400 : ${data.message || 'Bad Request'}`);
-      case 429:
-        if (data.error === 'RATE_LIMIT_EXCEEDED') {
-          throw new Error('Vous avez atteint la limite de tentatives, veuillez réessayer plus tard.');
-        }
-        break;
+      case 404:
+        throw new Error("Adresse e-mail inconnue. Merci de vérifier ou de vous inscrire.");
       default:
         throw new Error("Erreur lors de la vérification de votre adresse e-mail.");
     }
@@ -65,18 +86,31 @@ const LoginForm = () => {
 
   /**
    * Demande la génération d'un code temporaire pour l'inscription
-   * @param {string} emailAddress
+   * Nouvelle route : POST ${process.env.NEXT_PUBLIC_BACKEND_URL}/users/{{USER_ID}}/temporary-code
+   * 
+   * Réponses attendues :
+   * - 200 : le JSON avec le code temporaire et l'objet utilisateur
+   * - 400 ou 404 : message d'erreur (on supprimera le cookie et redirige vers /login)
+   * 
+   * @param {string} userId
+   * @returns {Promise<Object>}
    */
-  const fetchTemporaryCode = async (emailAddress) => {
-    const response = await fetch(`${BACKEND_URL}/user/temporary-code`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ EmailAddress: emailAddress }),
+  const fetchTemporaryCode = async (userId) => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}/temporary-code`, {
+      method: 'POST'
     });
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération du code temporaire');
+    if (response.ok) {
+      return response.json();
     }
-    return response.json();
+    const data = await response.json();
+    switch (response.status) {
+      case 400:
+        throw new Error(`Erreur 400 : ${data.message || 'Bad Request'}`);
+      case 404:
+        throw new Error("Utilisateur inconnu.");
+      default:
+        throw new Error("Erreur lors de la récupération du code temporaire");
+    }
   };
 
   /**
@@ -92,12 +126,18 @@ const LoginForm = () => {
     try {
       const emailData = await fetchEmailDefinition(trimmedEmail);
 
-      if (emailData.Defined === false) {
-        // L'utilisateur n'existe pas, on demande un code temporaire pour l'inscription
-        await fetchTemporaryCode(trimmedEmail);
-        setMode('signup');
-      } else if (emailData.Defined === true) {
-        // L'utilisateur existe, on passe en mode connexion
+      document.cookie = `userId=${emailData.Id}; path=/;`;
+
+      if (emailData.PasswordDefined === false) {
+        try {
+          await fetchTemporaryCode(emailData.Id);
+          setMode('signup');
+        } catch (error) {
+          console.error(error);
+          removeCookie('userId');
+          window.location.href = '/login';
+        }
+      } else if (emailData.PasswordDefined === true) {
         setMode('login');
       }
     } catch (error) {
@@ -107,40 +147,50 @@ const LoginForm = () => {
   };
 
   /**
-   * Gère la soumission du formulaire en mode connexion avec gestion des codes HTTP par switch-case
+   * Gère la soumission du formulaire en mode connexion
+   * Nouvelle route : POST ${process.env.NEXT_PUBLIC_BACKEND_URL}/users/{{USER_ID}}/token
+   * 
+   * Le body attendu est :
+   * {
+   *    "Password": "{{PASSWORD}}"
+   * }
+   * 
+   * En cas de succès (200), on stocke le token dans un cookie avec SameSite=Strict pour 7 jours et on redirige vers /home.
+   * En cas d'erreur 401, on affiche une alerte "Mot de passe invalide".
+   * En cas d'erreur 400, on supprime le cookie userId et on réinitialise le formulaire.
    */
   const handleLoginSubmit = async () => {
+    const userId = getCookie('userId');
+    if (!userId) {
+      alert("Identifiant utilisateur manquant, veuillez réessayer.");
+      resetFormState();
+      return;
+    }
     try {
-      const response = await fetch(`${BACKEND_URL}/user/token`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          EmailAddress: email.trim(),
           Password: password.trim(),
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        // Stockage du token dans un cookie pour 7 jours
-        document.cookie = `token=${data.Value}; max-age=${60 * 60 * 24 * 7}; path=/;`;
+        // Stocker le token dans un cookie avec SameSite=Strict pour 7 jours
+        document.cookie = `token=${data.Value}; max-age=${60 * 60 * 24 * 7}; path=/; SameSite=Strict;`;
 
-        // Redirection en fonction de l'état de l'utilisateur
-        if (data.User && data.User.GitHubId) {
-          window.location.href = '/home';
-        } else {
-          window.location.href = '/home';
-        }
+        // Redirection vers /home
+        window.location.href = '/home';
       } else {
-        switch (response.status) {
-          case 401:
-            alert("Mot de passe invalide, vérifiez vos informations.");
-            break;
-          case 404:
-            alert("Adresse e-mail inconnue. Merci de vérifier ou de vous inscrire.");
-            break;
-          default:
-            alert("Une erreur est survenue. Veuillez réessayer plus tard.");
+        if (response.status === 401) {
+          alert("Mot de passe invalide, vérifiez vos informations.");
+        } else if (response.status === 400) {
+          alert("Erreur de validation. Veuillez réessayer.");
+          removeCookie('userId');
+          resetFormState();
+        } else {
+          alert("Une erreur est survenue. Veuillez réessayer plus tard.");
         }
       }
     } catch (error) {
@@ -151,6 +201,7 @@ const LoginForm = () => {
 
   /**
    * Gère la soumission du formulaire en mode inscription
+   * (La logique d'inscription est à implémenter selon vos besoins)
    */
   const handleSignupSubmit = async () => {
     console.log('Soumission du formulaire d’inscription :', {
@@ -159,7 +210,7 @@ const LoginForm = () => {
       newPassword,
       confirmPassword,
     });
-    // Vous pouvez adapter la logique d'inscription ici en utilisant le même principe.
+    // À compléter : logique d'inscription (par exemple, validation du code, enregistrement du nouveau mot de passe, etc.)
   };
 
   /**
@@ -179,9 +230,6 @@ const LoginForm = () => {
     }
   };
 
-  /**
-   * Rendu conditionnel des champs en fonction du mode via switch-case
-   */
   const renderFormFields = () => {
     switch (mode) {
       case null:
