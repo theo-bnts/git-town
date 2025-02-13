@@ -3,12 +3,24 @@
 import React, { useState } from 'react';
 
 // Import des fonctions d'appel à l'API
-import { fetchEmailDefinition, fetchTemporaryCode, login, signup,} from '@/app/services/routes';
+import {
+  fetchEmailDefinition,
+  fetchTemporaryCode,
+  login,
+  signup,
+} from '@/app/services/routes';
 
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Input from '../ui/Input';
 import Text from '../ui/Text';
+
+// Composant pour afficher le message d'erreur avec un espace réservé
+const ErrorMsg = ({ message }) => (
+  <div className="min-h-0">
+    {message ? <Text variant="warn" className="text-sm">{message}</Text> : <span>&nbsp;</span>}
+  </div>
+);
 
 const LoginForm = () => {
   const [mode, setMode] = useState(null);
@@ -18,6 +30,13 @@ const LoginForm = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // États pour les messages d'erreur
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [codeError, setCodeError] = useState('');
+  const [newPasswordError, setNewPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
   const getCookie = (name) => {
     const value = `; ${document.cookie}`;
@@ -37,6 +56,12 @@ const LoginForm = () => {
     setCode('');
     setNewPassword('');
     setConfirmPassword('');
+    // Réinitialiser aussi les erreurs
+    setEmailError('');
+    setPasswordError('');
+    setCodeError('');
+    setNewPasswordError('');
+    setConfirmPasswordError('');
   };
 
   /**
@@ -44,12 +69,15 @@ const LoginForm = () => {
    */
   const handleNext = async () => {
     const trimmedEmail = email.trim();
+    setEmailError('');
     if (!trimmedEmail) {
-      alert("Veuillez saisir votre adresse e-mail universitaire");
+      setEmailError("Veuillez saisir votre adresse e-mail universitaire");
       return;
     }
     setIsLoading(true);
     try {
+      // Simulation d'un appel API avec 2 secondes de délai
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       const emailData = await fetchEmailDefinition(trimmedEmail);
       document.cookie = `userId=${emailData.Id}; path=/;`;
 
@@ -61,7 +89,10 @@ const LoginForm = () => {
       }
     } catch (error) {
       console.error(error);
-      alert(error.message || "Une erreur s'est produite lors de la vérification de votre adresse e-mail.");
+      setEmailError(
+        error.message ||
+          "Une erreur s'est produite lors de la vérification de votre adresse e-mail."
+      );
     }
     setIsLoading(false);
   };
@@ -70,28 +101,33 @@ const LoginForm = () => {
    * Gère la soumission en mode connexion
    */
   const handleLoginSubmit = async () => {
+    setPasswordError('');
     const userId = getCookie('userId');
     if (!userId) {
-      alert("Identifiant utilisateur manquant, veuillez réessayer.");
+      setPasswordError("Identifiant utilisateur manquant, veuillez réessayer.");
       resetForm();
       return;
     }
     setIsLoading(true);
     try {
       const data = await login(userId, password);
-      document.cookie = `token=${data.Value}; max-age=${60 * 60 * 24 * 7}; path=/; SameSite=Strict;`;
+      document.cookie = `token=${data.Value}; max-age=${
+        60 * 60 * 24 * 7
+      }; path=/; SameSite=Strict;`;
       window.location.href = '/home';
       return;
     } catch (error) {
       console.error(error);
       if (error.message.includes('invalide')) {
-        alert("Mot de passe invalide, vérifiez vos informations.");
+        setPasswordError("Mot de passe invalide, vérifiez vos informations.");
       } else if (error.message.includes('400')) {
-        alert("Erreur de validation. Veuillez réessayer.");
+        setPasswordError("Erreur de validation. Veuillez réessayer.");
         removeCookie('userId');
         resetForm();
       } else {
-        alert(error.message || "Une erreur est survenue. Veuillez réessayer plus tard.");
+        setPasswordError(
+          error.message || "Une erreur est survenue. Veuillez réessayer plus tard."
+        );
       }
     }
     setIsLoading(false);
@@ -101,14 +137,18 @@ const LoginForm = () => {
    * Gère la soumission en mode inscription
    */
   const handleSignupSubmit = async () => {
+    // Réinitialiser les erreurs associées
+    setCodeError('');
+    setNewPasswordError('');
+    setConfirmPasswordError('');
     if (newPassword.trim() !== confirmPassword.trim()) {
-      alert("Les mots de passe ne correspondent pas.");
+      setConfirmPasswordError("Les mots de passe ne correspondent pas.");
       return;
     }
 
     const userId = getCookie('userId');
     if (!userId) {
-      alert("Identifiant utilisateur manquant, veuillez réessayer.");
+      setCodeError("Identifiant utilisateur manquant, veuillez réessayer.");
       resetForm();
       return;
     }
@@ -120,19 +160,19 @@ const LoginForm = () => {
     } catch (error) {
       console.error(error);
       if (error.message.includes('temporaire invalide')) {
-        alert("Code temporaire invalide.");
+        setCodeError("Code temporaire invalide.");
       } else if (error.message.includes('inconnu')) {
-        alert("Utilisateur inconnu.");
+        setCodeError("Utilisateur inconnu.");
         removeCookie('userId');
         resetForm();
       } else if (error.message.includes('validation')) {
-        alert(error.message);
+        setCodeError(error.message);
         if (error.message.includes('params/Id')) {
           removeCookie('userId');
           resetForm();
         }
       } else {
-        alert(error.message || "Une erreur est survenue. Veuillez réessayer.");
+        setCodeError(error.message || "Une erreur est survenue. Veuillez réessayer.");
       }
     }
 
@@ -173,8 +213,12 @@ const LoginForm = () => {
                 variant={password ? 'selected' : 'default'}
                 placeholder="Saisir le mot de passe"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (passwordError) setPasswordError('');
+                }}
               />
+              <ErrorMsg message={passwordError} />
             </div>
             <div className="flex justify-between">
               <Button variant="outline" onClick={resetForm}>
@@ -196,8 +240,12 @@ const LoginForm = () => {
                 variant={code ? 'selected' : 'default'}
                 placeholder="Saisir le code reçu par e-mail"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  if (codeError) setCodeError('');
+                }}
               />
+              <ErrorMsg message={codeError} />
             </div>
             <div>
               <Text variant="bold">Nouveau mot de passe</Text>
@@ -205,8 +253,12 @@ const LoginForm = () => {
                 variant={newPassword ? 'selected' : 'default'}
                 placeholder="Saisir votre nouveau mot de passe"
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  if (newPasswordError) setNewPasswordError('');
+                }}
               />
+              <ErrorMsg message={newPasswordError} />
             </div>
             <div>
               <Text variant="bold">Confirmation mot de passe</Text>
@@ -214,8 +266,12 @@ const LoginForm = () => {
                 variant={confirmPassword ? 'selected' : 'default'}
                 placeholder="Saisir à nouveau votre nouveau mot de passe"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (confirmPasswordError) setConfirmPasswordError('');
+                }}
               />
+              <ErrorMsg message={confirmPasswordError} />
             </div>
             <div className="flex justify-between">
               <Button variant="outline" onClick={resetForm}>
@@ -242,9 +298,13 @@ const LoginForm = () => {
             variant={mode ? 'disabled' : email ? 'selected' : 'default'}
             placeholder="Saisir votre adresse e-mail universitaire"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (emailError) setEmailError('');
+            }}
             disabled={!!mode}
           />
+          <ErrorMsg message={emailError} />
         </div>
         {renderFormFields()}
       </form>

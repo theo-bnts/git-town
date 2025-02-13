@@ -85,3 +85,28 @@ export async function signup(userId, temporaryCode, newPassword) {
 
   throw new Error("Une erreur est survenue lors de l'inscription.");
 }
+
+/**
+ * Association d'un compte utilisateur avec un compte GitHub.
+ * POST /users/{{USER_ID}}/github
+ */
+export async function linkGithubAccount(userId, code) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}/github`, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ Code: code.trim() }),
+  });
+  const data = await res.json();
+
+  if (res.ok) return data;
+
+  if (res.status === 401) throw new Error("Token invalide");
+  if (res.status === 403) throw new Error("User ID invalide");
+  if (res.status === 404) throw new Error("Utilisateur inconnu.");
+  if (res.status === 400) throw new Error(data.message || "Erreur de validation.");
+
+  throw new Error("Une erreur est survenue lors de la liaison du compte GitHub.");
+}
