@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { Table } from "@/app/components/layouts/table";
 import { PencilIcon, MarkGithubIcon } from "@primer/octicons-react";
-import { getToken } from "./token";
-import { getUsers } from "./users";
+import { getToken } from "../../config/api/token.js";
+import { getUsers } from "../../config/api/users";
 
 const columns = [
   { key: "name", title: "Nom", sortable: true },
