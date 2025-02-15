@@ -1,9 +1,10 @@
-'use client';
 // app/login/link/page.jsx
+'use client';
+
 import Image from 'next/image';
 
 import gittownhublogo from '../../../public/assets/pictures/gittownhub.svg';
-import LinkForm from '../../components/layout/LinkForm';
+import LinkGitForm from '../../components/layout/LinkGitForm';
 import miageLogo from '../../../public/assets/pictures/miage.png';
 
 export default function LinkPage() {
@@ -32,7 +33,7 @@ export default function LinkPage() {
         {/* Formulaire qui prend toute la largeur sur mobile */}
         <div className="flex-1 flex items-center justify-center w-full">
           <div className="w-full sm:max-w-md">
-            <LinkForm />
+            <LinkGitForm />
           </div>
         </div>
       </div>

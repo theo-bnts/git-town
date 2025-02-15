@@ -1,8 +1,6 @@
-// app/components/layout/LoginForm.jsx
-
+// /app/components/layout/LoginForm.jsx
 import React, { useState } from 'react';
 
-// Import des fonctions d'appel à l'API
 import {
   fetchEmailDefinition,
   fetchTemporaryCode,
@@ -15,12 +13,25 @@ import Card from '../ui/Card';
 import Input from '../ui/Input';
 import Text from '../ui/Text';
 
-// Composant pour afficher le message d'erreur avec un espace réservé
-const ErrorMsg = ({ message }) => (
-  <div className="min-h-0">
-    {message ? <Text variant="warn" className="text-sm">{message}</Text> : <span>&nbsp;</span>}
-  </div>
-);
+const ErrorMsg = ({ message }) => {
+  if (!message) return null;
+  return (
+    <div className="mt-1">
+      <Text variant="warn" className="text-sm">{message}</Text>
+    </div>
+  );
+};
+
+/**
+ * Validations basiques front.
+ */
+const validateEmail = (email) => {
+  return new RegExp(process.env.NEXT_PUBLIC_USER_EMAIL_ADDRESS_PATTERN, 'u').test(email);
+};
+
+const validatePassword = (password) => {
+  return password.length >= process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH;
+};
 
 const LoginForm = () => {
   const [mode, setMode] = useState(null);
@@ -31,24 +42,27 @@ const LoginForm = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // États pour les messages d'erreur
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [codeError, setCodeError] = useState('');
   const [newPasswordError, setNewPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
+  /**
+   * Récupère la valeur d’un cookie.
+   */
   const getCookie = (name) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
+    const cookieValue = `; ${document.cookie}`;
+    const parts = cookieValue.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop().split(';').shift();
+    }
     return null;
   };
 
-  const removeCookie = (name) => {
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-  };
-
+  /**
+   * Remet le formulaire et les états à zéro.
+   */
   const resetForm = () => {
     setMode(null);
     setEmail('');
@@ -56,7 +70,6 @@ const LoginForm = () => {
     setCode('');
     setNewPassword('');
     setConfirmPassword('');
-    // Réinitialiser aussi les erreurs
     setEmailError('');
     setPasswordError('');
     setCodeError('');
@@ -65,82 +78,83 @@ const LoginForm = () => {
   };
 
   /**
-   * Gère l'étape "Suivant" après saisie de l'e-mail
+   * Étape "Suivant" après saisie de l’adresse e-mail.
    */
   const handleNext = async () => {
     const trimmedEmail = email.trim();
     setEmailError('');
+
     if (!trimmedEmail) {
-      setEmailError("Veuillez saisir votre adresse e-mail universitaire");
+      setEmailError("Veuillez saisir votre adresse e-mail universitaire.");
       return;
     }
+
+    if (!validateEmail(trimmedEmail)) {
+      setEmailError("L’adresse e-mail doit se terminer par etud.u-picardie.fr ou u-picardie.fr.");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // Simulation d'un appel API avec 2 secondes de délai
-      await new Promise((resolve) => setTimeout(resolve, 2000));
       const emailData = await fetchEmailDefinition(trimmedEmail);
       document.cookie = `userId=${emailData.Id}; path=/;`;
 
-      if (emailData.PasswordDefined === false) {
+      if (!emailData.PasswordDefined) {
         await fetchTemporaryCode(emailData.Id);
         setMode('signup');
       } else {
         setMode('login');
       }
     } catch (error) {
-      console.error(error);
-      setEmailError(
-        error.message ||
-          "Une erreur s'est produite lors de la vérification de votre adresse e-mail."
-      );
+      setEmailError(error.message);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   /**
-   * Gère la soumission en mode connexion
+   * Gère la soumission en mode "connexion".
    */
   const handleLoginSubmit = async () => {
     setPasswordError('');
     const userId = getCookie('userId');
+
     if (!userId) {
       setPasswordError("Identifiant utilisateur manquant, veuillez réessayer.");
       resetForm();
       return;
     }
+
+    if (!validatePassword(password)) {
+      setPasswordError("Le mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const data = await login(userId, password);
-      document.cookie = `token=${data.Value}; max-age=${
-        60 * 60 * 24 * 7
-      }; path=/; SameSite=Strict;`;
+      document.cookie = `token=${data.Value}; max-age=${60 * 60 * 24 * 7}; path=/; SameSite=Strict;`;
       window.location.href = '/home';
-      return;
     } catch (error) {
-      console.error(error);
-      if (error.message.includes('invalide')) {
-        setPasswordError("Mot de passe invalide, vérifiez vos informations.");
-      } else if (error.message.includes('400')) {
-        setPasswordError("Erreur de validation. Veuillez réessayer.");
-        removeCookie('userId');
-        resetForm();
-      } else {
-        setPasswordError(
-          error.message || "Une erreur est survenue. Veuillez réessayer plus tard."
-        );
-      }
+      setPasswordError(error.message);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   /**
-   * Gère la soumission en mode inscription
+   * Gère la soumission en mode "inscription".
    */
   const handleSignupSubmit = async () => {
-    // Réinitialiser les erreurs associées
     setCodeError('');
     setNewPasswordError('');
     setConfirmPasswordError('');
+
+    if (!validatePassword(newPassword.trim())) {
+      setNewPasswordError("Le nouveau mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
+
     if (newPassword.trim() !== confirmPassword.trim()) {
       setConfirmPasswordError("Les mots de passe ne correspondent pas.");
       return;
@@ -152,44 +166,27 @@ const LoginForm = () => {
       resetForm();
       return;
     }
-    setIsLoading(true);
 
+    setIsLoading(true);
     try {
       await signup(userId, code, newPassword);
       window.location.href = '/login/link';
     } catch (error) {
-      console.error(error);
-      if (error.message.includes('temporaire invalide')) {
-        setCodeError("Code temporaire invalide.");
-      } else if (error.message.includes('inconnu')) {
-        setCodeError("Utilisateur inconnu.");
-        removeCookie('userId');
-        resetForm();
-      } else if (error.message.includes('validation')) {
-        setCodeError(error.message);
-        if (error.message.includes('params/Id')) {
-          removeCookie('userId');
-          resetForm();
-        }
-      } else {
-        setCodeError(error.message || "Une erreur est survenue. Veuillez réessayer.");
-      }
+      setCodeError(error.message);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
+  /**
+   * Gère la soumission du formulaire global (selon le mode).
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
-    switch (mode) {
-      case 'login':
-        handleLoginSubmit();
-        break;
-      case 'signup':
-        handleSignupSubmit();
-        break;
-      default:
-        break;
+    if (mode === 'login') {
+      handleLoginSubmit();
+    } else if (mode === 'signup') {
+      handleSignupSubmit();
     }
   };
 
@@ -212,6 +209,7 @@ const LoginForm = () => {
               <Input
                 variant={password ? 'selected' : 'default'}
                 placeholder="Saisir le mot de passe"
+                type="password"
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
@@ -252,6 +250,7 @@ const LoginForm = () => {
               <Input
                 variant={newPassword ? 'selected' : 'default'}
                 placeholder="Saisir votre nouveau mot de passe"
+                type="password"
                 value={newPassword}
                 onChange={(e) => {
                   setNewPassword(e.target.value);
@@ -265,6 +264,7 @@ const LoginForm = () => {
               <Input
                 variant={confirmPassword ? 'selected' : 'default'}
                 placeholder="Saisir à nouveau votre nouveau mot de passe"
+                type="password"
                 value={confirmPassword}
                 onChange={(e) => {
                   setConfirmPassword(e.target.value);

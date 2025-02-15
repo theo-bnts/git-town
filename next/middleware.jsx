@@ -1,99 +1,51 @@
 // app/middleware.js
 import { NextResponse } from "next/server";
 
+
 export async function middleware(request) {
   const token = request.cookies.get("token")?.value;
   const userId = request.cookies.get("userId")?.value;
-  const { pathname } = request.nextUrl;
 
   // --- Page de login (publique) ---
-  if (pathname === "/login") {
-    // Si l'utilisateur est authentifié, on vérifie son token
-    if (token && userId) {
-      try {
-        const apiResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}`,
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        if (apiResponse.ok) {
-          const userData = await apiResponse.json();
-          // S'il n'a pas encore lié son compte GitHub, il doit aller sur /login/link
-          if (userData.GitHubId === null) {
-            return NextResponse.redirect(new URL("/login/link", request.url));
-          } else {
-            // Sinon, il est déjà authentifié : rediriger vers /home
-            return NextResponse.redirect(new URL("/home", request.url));
-          }
-        } else {
-          // En cas d'échec, on supprime les cookies pour permettre une nouvelle connexion
-          const response = NextResponse.next();
-          response.cookies.delete("token");
-          response.cookies.delete("userId");
-          return response;
+  // Si l'utilisateur est authentifié, on vérifie son token
+  if (token && userId) {
+    let apiResponse;
+    try {
+      apiResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
         }
-      } catch (error) {
-        // En cas d'erreur (ex. réseau), on supprime les cookies et on autorise l'accès à /login
-        const response = NextResponse.next();
-        response.cookies.delete("token");
-        response.cookies.delete("userId");
-        return response;
-      }
-    }
-    return NextResponse.next();
-  }
-
-  // --- Pour toutes les autres routes ---
-  // Si token ou userId sont manquants, rediriger vers /login
-  if (!token || !userId) {
-    const response = NextResponse.redirect(new URL("/login", request.url));
-    response.cookies.delete("token");
-    response.cookies.delete("userId");
-    return response;
-  }
-
-  try {
-    // Vérifier la validité du token via l'API
-    const apiResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}`,
-      {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    if (!apiResponse.ok) {
-      const response = NextResponse.redirect(new URL("/login", request.url));
+      ); 
+    } catch (error) {
+      const response = NextResponse.next();
       response.cookies.delete("token");
       response.cookies.delete("userId");
-      return response;
+      return NextResponse.redirect(new URL("/login", request.url));
     }
-    const userData = await apiResponse.json();
-
-    // Si on accède à /login/link :
-    if (pathname === "/login/link") {
-      // Si GitHubId est déjà renseigné, l'accès à /login/link n'est pas autorisé
+    if (apiResponse.ok) {
+      const userData = await apiResponse.json();
+      // S'il n'a pas encore lié son compte GitHub, il doit aller sur /login/link
       if (userData.GitHubId !== null) {
-        return NextResponse.redirect(new URL("/home", request.url));
+        // Si il accède /login/.. on le redirige vers /home
+        if (request.nextUrl.pathname.startsWith("/login")) {
+          return NextResponse.redirect(new URL("/home", request.url));
+        } // Si !githubId alors il doit aller sur /login/link ou /login/authorize si code
+      } else if (request.nextUrl.pathname !== "/login/link" &&
+        (request.nextUrl.pathname !== "/login/authorize" || !request.nextUrl.searchParams.get("code"))) {
+        return NextResponse.redirect(new URL("/login/link", request.url));
       }
-      return NextResponse.next();
+    } else {
+      const response = NextResponse.next();
+      response.cookies.delete("token");
+      response.cookies.delete("userId");
+      return NextResponse.redirect(new URL("/login", request.url));
     }
-
-    // Pour toutes les autres routes :
-    // Si GitHubId est null, l'utilisateur n'a pas finalisé la liaison GitHub
-    if (userData.GitHubId === null) {
-      return NextResponse.redirect(new URL("/login/link", request.url));
-    }
-
-    // Sinon, tout est valide et l'accès est autorisé
-    return NextResponse.next();
-  } catch (error) {
-    const response = NextResponse.redirect(new URL("/login", request.url));
-    response.cookies.delete("token");
-    response.cookies.delete("userId");
-    return response;
+  } else if (request.nextUrl.pathname !== "/login") {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
+  return NextResponse.next();
 }
 
 export const config = {
