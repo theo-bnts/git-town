@@ -1,13 +1,10 @@
 // /app/services/errorCodes.jsx
 export const API_ERRORS = {
+  INTERNAL_SERVER_ERROR: (msg) => {
+    return `(500) : ${msg || "Erreur interne du serveur."}`;
+  },
   BAD_REQUEST: (msg) => {
-    if (msg.includes('Password must NOT have fewer than 8 characters')) {
-      return '(400) : Le mot de passe ne peut pas contenir moins de 8 caractères';
-    }
-    if (msg.includes('EmailAddress must match pattern')) {
-      return '(400) : L\'adresse e-mail doit se terminer par etud.u-picardie.fr ou u-picardie.fr';
-    }
-    return `(400) : ${msg || "Bad Request"}`;
+    return `(400) : ${msg || "Requête incorrecte."}`;
   },
   UNAUTHORIZED: {
     INVALID_TOKEN: "(401) : Token invalide.",

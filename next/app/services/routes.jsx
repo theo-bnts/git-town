@@ -24,7 +24,10 @@ export async function fetchEmailDefinition(emailAddress) {
   if (res.status === 429) {
     throw new Error(API_ERRORS.TOO_MANY_REQUESTS.RATE_LIMIT_EXCEEDED);
   }
-  throw new Error("Une erreur s'est produite lors de la vérification de l'adresse e-mail.");
+  if (res.status === 500) {
+    throw new Error(API_ERRORS.INTERNAL_SERVER_ERROR(data.message));
+  }
+  throw new Error("Oups, une erreur s'est produite lors de la récupération de l'adresse e-mail.");
 }
 
 /**
@@ -48,7 +51,10 @@ export async function fetchTemporaryCode(userId) {
   if (res.status === 404) {
     throw new Error(API_ERRORS.NOT_FOUND.UNKNOWN_USER_ID);
   }
-  throw new Error("Une erreur s'est produite lors de la récupération du code temporaire.");
+  if (res.status === 500) {
+    throw new Error(API_ERRORS.INTERNAL_SERVER_ERROR(data.message));
+  }
+  throw new Error("Oups, une erreur s'est produite lors de la génération du code temporaire.");
 }
 
 /**
@@ -77,7 +83,10 @@ export async function login(userId, password) {
   if (res.status === 400) {
     throw new Error(API_ERRORS.BAD_REQUEST(data.message));
   }
-  throw new Error("Une erreur s'est produite lors de la connexion.");
+  if (res.status === 500) {
+    throw new Error(API_ERRORS.INTERNAL_SERVER_ERROR(data.message));
+  }
+  throw new Error("Oups, une erreur s'est produite lors de la connexion.");
 }
 
 /**
@@ -113,7 +122,10 @@ export async function signup(userId, temporaryCode, newPassword) {
   if (res.status === 400) {
     throw new Error(API_ERRORS.BAD_REQUEST(data.message));
   }
-  throw new Error("Une erreur s'est produite lors de l'inscription.");
+  if (res.status === 500) {
+    throw new Error(API_ERRORS.INTERNAL_SERVER_ERROR(data.message));
+  }
+  throw new Error("Oups, une erreur s'est produite lors de l'inscription.");
 }
 
 /**
@@ -139,18 +151,27 @@ export async function linkGithubAccount(userId, code, token) {
   const data = await res.json();
 
   if (res.ok) return data;
-
+  
+  if (res.status === 400) {
+    throw new Error(API_ERRORS.BAD_REQUEST(data.message));
+  }
   if (res.status === 401) {
     throw new Error(API_ERRORS.UNAUTHORIZED.INVALID_TOKEN);
   }
+  if (res.status == 401) {
+    throw new Error(API_ERRORS.UNAUTHORIZED.INVALID_OAUTH_APP_CODE);
+  }
   if (res.status === 403) {
-    throw new Error(API_ERRORS.FORBIDDEN.INSUFFICIENT_PERMISSIONS);
+    throw new Error(API_ERRORS.FORBIDDEN.INSUFNOT_FOUND.USER_ID_MISMATCH);
   }
   if (res.status === 404) {
     throw new Error(API_ERRORS.NOT_FOUND.UNKNOWN_USER_ID);
   }
-  if (res.status === 400) {
-    throw new Error(API_ERRORS.BAD_REQUEST(data.message));
+  if (res.status === 409) {
+    throw new Error(API_ERRORS.CONFLICT.GITHUB_ID_ALREADY_DEFINED);
   }
-  throw new Error("Une erreur s'est produite lors de la liaison du compte GitHub.");
+  if (res.status === 500) {
+    throw new Error(API_ERRORS.INTERNAL_SERVER_ERROR(data.message));
+  }
+  throw new Error("Oups, une erreur s'est produite lors de la liaison GitHub.");
 }

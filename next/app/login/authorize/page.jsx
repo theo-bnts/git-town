@@ -38,6 +38,7 @@ export default function AuthorizePage() {
       const linkAccount = async () => {
         try {
           const response = await linkGithubAccount(userId, code, token);
+          console.log(response);
           console.log('Réponse de la liaison GitHub:', response);
           setGithubLinked(true);
         } catch (err) {

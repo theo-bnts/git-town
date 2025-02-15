@@ -48,9 +48,6 @@ const LoginForm = () => {
   const [newPasswordError, setNewPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
-  /**
-   * Récupère la valeur d’un cookie.
-   */
   const getCookie = (name) => {
     const cookieValue = `; ${document.cookie}`;
     const parts = cookieValue.split(`; ${name}=`);
@@ -60,9 +57,6 @@ const LoginForm = () => {
     return null;
   };
 
-  /**
-   * Remet le formulaire et les états à zéro.
-   */
   const resetForm = () => {
     setMode(null);
     setEmail('');
@@ -77,9 +71,6 @@ const LoginForm = () => {
     setConfirmPasswordError('');
   };
 
-  /**
-   * Étape "Suivant" après saisie de l’adresse e-mail.
-   */
   const handleNext = async () => {
     const trimmedEmail = email.trim();
     setEmailError('');
@@ -112,9 +103,6 @@ const LoginForm = () => {
     }
   };
 
-  /**
-   * Gère la soumission en mode "connexion".
-   */
   const handleLoginSubmit = async () => {
     setPasswordError('');
     const userId = getCookie('userId');
@@ -142,9 +130,6 @@ const LoginForm = () => {
     }
   };
 
-  /**
-   * Gère la soumission en mode "inscription".
-   */
   const handleSignupSubmit = async () => {
     setCodeError('');
     setNewPasswordError('');
@@ -178,9 +163,6 @@ const LoginForm = () => {
     }
   };
 
-  /**
-   * Gère la soumission du formulaire global (selon le mode).
-   */
   const handleSubmit = (e) => {
     e.preventDefault();
     if (mode === 'login') {
@@ -194,17 +176,31 @@ const LoginForm = () => {
     switch (mode) {
       case null:
         return (
-          <div className="flex justify-center">
-            <Button variant="default" onClick={handleNext} loading={isLoading}>
-              <Text variant="defaultBold">Suivant</Text>
-            </Button>
+          <div className="space-y-4">
+            <Text variant="bold">Adresse e-mail universitaire</Text>
+            <Input
+              variant={mode ? 'disabled' : email ? 'selected' : 'default'}
+              placeholder="Saisir votre adresse e-mail universitaire"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError('');
+              }}
+              disabled={!!mode}
+            />
+            <ErrorMsg message={emailError} />
+            <div className="flex justify-center">
+              <Button variant="default" onClick={handleNext} loading={isLoading}>
+                <Text variant="defaultBold">Suivant</Text>
+              </Button>
+            </div>
           </div>
         );
 
       case 'login':
         return (
           <>
-            <div>
+            <div className="space-y-4">
               <Text variant="bold">Mot de passe</Text>
               <Input
                 variant={password ? 'selected' : 'default'}
@@ -219,7 +215,7 @@ const LoginForm = () => {
               <ErrorMsg message={passwordError} />
             </div>
             <div className="flex justify-between">
-              <Button variant="outline" onClick={resetForm}>
+              <Button variant="outline" type="button" onClick={resetForm}>
                 <Text variant="bold">Précédent</Text>
               </Button>
               <Button variant="default" type="submit" loading={isLoading}>
@@ -231,8 +227,8 @@ const LoginForm = () => {
 
       case 'signup':
         return (
-          <>
-            <div>
+          <div className="space-y-4">
+            <div className="space-y-2">
               <Text variant="bold">Code reçu par e-mail</Text>
               <Input
                 variant={code ? 'selected' : 'default'}
@@ -245,7 +241,7 @@ const LoginForm = () => {
               />
               <ErrorMsg message={codeError} />
             </div>
-            <div>
+            <div className="space-y-2">
               <Text variant="bold">Nouveau mot de passe</Text>
               <Input
                 variant={newPassword ? 'selected' : 'default'}
@@ -259,7 +255,7 @@ const LoginForm = () => {
               />
               <ErrorMsg message={newPasswordError} />
             </div>
-            <div>
+            <div className="space-y-2">
               <Text variant="bold">Confirmation mot de passe</Text>
               <Input
                 variant={confirmPassword ? 'selected' : 'default'}
@@ -274,14 +270,14 @@ const LoginForm = () => {
               <ErrorMsg message={confirmPasswordError} />
             </div>
             <div className="flex justify-between">
-              <Button variant="outline" onClick={resetForm}>
+              <Button variant="outline" type="button" onClick={resetForm}>
                 <Text variant="bold">Précédent</Text>
               </Button>
               <Button variant="default" type="submit" loading={isLoading}>
                 <Text variant="boldWhite">Inscription</Text>
               </Button>
             </div>
-          </>
+          </div>
         );
 
       default:
@@ -291,21 +287,7 @@ const LoginForm = () => {
 
   return (
     <Card variant="default">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <Text variant="bold">Adresse e-mail universitaire</Text>
-          <Input
-            variant={mode ? 'disabled' : email ? 'selected' : 'default'}
-            placeholder="Saisir votre adresse e-mail universitaire"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              if (emailError) setEmailError('');
-            }}
-            disabled={!!mode}
-          />
-          <ErrorMsg message={emailError} />
-        </div>
+      <form onSubmit={handleSubmit}>
         {renderFormFields()}
       </form>
     </Card>
