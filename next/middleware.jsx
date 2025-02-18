@@ -16,30 +16,30 @@ export async function middleware(request) {
         }
       );
     } catch (error) {
-      const response = NextResponse.next();
-      response.cookies.delete("token");
-      response.cookies.delete("userId");
-      if (request.nextUrl.pathname !== "/login") {
-        return NextResponse.redirect(new URL("/login", request.url));
-      }
+      const response = NextResponse.redirect(new URL("/login", request.url));
+      response.cookies.delete("token", { path: "/" });
+      response.cookies.delete("userId", { path: "/" });
+      return response;
     }
+
     if (apiResponse.ok) {
       const userData = await apiResponse.json();
       if (userData.GitHubId !== null) {
-        if (request.nextUrl.pathname.startsWith("/login")) {
+        if (request.nextUrl.pathname !== "/home") {
           return NextResponse.redirect(new URL("/home", request.url));
         }
-      } else if (request.nextUrl.pathname !== "/login/link" &&
-        (request.nextUrl.pathname !== "/login/authorize" || !request.nextUrl.searchParams.get("code"))) {
+      } else if (
+        request.nextUrl.pathname !== "/login/link" &&
+        (request.nextUrl.pathname !== "/login/authorize" ||
+          !request.nextUrl.searchParams.get("code"))
+      ) {
         return NextResponse.redirect(new URL("/login/link", request.url));
       }
     } else {
-      const response = NextResponse.next();
-      response.cookies.delete("token");
-      response.cookies.delete("userId");
-      if (request.nextUrl.pathname !== "/login") {
-        return NextResponse.redirect(new URL("/login", request.url));
-      }
+      const response = NextResponse.redirect(new URL("/login", request.url));
+      response.cookies.delete("token", { path: "/" });
+      response.cookies.delete("userId", { path: "/" });
+      return response;
     }
   } else if (request.nextUrl.pathname !== "/login") {
     return NextResponse.redirect(new URL("/login", request.url));

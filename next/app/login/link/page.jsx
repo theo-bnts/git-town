@@ -10,7 +10,6 @@ import miageLogo from '../../../public/assets/pictures/miage.png';
 export default function LinkPage() {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Logo en haut SEULEMENT sur mobile */}
       <div className="md:hidden flex justify-center pt-2">
         <Image
           src={gittownhublogo}
@@ -30,7 +29,6 @@ export default function LinkPage() {
           />
         </div>
 
-        {/* Formulaire qui prend toute la largeur sur mobile */}
         <div className="flex-1 flex items-center justify-center w-full">
           <div className="w-full sm:max-w-md">
             <LinkGitForm />
@@ -38,7 +36,6 @@ export default function LinkPage() {
         </div>
       </div>
 
-      {/* Logo Miage en bas */}
       <div className="flex justify-center pb-2">
         <Image
           src={miageLogo}

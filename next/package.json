@@ -9,6 +9,7 @@
     "format": "eslint --fix ./app"
   },
   "dependencies": {
+    "@primer/octicons-react": "19",
     "react": "19",
     "react-dom": "19",
     "next": "15"

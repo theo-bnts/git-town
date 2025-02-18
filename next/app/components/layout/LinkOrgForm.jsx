@@ -1,5 +1,4 @@
 // app/components/layout/LinkOrgForm.jsx
-'use client';
 
 import React from 'react';
 
@@ -15,7 +14,7 @@ const LinkOrgForm = () => {
   return (
     <Card variant="default">
       <div className="space-y-4">
-        <Text variant="default">
+        <Text variant="bold">
           Cliquez sur le bouton ci-dessous pour rejoindre l’organisation.
         </Text>
         <Button

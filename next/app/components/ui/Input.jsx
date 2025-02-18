@@ -1,4 +1,3 @@
-'use client';
 // app/components/ui/Input.jsx
 import React, { useState } from 'react';
 import { inputStyles } from '../../styles/tailwindStyles';
