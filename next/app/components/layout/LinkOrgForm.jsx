@@ -14,6 +14,7 @@ const LinkOrgForm = () => {
   return (
     <Card variant="default">
       <div className="space-y-4">
+        <Text variant="bold">Dernière étape ! (enfin presque...)</Text>
         <Text variant="bold">
           Cliquez sur le bouton ci-dessous pour rejoindre l’organisation.
         </Text>
@@ -22,7 +23,7 @@ const LinkOrgForm = () => {
           onClick={handleJoinOrg}
           type="button"
         >
-          <Text variant="defaultBold">Rejoindre l’organisation</Text>
+          <Text variant="boldWhite">Rejoindre l’organisation</Text>
         </Button>
       </div>
     </Card>

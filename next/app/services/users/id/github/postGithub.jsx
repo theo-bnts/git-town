@@ -11,7 +11,7 @@ import { API_ERRORS } from "@/app/services/errorCodes";
  * @returns {Promise<Object>} - La réponse du serveur.
  * @throws {Error} - En cas d’erreur de la requête.
  */
-export async function postGithub(userId, code, token) {
+export default async function postGithub(userId, code, token) {
   const url = githubRoute(userId);
   const res = await fetch(url, {
     method: "POST",

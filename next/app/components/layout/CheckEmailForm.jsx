@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { InfoIcon } from '@primer/octicons-react';
 
 import { getEmailAddress } from '@/app/services/users/emailAddress/getEmailAddress';
 import { postTemporaryCode } from '@/app/services/users/id/temporaryCode/postTemporaryCode';
@@ -35,15 +36,12 @@ const CheckEmailForm = ({ onSuccess }) => {
     setIsLoading(true);
     try {
       const emailData = await getEmailAddress(trimmedEmail);
-      // Sauvegarde de l'identifiant utilisateur en cookie
       document.cookie = `userId=${emailData.Id}; path=/;`;
 
-      // Si le mot de passe n'est pas défini, on demande un code temporaire
       if (!emailData.PasswordDefined) {
         await postTemporaryCode(emailData.Id);
       }
-      // Notifie le parent : on transmet l'ID utilisateur et si le mot de passe est déjà défini
-      onSuccess(emailData.Id, emailData.PasswordDefined);
+      onSuccess(emailData.Id, emailData.PasswordDefined, trimmedEmail);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -62,10 +60,11 @@ const CheckEmailForm = ({ onSuccess }) => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          {error && <Text variant="warn" className="text-sm">{error}</Text>}
+          {error && 
+          <Text variant="warn">{error}</Text>}
           <div className="flex justify-center">
             <Button variant="default" type="submit" loading={isLoading}>
-              <Text variant="defaultBold">Suivant</Text>
+              <Text variant="boldWhite">Suivant</Text>
             </Button>
           </div>
         </div>

@@ -10,13 +10,13 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Text from '../ui/Text';
 
-const LoginForm = ({ userId, onSuccess, onBack }) => {
+const LoginForm = ({ userId, email, onSuccess, onBack }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const validatePassword = (pwd) =>
-    pwd.length >= process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH;
+  const validatePassword = (password) =>
+    password.length >= process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,15 +45,26 @@ const LoginForm = ({ userId, onSuccess, onBack }) => {
     <Card variant="default">
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
-          <Text variant="bold">Mot de passe</Text>
-          <Input
-            variant="default"
-            placeholder="Saisir le mot de passe"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {error && <Text variant="warn" className="text-sm">{error}</Text>}
+          <div className="space-y-2">
+            <Text variant="bold">Adresse e-mail universitaire</Text>
+            <Input
+              variant="disabled"
+                value={email}
+                disabled
+            />
+          </div>
+          <div className="space-y-2">
+            <Text variant="bold">Mot de passe</Text>
+            <Input
+              variant="default"
+              placeholder="Saisir le mot de passe"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          {error && 
+          <Text variant="warn" className="text-sm">{error}</Text>}
           <div className="flex justify-between">
             <Button variant="outline" type="button" onClick={onBack}>
               <Text variant="bold">Précédent</Text>

@@ -23,7 +23,7 @@ const LinkGitForm = () => {
           onClick={handleGithubLink} 
           type="button"
         >
-          <Text variant="defaultBold">Lier mon compte GitHub</Text>
+          <Text variant="boldWhite">Lier mon compte GitHub</Text>
         </Button>
       </div>
     </Card>

@@ -11,10 +11,12 @@ import LoginForm from './LoginForm';
 const ManageAuthForm = () => {
   const [step, setStep] = useState('email');
   const [userId, setUserId] = useState(null);
+  const [email, setEmail] = useState('');
   const router = useRouter();
 
-  const handleEmailSuccess = (userId, passwordDefined) => {
+  const handleEmailSuccess = (userId, passwordDefined, email) => {
     setUserId(userId);
+    setEmail(email);
     if (passwordDefined) {
       setStep('login');
     } else {
@@ -36,10 +38,15 @@ const ManageAuthForm = () => {
 
   return (
     <>
-      {step === 'email' && <CheckEmailForm onSuccess={handleEmailSuccess} />}
+      {step === 'email' && 
+        <CheckEmailForm 
+          onSuccess={handleEmailSuccess} 
+        />
+      }
       {step === 'login' && (
         <LoginForm
           userId={userId}
+          email={email}
           onSuccess={handleLoginSuccess}
           onBack={handleBackToEmail}
         />
@@ -47,6 +54,7 @@ const ManageAuthForm = () => {
       {step === 'definePassword' && (
         <DefinePasswordForm
           userId={userId}
+          email={email}
           onSuccess={handleDefinePasswordSuccess}
           onBack={handleBackToEmail}
         />

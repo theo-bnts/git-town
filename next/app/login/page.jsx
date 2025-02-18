@@ -1,5 +1,6 @@
-'use client';
 // app/login/page.jsx
+'use client';
+
 import Image from 'next/image';
 
 import ManageAuthForm from '../components/layout/ManageAuthForm';

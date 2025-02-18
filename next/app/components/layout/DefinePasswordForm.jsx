@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { InfoIcon } from '@primer/octicons-react';
 
 import { postPassword } from '@/app/services/users/id/password/postPassword';
 
@@ -10,15 +11,15 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Text from '../ui/Text';
 
-const DefinePasswordForm = ({ userId, onSuccess, onBack }) => {
+const DefinePasswordForm = ({ userId, email, onSuccess, onBack }) => {
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const validatePassword = (pwd) =>
-    pwd.length >= process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH;
+  const validatePassword = (password) =>
+    password.length >= process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,8 +52,20 @@ const DefinePasswordForm = ({ userId, onSuccess, onBack }) => {
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Text variant="bold">Code reçu par e-mail</Text>
+            <Text variant="bold">Adresse e-mail universitaire</Text>
             <Input
+              variant="disabled"
+              value={email}
+              disabled
+            />
+          </div>
+          <div className="space-y-2">
+            <div flex items-center>
+              <Text variant="bold">Code reçu par e-mail</Text>
+              <InfoIcon size={16}/>
+            </div>
+            <Input
+              variant="default"
               placeholder="Saisir le code reçu par e-mail"
               value={code}
               onChange={(e) => setCode(e.target.value)}
