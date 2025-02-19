@@ -76,7 +76,7 @@ export default class User {
           $3::text,
           $4::text,
           $5::uuid,
-          $6::bigint
+          $6::bigint,
           $7::boolean
         )
         RETURNING id, created_at, updated_at
@@ -107,7 +107,7 @@ export default class User {
           password_hash = $3::text,
           full_name = $4::text,
           role_id = $5::uuid,
-          github_id = $6::bigint
+          github_id = $6::bigint,
           github_organization_member = $7::boolean
           WHERE id = $8::uuid
       `,
