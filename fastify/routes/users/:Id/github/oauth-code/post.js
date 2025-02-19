@@ -1,12 +1,11 @@
-import GitHubOrganization from '../../../../entities/tools/GitHubOrganization.js';
-import GitHubUser from '../../../../entities/tools/GitHubUser.js';
-import Middleware from '../../../../entities/tools/Middleware.js';
-import User from '../../../../entities/User.js';
+import GitHubUser from '../../../../../entities/tools/GitHubUser.js';
+import Middleware from '../../../../../entities/tools/Middleware.js';
+import User from '../../../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/users/:Id/github',
+    url: '/users/:Id/github/oauth-code',
     schema: {
       headers: {
         type: 'object',
@@ -58,20 +57,16 @@ export default async function route(app) {
       try {
         gitHubUser = await GitHubUser.fromOAuthCode(oAuthCode);
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(error);
-        throw { statusCode: 401, error: 'INVALID_OAUTH_APP_CODE' };
+        throw { statusCode: 401, error: 'INVALID_OAUTH_CODE' };
       }
 
       user.GitHubId = await gitHubUser.getUserId();
 
-      if (await GitHubOrganization.isIdInserted(user.GitHubId)) {
+      if (await User.isGitHubIdInserted(user.GitHubId)) {
         throw { statusCode: 409, error: 'DUPLICATE_GITHUB_ID' };
       }
 
       await user.update();
-
-      await GitHubOrganization.fromEnvironment().invite(user);
 
       return user;
     },

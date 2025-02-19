@@ -21,6 +21,7 @@ export default class GitHubOrganization {
           privateKey: process.env.GITHUB_APP_PRIVATE_KEY,
           clientId: process.env.GITHUB_APP_CLIENT_ID,
           clientSecret: process.env.GITHUB_APP_CLIENT_SECRET,
+          installationId: Number(process.env.GITHUB_APP_INSTALLATION_ID),
         },
         request: {
           agent: ProxyAgent.https(),
@@ -31,8 +32,8 @@ export default class GitHubOrganization {
 
   async invite(user) {
     await this.Octokit.rest.orgs.createInvitation({
-      org: process.env.GITHUB_ORGANIZATION_ID,
-      invitee_id: user,
+      org: Number(process.env.GITHUB_ORGANIZATION_ID),
+      invitee_id: Number(user.GitHubId),
     });
   }
 

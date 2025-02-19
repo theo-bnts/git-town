@@ -18,7 +18,7 @@ const app = fastify({
 });
 
 app.listen(
-  { host: process.env.SERVER_HOST, port: process.env.SERVER_PORT },
+  { host: process.env.SERVER_HOST, port: Number(process.env.SERVER_PORT) },
   (error) => {
     if (error) {
       throw error;
@@ -27,13 +27,16 @@ app.listen(
 );
 
 app.register(rateLimit, {
-  max: process.env.RATE_LIMIT_AUTHENTICATED_MAX,
+  max: Number(process.env.RATE_LIMIT_AUTHENTICATED_MAX),
   timeWindow: process.env.RATE_LIMIT_TIME_WINDOW,
   hook: 'preHandler',
   allowList: async (request) => (!await Request.isAuthenticated(request)),
   keyGenerator: async (request) => {
-    const token = await Request.getUsedToken(request);
-    return token.User.Id;
+    if (await Request.isAuthenticated(request)) {
+      const token = await Request.getUsedToken(request);
+      return token.User.Id;
+    }
+    return null;
   },
   errorResponseBuilder: () => ({ statusCode: 429, error: 'RATE_LIMIT_EXCEEDED' }),
 });
