@@ -1,3 +1,5 @@
+// app/services/routes.js
+
 export const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const publicUserRoute = (email) =>
@@ -13,4 +15,4 @@ export const passwordRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}/password`;
 
 export const githubRoute = (userId) =>
-  `${API_BASE_URL}/users/${userId}/github`;
+  `${API_BASE_URL}/users/${userId}/github/oauth-code`;

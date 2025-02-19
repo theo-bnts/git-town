@@ -1,5 +1,5 @@
 import { temporaryCodeRoute } from "@/app/services/routes";
-import { API_ERRORS } from "@/app/services/errorCodes";
+import { handleApiError } from "@/app/services/errorHandler";
 
 /**
  * Demande la génération d’un code temporaire pour l’inscription.
@@ -15,15 +15,5 @@ export async function postTemporaryCode(userId) {
   const data = await res.json();
 
   if (res.ok) return data;
-
-  if (res.status === 400) {
-    throw new Error(API_ERRORS.BAD_REQUEST(data.message));
-  }
-  if (res.status === 404) {
-    throw new Error(API_ERRORS.NOT_FOUND.UNKNOWN_USER_ID);
-  }
-  if (res.status === 500) {
-    throw new Error(API_ERRORS.INTERNAL_SERVER_ERROR(data.message));
-  }
-  throw new Error("Oups, une erreur s'est produite lors de la génération du code temporaire.");
+  handleApiError(res, data);
 }

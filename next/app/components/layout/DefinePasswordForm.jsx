@@ -1,10 +1,13 @@
+// app/components/layout/DefinePasswordForm.jsx
+'use client';
+
 import React, { useState } from 'react';
 import { InfoIcon } from '@primer/octicons-react';
 
 import { postPassword } from '@/app/services/users/id/password/postPassword';
 
-import Card from '../ui/Card';
 import Button from '../ui/Button';
+import Card from '../ui/Card';
 import Input from '../ui/Input';
 import Text from '../ui/Text';
 
@@ -14,15 +17,15 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [tooltips, setTooltips] = useState({code: false, password: false,});
+  const [tooltips, setTooltips] = useState({ code: false, password: false });
 
   const validatePassword = (password) =>
-    password.length >= process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH;
+    password.length >= Number(process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-  
+
     if (!validatePassword(newPassword.trim())) {
       setError("Le nouveau mot de passe doit contenir au moins 8 caractères.");
       return;
@@ -35,7 +38,7 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
       setError("Identifiant utilisateur manquant, veuillez réessayer.");
       return;
     }
-  
+
     setIsLoading(true);
     try {
       await postPassword(userId, code, newPassword);

@@ -1,5 +1,5 @@
 import { passwordRoute } from "@/app/services/routes";
-import { API_ERRORS } from "@/app/services/errorCodes";
+import { handleApiError } from "@/app/services/errorHandler";
 
 /**
  * Inscription via définition d’un mot de passe à l’aide d’un code temporaire.
@@ -26,18 +26,5 @@ export async function postPassword(userId, temporaryCode, newPassword) {
   const data = text ? JSON.parse(text) : {};
 
   if (res.ok) return data;
-
-  if (res.status === 401) {
-    throw new Error(API_ERRORS.UNAUTHORIZED.INVALID_TEMPORARY_CODE);
-  }
-  if (res.status === 404) {
-    throw new Error(API_ERRORS.NOT_FOUND.UNKNOWN_USER_ID);
-  }
-  if (res.status === 400) {
-    throw new Error(API_ERRORS.BAD_REQUEST(data.message || "Mauvaise requête."));
-  }
-  if (res.status === 500) {
-    throw new Error(API_ERRORS.INTERNAL_SERVER_ERROR(data.message || "Erreur interne du serveur."));
-  }
-  throw new Error("Oups, une erreur s'est produite lors de l'inscription.");
+  handleApiError(res, data);
 }

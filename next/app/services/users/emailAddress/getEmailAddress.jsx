@@ -1,5 +1,5 @@
 import { publicUserRoute } from "@/app/services/routes";
-import { API_ERRORS } from "@/app/services/errorCodes";
+import { handleApiError } from "@/app/services/errorHandler";
 
 /**
  * Récupère les données publiques d’un utilisateur via son adresse e-mail.
@@ -15,18 +15,5 @@ export async function getEmailAddress(emailAddress) {
   const data = await res.json();
 
   if (res.ok) return data;
-
-  if (res.status === 400) {
-    throw new Error(API_ERRORS.BAD_REQUEST(data.message));
-  }
-  if (res.status === 404) {
-    throw new Error(API_ERRORS.NOT_FOUND.UNKNOWN_EMAIL_ADDRESS);
-  }
-  if (res.status === 429) {
-    throw new Error(API_ERRORS.TOO_MANY_REQUESTS.RATE_LIMIT_EXCEEDED);
-  }
-  if (res.status === 500) {
-    throw new Error(API_ERRORS.INTERNAL_SERVER_ERROR(data.message));
-  }
-  throw new Error("Oups, une erreur s'est produite lors de la récupération de l'adresse e-mail.");
+  handleApiError(res, data);
 }

@@ -6,8 +6,8 @@ import React, { useState } from 'react';
 import { getEmailAddress } from '@/app/services/users/emailAddress/getEmailAddress';
 import { postTemporaryCode } from '@/app/services/users/id/temporaryCode/postTemporaryCode';
 
-import Card from '../ui/Card';
 import Button from '../ui/Button';
+import Card from '../ui/Card';
 import Input from '../ui/Input';
 import Text from '../ui/Text';
 
@@ -24,14 +24,17 @@ const CheckEmailForm = ({ onSuccess }) => {
     e.preventDefault();
     const trimmedEmail = email.trim();
     setError('');
+
     if (!trimmedEmail) {
       setError("Veuillez saisir votre adresse e-mail universitaire.");
       return;
     }
+
     if (!validateEmail(trimmedEmail)) {
       setError("L’adresse e-mail doit se terminer par etud.u-picardie.fr ou u-picardie.fr.");
       return;
     }
+
     setIsLoading(true);
     try {
       const emailData = await getEmailAddress(trimmedEmail);
@@ -59,8 +62,7 @@ const CheckEmailForm = ({ onSuccess }) => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          {error && 
-          <Text variant="warn">{error}</Text>}
+          {error && <Text variant="warn">{error}</Text>}
           <div className="flex justify-center">
             <Button variant="default" type="submit" loading={isLoading}>
               <Text variant="boldWhite">Suivant</Text>

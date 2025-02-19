@@ -1,4 +1,5 @@
 // app/components/layout/LinkGitForm.jsx
+'use client';
 
 import React from 'react';
 
@@ -18,13 +19,11 @@ const LinkGitForm = () => {
         <Text variant="default">
           Cliquez sur le bouton ci-dessous pour lier votre compte GitHub.
         </Text>
-        <Button 
-          variant="default" 
-          onClick={handleGithubLink} 
-          type="button"
-        >
-          <Text variant="boldWhite">Lier mon compte GitHub</Text>
-        </Button>
+        <div className="flex justify-center">
+          <Button variant="default" onClick={handleGithubLink} type="button">
+            <Text variant="boldWhite">Lier mon compte GitHub</Text>
+          </Button>
+        </div>
       </div>
     </Card>
   );

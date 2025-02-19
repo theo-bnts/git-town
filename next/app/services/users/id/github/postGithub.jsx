@@ -1,5 +1,5 @@
 import { githubRoute } from "@/app/services/routes";
-import { API_ERRORS } from "@/app/services/errorCodes";
+import { handleApiError } from "@/app/services/errorHandler";
 
 /**
  * Lie un compte GitHub au compte utilisateur.
@@ -24,24 +24,5 @@ export default async function postGithub(userId, code, token) {
   const data = await res.json();
 
   if (res.ok) return data;
-  
-  if (res.status === 400) {
-    throw new Error(API_ERRORS.BAD_REQUEST(data.message));
-  }
-  if (res.status === 401) {
-    throw new Error(API_ERRORS.UNAUTHORIZED.INVALID_OAUTH_APP_CODE);
-  }
-  if (res.status === 403) {
-    throw new Error(API_ERRORS.FORBIDDEN.INSUFFICIENT_PERMISSIONS);
-  }
-  if (res.status === 404) {
-    throw new Error(API_ERRORS.NOT_FOUND.UNKNOWN_USER_ID);
-  }
-  if (res.status === 409) {
-    throw new Error(API_ERRORS.CONFLICT.GITHUB_ID_ALREADY_DEFINED);
-  }
-  if (res.status === 500) {
-    throw new Error(API_ERRORS.INTERNAL_SERVER_ERROR(data.message));
-  }
-  throw new Error("Oups, une erreur s'est produite lors de la liaison GitHub.");
+  handleApiError(res, data);
 }

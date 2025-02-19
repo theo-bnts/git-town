@@ -1,5 +1,5 @@
 import { tokenRoute } from "@/app/services/routes";
-import { API_ERRORS } from "@/app/services/errorCodes";
+import { handleApiError } from "@/app/services/errorHandler";
 
 /**
  * Connexion de l’utilisateur pour récupérer un token.
@@ -20,16 +20,5 @@ export async function postToken(userId, password) {
   const data = await res.json();
 
   if (res.ok) return data;
-
-  if (res.status === 401) {
-    throw new Error(API_ERRORS.UNAUTHORIZED.INVALID_PASSWORD);
-  }
-  if (res.status === 400) {
-    throw new Error(API_ERRORS.BAD_REQUEST(data.message));
-  }
-  if (res.status === 500) {
-    throw new Error(API_ERRORS.INTERNAL_SERVER_ERROR(data.message));
-  }
-  throw new Error("Oups, une erreur s'est produite lors de la connexion.");
+  handleApiError(res, data);
 }
-

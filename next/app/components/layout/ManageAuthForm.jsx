@@ -18,11 +18,7 @@ const ManageAuthForm = () => {
   const handleEmailSuccess = (userId, passwordDefined, email) => {
     setUserId(userId);
     setEmail(email);
-    if (passwordDefined) {
-      setStep('login');
-    } else {
-      setStep('definePassword');
-    }
+    setStep(passwordDefined ? 'login' : 'definePassword');
   };
 
   const handleLoginSuccess = () => {
@@ -45,11 +41,9 @@ const ManageAuthForm = () => {
 
   return (
     <>
-      {step === 'email' && 
-        <CheckEmailForm 
-          onSuccess={handleEmailSuccess} 
-        />
-      }
+      {step === 'email' && (
+        <CheckEmailForm onSuccess={handleEmailSuccess} />
+      )}
       {step === 'login' && (
         <LoginForm
           userId={userId}

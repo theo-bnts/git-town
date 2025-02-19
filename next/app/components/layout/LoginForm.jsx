@@ -2,10 +2,12 @@
 'use client';
 
 import React, { useState } from 'react';
+
 import { InfoIcon, MailIcon } from '@primer/octicons-react';
 import { postToken } from '@/app/services/users/id/token/postToken';
-import Card from '../ui/Card';
+
 import Button from '../ui/Button';
+import Card from '../ui/Card';
 import Input from '../ui/Input';
 import Text from '../ui/Text';
 
@@ -16,11 +18,12 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
   const [isEnvelopeTooltipOpen, setIsEnvelopeTooltipOpen] = useState(false);
 
   const validatePassword = (password) =>
-    password.length >= process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH;
+    password.length >= Number(process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
     if (!userId) {
       setError("Identifiant utilisateur manquant, veuillez réessayer.");
       return;
@@ -42,11 +45,11 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
   };
 
   const handleMailIconClick = async () => {
+    if (!userId) {
+      setError("Identifiant utilisateur manquant.");
+      return;
+    }
     try {
-      if (!userId) {
-        setError("Identifiant utilisateur manquant.");
-        return;
-      }
       await onGoToDefinePassword();
     } catch (err) {
       setError(err.message);
@@ -64,7 +67,7 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Text variant="bold">Mot de passe</Text>
-              <div 
+              <div
                 className="relative inline-block"
                 onMouseLeave={() => setIsEnvelopeTooltipOpen(false)}
               >
