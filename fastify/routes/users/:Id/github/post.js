@@ -54,14 +54,15 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'GITHUB_ID_ALREADY_DEFINED' };
       }
 
-      let gitHubOAuthApp;
+      let gitHubUser;
       try {
-        gitHubOAuthApp = await GitHubUser.fromOAuthCode(oAuthCode);
+        gitHubUser = await GitHubUser.fromOAuthCode(oAuthCode);
       } catch (error) {
+        console.error(error);
         throw { statusCode: 401, error: 'INVALID_OAUTH_APP_CODE' };
       }
 
-      user.GitHubId = await gitHubOAuthApp.getUserId();
+      user.GitHubId = await gitHubUser.getUserId();
 
       if (await GitHubOrganization.isIdInserted(user.GitHubId)) {
         throw { statusCode: 409, error: 'DUPLICATE_GITHUB_ID' };
