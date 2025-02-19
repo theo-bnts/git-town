@@ -1,6 +1,3 @@
-// app/components/layout/DefinePasswordForm.jsx
-'use client';
-
 import React, { useState } from 'react';
 import { InfoIcon } from '@primer/octicons-react';
 
@@ -11,12 +8,13 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Text from '../ui/Text';
 
-const DefinePasswordForm = ({ userId, email, onSuccess, onBack }) => {
+const DefinePasswordForm = ({ userId, email, onBack }) => {
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [tooltips, setTooltips] = useState({code: false, password: false,});
 
   const validatePassword = (password) =>
     password.length >= process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH;
@@ -24,6 +22,7 @@ const DefinePasswordForm = ({ userId, email, onSuccess, onBack }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+  
     if (!validatePassword(newPassword.trim())) {
       setError("Le nouveau mot de passe doit contenir au moins 8 caractères.");
       return;
@@ -36,15 +35,23 @@ const DefinePasswordForm = ({ userId, email, onSuccess, onBack }) => {
       setError("Identifiant utilisateur manquant, veuillez réessayer.");
       return;
     }
+  
     setIsLoading(true);
     try {
       await postPassword(userId, code, newPassword);
-      onSuccess();
+      window.location.href = '/login';
     } catch (err) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleTooltipToggle = (key, state) => {
+    setTooltips((prev) => ({
+      ...prev,
+      [key]: state,
+    }));
   };
 
   return (
@@ -53,16 +60,31 @@ const DefinePasswordForm = ({ userId, email, onSuccess, onBack }) => {
         <div className="space-y-4">
           <div className="space-y-2">
             <Text variant="bold">Adresse e-mail universitaire</Text>
-            <Input
-              variant="disabled"
-              value={email}
-              disabled
-            />
+            <Input variant="disabled" value={email} disabled />
           </div>
           <div className="space-y-2">
-            <div flex items-center>
+            <div className="flex items-center space-x-2">
               <Text variant="bold">Code reçu par e-mail</Text>
-              <InfoIcon size={16}/>
+              <div
+                className="relative inline-block"
+                onMouseLeave={() => handleTooltipToggle('code', false)}
+              >
+                <InfoIcon
+                  size={16}
+                  className="cursor-pointer"
+                  onClick={() => handleTooltipToggle('code', !tooltips.code)}
+                  onMouseEnter={() => handleTooltipToggle('code', true)}
+                />
+                {tooltips.code && (
+                  <div className="absolute w-40 lg:w-80 p-1 z-50">
+                    <Card variant="info">
+                      <Text variant="defaultWhite">
+                        Nous venons de vous envoyer le code par email, il est valide 5 minutes !
+                      </Text>
+                    </Card>
+                  </div>
+                )}
+              </div>
             </div>
             <Input
               variant="default"
@@ -72,7 +94,29 @@ const DefinePasswordForm = ({ userId, email, onSuccess, onBack }) => {
             />
           </div>
           <div className="space-y-2">
-            <Text variant="bold">Nouveau mot de passe</Text>
+            <div className="flex items-center space-x-2">
+              <Text variant="bold">Nouveau mot de passe</Text>
+              <div
+                className="relative inline-block"
+                onMouseLeave={() => handleTooltipToggle('password', false)}
+              >
+                <InfoIcon
+                  size={16}
+                  className="cursor-pointer"
+                  onClick={() => handleTooltipToggle('password', !tooltips.password)}
+                  onMouseEnter={() => handleTooltipToggle('password', true)}
+                />
+                {tooltips.password && (
+                  <div className="absolute w-40 lg:w-80 p-1 z-50">
+                    <Card variant="info">
+                      <Text variant="defaultWhite">
+                        Votre mot de passe doit contenir au moins 8 caractères.
+                      </Text>
+                    </Card>
+                  </div>
+                )}
+              </div>
+            </div>
             <Input
               variant="default"
               placeholder="Saisir votre nouveau mot de passe"

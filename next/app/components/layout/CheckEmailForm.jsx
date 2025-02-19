@@ -2,7 +2,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { InfoIcon } from '@primer/octicons-react';
 
 import { getEmailAddress } from '@/app/services/users/emailAddress/getEmailAddress';
 import { postTemporaryCode } from '@/app/services/users/id/temporaryCode/postTemporaryCode';

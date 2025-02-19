@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { postTemporaryCode } from '@/app/services/users/id/temporaryCode/postTemporaryCode';
 
 import CheckEmailForm from './CheckEmailForm';
 import DefinePasswordForm from './DefinePasswordForm';
@@ -36,6 +37,12 @@ const ManageAuthForm = () => {
     setStep('email');
   };
 
+  const handleGoToDefinePassword = async () => {
+    if (!userId) return;
+    await postTemporaryCode(userId);
+    setStep('definePassword');
+  };
+
   return (
     <>
       {step === 'email' && 
@@ -49,6 +56,7 @@ const ManageAuthForm = () => {
           email={email}
           onSuccess={handleLoginSuccess}
           onBack={handleBackToEmail}
+          onGoToDefinePassword={handleGoToDefinePassword}
         />
       )}
       {step === 'definePassword' && (

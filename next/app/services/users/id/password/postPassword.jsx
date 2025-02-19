@@ -21,7 +21,9 @@ export async function postPassword(userId, temporaryCode, newPassword) {
       Password: newPassword.trim(),
     }),
   });
-  const data = await res.json();
+
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : {};
 
   if (res.ok) return data;
 
@@ -32,10 +34,10 @@ export async function postPassword(userId, temporaryCode, newPassword) {
     throw new Error(API_ERRORS.NOT_FOUND.UNKNOWN_USER_ID);
   }
   if (res.status === 400) {
-    throw new Error(API_ERRORS.BAD_REQUEST(data.message));
+    throw new Error(API_ERRORS.BAD_REQUEST(data.message || "Mauvaise requête."));
   }
   if (res.status === 500) {
-    throw new Error(API_ERRORS.INTERNAL_SERVER_ERROR(data.message));
+    throw new Error(API_ERRORS.INTERNAL_SERVER_ERROR(data.message || "Erreur interne du serveur."));
   }
   throw new Error("Oups, une erreur s'est produite lors de l'inscription.");
 }

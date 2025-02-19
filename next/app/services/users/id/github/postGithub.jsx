@@ -29,7 +29,7 @@ export default async function postGithub(userId, code, token) {
     throw new Error(API_ERRORS.BAD_REQUEST(data.message));
   }
   if (res.status === 401) {
-    throw new Error(API_ERRORS.UNAUTHORIZED.INVALID_TOKEN);
+    throw new Error(API_ERRORS.UNAUTHORIZED.INVALID_OAUTH_APP_CODE);
   }
   if (res.status === 403) {
     throw new Error(API_ERRORS.FORBIDDEN.INSUFFICIENT_PERMISSIONS);

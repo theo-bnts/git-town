@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export async function middleware(request) {
   const token = request.cookies.get("token")?.value;
   const userId = request.cookies.get("userId")?.value;
-/*
+
   if (token && userId) {
     let apiResponse;
     try {
@@ -44,7 +44,7 @@ export async function middleware(request) {
   } else if (request.nextUrl.pathname !== "/login") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-  return NextResponse.next();*/
+  return NextResponse.next();
 }
 
 export const config = {

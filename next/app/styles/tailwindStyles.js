@@ -17,6 +17,7 @@ const buttonStyles = {
 
 const cardStyles = {
   default: "bg-[var(--primary-color)] p-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)] rounded-[12.5px]",
+  info: "bg-[var(--accent-color)] p-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)] rounded-[12.5px]",
 };
 
 const inputStyles = {

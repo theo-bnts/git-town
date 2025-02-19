@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import useSearchParams from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 import postGithub from '@/app/services/users/id/github/postGithub';
 

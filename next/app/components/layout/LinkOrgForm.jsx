@@ -15,7 +15,7 @@ const LinkOrgForm = () => {
     <Card variant="default">
       <div className="space-y-4">
         <Text variant="bold">Dernière étape ! (enfin presque...)</Text>
-        <Text variant="bold">
+        <Text variant="default">
           Cliquez sur le bouton ci-dessous pour rejoindre l’organisation.
         </Text>
         <Button
