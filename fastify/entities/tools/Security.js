@@ -27,4 +27,11 @@ export default class Security {
       .update(crypto.createHash('sha512').update(salt).digest('hex'))
       .digest('hex');
   }
+
+  static hashGitHubWebhookSecret(body) {
+    return crypto
+      .createHmac('sha256', process.env.GITHUB_WEBHOOK_SECRET)
+      .update(body)
+      .digest('hex');
+  }
 }

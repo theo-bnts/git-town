@@ -21,6 +21,8 @@ export default class User {
 
   GitHubId;
 
+  GitHubOrganizationMember;
+
   constructor(
     id,
     createdAt,
@@ -31,6 +33,7 @@ export default class User {
     fullName,
     role,
     gitHubId,
+    gitHubOrganizationMember,
   ) {
     this.Id = id;
     this.CreatedAt = createdAt;
@@ -41,6 +44,7 @@ export default class User {
     this.FullName = fullName;
     this.Role = role;
     this.GitHubId = gitHubId;
+    this.GitHubOrganizationMember = gitHubOrganizationMember;
   }
 
   isPasswordDefined() {
@@ -63,7 +67,8 @@ export default class User {
           password_hash,
           full_name,
           role_id,
-          github_id
+          github_id,
+          github_organization_member
         )
         VALUES (
           $1::text,
@@ -72,6 +77,7 @@ export default class User {
           $4::text,
           $5::uuid,
           $6::bigint
+          $7::boolean
         )
         RETURNING id, created_at, updated_at
       `,
@@ -82,6 +88,7 @@ export default class User {
         this.FullName,
         this.Role.Id,
         this.GitHubId,
+        this.GitHubOrganizationMember,
       ],
     );
 
@@ -101,7 +108,8 @@ export default class User {
           full_name = $4::text,
           role_id = $5::uuid,
           github_id = $6::bigint
-          WHERE id = $7::uuid
+          github_organization_member = $7::boolean
+          WHERE id = $8::uuid
       `,
       [
         this.EmailAddress,
@@ -110,6 +118,7 @@ export default class User {
         this.FullName,
         this.Role.Id,
         this.GitHubId,
+        this.GitHubOrganizationMember,
         this.Id,
       ],
     );
@@ -125,6 +134,7 @@ export default class User {
       FullName: this.FullName,
       Role: this.Role,
       GitHubId: this.GitHubId,
+      GitHubOrganizationMember: this.GitHubOrganizationMember,
     };
   }
 
@@ -154,6 +164,19 @@ export default class User {
     return row.count === 1n;
   }
 
+  static async isGitHubIdInserted(gitHubId) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.user
+        WHERE github_id = $1::bigint
+      `,
+      [gitHubId],
+    );
+
+    return row.count === 1n;
+  }
+
   static async fromId(id) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
@@ -165,7 +188,8 @@ export default class User {
           password_hash,
           full_name,
           role_id,
-          github_id
+          github_id,
+          github_organization_member
         FROM public.user
         WHERE id = $1::uuid
       `,
@@ -184,6 +208,7 @@ export default class User {
       row.full_name,
       role,
       row.github_id,
+      row.github_organization_member,
     );
   }
 
@@ -198,7 +223,8 @@ export default class User {
           password_hash,
           full_name,
           role_id,
-          github_id
+          github_id,
+          github_organization_member
         FROM public.user
         WHERE email_address = $1::text
       `,
@@ -217,6 +243,7 @@ export default class User {
       row.full_name,
       role,
       row.github_id,
+      row.github_organization_member,
     );
   }
 
@@ -232,7 +259,8 @@ export default class User {
           password_hash,
           full_name,
           role_id,
-          github_id
+          github_id,
+          github_organization_member
         FROM public.user
       `,
     );
@@ -249,6 +277,7 @@ export default class User {
       row.full_name,
       roles.find((role) => role.Id === row.role_id),
       row.github_id,
+      row.github_organization_member,
     ));
   }
 }

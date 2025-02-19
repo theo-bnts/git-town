@@ -1,11 +1,21 @@
 import Request from './Request.js';
 import Role from '../Role.js';
 import User from '../User.js';
+import Security from './Security.js';
 
 export default class Middleware {
   static async assertAuthentication(request) {
     if (!await Request.isAuthenticated(request)) {
       throw { statusCode: 401, error: 'INVALID_TOKEN' };
+    }
+  }
+
+  static async assertGitHubWebhookAuthentication(request) {
+    const { 'x-hub-signature-256': signature } = request.headers;
+    const { body } = request;
+
+    if (signature === undefined || signature === null || signature !== `sha256=${Security.hashGitHubWebhookSecret(body)}`) {
+      throw { statusCode: 401, error: 'INVALID_SIGNATURE' };
     }
   }
 

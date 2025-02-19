@@ -1,5 +1,6 @@
+import GitHubOrganization from '../../../../entities/tools/GitHubOrganization.js';
+import GitHubUser from '../../../../entities/tools/GitHubUser.js';
 import Middleware from '../../../../entities/tools/Middleware.js';
-import OctokitFactory from '../../../../entities/tools/OctokitFactory.js';
 import User from '../../../../entities/User.js';
 
 export default async function route(app) {
@@ -53,17 +54,22 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'GITHUB_ID_ALREADY_DEFINED' };
       }
 
-      let userOctokit;
+      let gitHubOAuthApp;
       try {
-        userOctokit = await OctokitFactory.user(oAuthCode);
+        gitHubOAuthApp = await GitHubUser.fromCode(oAuthCode);
       } catch (error) {
         throw { statusCode: 401, error: 'INVALID_OAUTH_APP_CODE' };
       }
 
-      const { data: { id: gitHubId } } = await userOctokit.rest.users.getAuthenticated();
+      user.GitHubId = await gitHubOAuthApp.getUserId();
 
-      user.GitHubId = BigInt(gitHubId);
+      if (await GitHubOrganization.isIdInserted(user.GitHubId)) {
+        throw { statusCode: 409, error: 'DUPLICATE_GITHUB_ID' };
+      }
+
       await user.update();
+
+      await GitHubOrganization.fromEnvironment().invite(user);
 
       return user;
     },
