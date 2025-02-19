@@ -7,7 +7,6 @@ import rateLimit from '@fastify/rate-limit';
 import DatabasePool from './entities/tools/DatabasePool.js';
 import MailTransporter from './entities/tools/MailTransporter.js';
 import Request from './entities/tools/Request.js';
-import Security from './entities/tools/Security.js';
 
 DatabasePool.Instance = new DatabasePool();
 MailTransporter.Instance = new MailTransporter();

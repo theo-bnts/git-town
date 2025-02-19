@@ -58,6 +58,7 @@ export default async function route(app) {
       try {
         gitHubOAuthApp = await GitHubUser.fromCode(oAuthCode);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(error);
         throw { statusCode: 401, error: 'INVALID_OAUTH_APP_CODE' };
       }
