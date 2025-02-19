@@ -7,6 +7,7 @@ import rateLimit from '@fastify/rate-limit';
 import DatabasePool from './entities/tools/DatabasePool.js';
 import MailTransporter from './entities/tools/MailTransporter.js';
 import Request from './entities/tools/Request.js';
+import Security from './entities/tools/Security.js';
 
 DatabasePool.Instance = new DatabasePool();
 MailTransporter.Instance = new MailTransporter();
@@ -30,7 +31,7 @@ app.register(rateLimit, {
   max: process.env.RATE_LIMIT_AUTHENTICATED_MAX,
   timeWindow: process.env.RATE_LIMIT_TIME_WINDOW,
   hook: 'preHandler',
-  allowList: async (request) => !(await Request.isAuthenticated(request)),
+  allowList: async (request) => (!await Request.isAuthenticated(request)),
   keyGenerator: async (request) => {
     const token = await Request.getUsedToken(request);
     return token.User.Id;

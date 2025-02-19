@@ -58,6 +58,7 @@ export default async function route(app) {
       try {
         gitHubOAuthApp = await GitHubUser.fromCode(oAuthCode);
       } catch (error) {
+        console.error(error);
         throw { statusCode: 401, error: 'INVALID_OAUTH_APP_CODE' };
       }
 

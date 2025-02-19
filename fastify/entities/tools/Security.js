@@ -30,8 +30,8 @@ export default class Security {
 
   static hashGitHubWebhookSecret(body) {
     return crypto
-      .createHmac('sha256', process.env.GITHUB_WEBHOOK_SECRET)
-      .update(body)
+      .createHmac('sha256', process.env.GITHUB_WEBHOOKS_SECRET)
+      .update(body.toString())
       .digest('hex');
   }
 }

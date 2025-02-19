@@ -15,14 +15,19 @@ export default async function route(app) {
         },
         required: ['x-hub-signature-256'],
       },
-      body: {},
+      body: {
+        type: 'object',
+      },
     },
+    /*
     preHandler: async (request) => {
       await Middleware.assertGitHubWebhookAuthentication(request);
     },
+    */
     handler: async (request) => {
       // eslint-disable-next-line no-console
       console.log(request.body);
+      await Middleware.assertGitHubWebhookAuthentication(request);
     },
   });
 }
