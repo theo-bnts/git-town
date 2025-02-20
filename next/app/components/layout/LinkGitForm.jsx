@@ -3,9 +3,9 @@
 
 import React from 'react';
 
-import Button from '../ui/Button';
-import Card from '../ui/Card';
-import Text from '../ui/Text';
+import Button from '@/app/components/ui/Button';
+import Card from '@/app/components/ui/Card';
+import Text from '@/app/components/ui/Text';
 
 const LinkGitForm = () => {
   const handleGithubLink = () => {

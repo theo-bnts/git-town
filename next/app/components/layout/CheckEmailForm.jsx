@@ -2,15 +2,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import Cookies from 'js-cookie';
 
 import { getEmailAddress } from '@/app/services/users/emailAddress/getEmailAddress';
 import { postTemporaryCode } from '@/app/services/users/id/temporaryCode/postTemporaryCode';
 
-import Button from '../ui/Button';
-import Card from '../ui/Card';
-import Input from '../ui/Input';
-import Text from '../ui/Text';
+import { isEmailValid } from '@/app/services/validators';
+import { setCookie }  from '@/app/services/cookies';
+
+import Button from '@/app/components/ui/Button';
+import Card from '@/app/components/ui/Card';
+import Input from '@/app/components/ui/Input';
+import Text from '@/app/components/ui/Text';
 
 const CheckEmailForm = ({ onSuccess }) => {
   const [email, setEmail] = useState('');
@@ -18,7 +20,7 @@ const CheckEmailForm = ({ onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = (email) => {
-    return new RegExp(process.env.NEXT_PUBLIC_USER_EMAIL_ADDRESS_PATTERN, 'u').test(email);
+    return isEmailValid(email);
   };
 
   const handleSubmit = async (e) => {
@@ -39,7 +41,7 @@ const CheckEmailForm = ({ onSuccess }) => {
     setIsLoading(true);
     try {
       const data = await getEmailAddress(trimmedEmail);
-      Cookies.set('userId', data.Id, { expires: 7, sameSite: 'strict', path: '/' });
+      setCookie('userId', data.Id);
 
       if (!data.PasswordDefined) {
         await postTemporaryCode(data.Id);

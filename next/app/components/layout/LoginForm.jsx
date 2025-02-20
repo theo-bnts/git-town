@@ -2,15 +2,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import Cookies from 'js-cookie';
 
 import { InfoIcon, MailIcon } from '@primer/octicons-react';
 import { postToken } from '@/app/services/users/id/token/postToken';
 
-import Button from '../ui/Button';
-import Card from '../ui/Card';
-import Input from '../ui/Input';
-import Text from '../ui/Text';
+import { isPasswordValid } from '@/app/services/validators';
+import { setCookie } from '@/app/services/cookies';
+
+import Button from '@/app/components/ui/Button';
+import Card from '@/app/components/ui/Card';
+import Input from '@/app/components/ui/Input';
+import Text from '@/app/components/ui/Text';
 
 const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) => {
   const [password, setPassword] = useState('');
@@ -18,8 +20,7 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
   const [isLoading, setIsLoading] = useState(false);
   const [isEnvelopeTooltipOpen, setIsEnvelopeTooltipOpen] = useState(false);
 
-  const validatePassword = (password) =>
-    password.length >= Number(process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH);
+  const validatePassword = (password) => isPasswordValid(password);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +37,7 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
     setIsLoading(true);
     try {
       const data = await postToken(userId, password);
-      Cookies.set('token', data.Value, { expires: 7, sameSite: 'strict', path: '/' });
+      setCookie('token', data.Value);
       onSuccess(data.Value);
     } catch (err) {
       setError(err.message);

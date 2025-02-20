@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 
-import ManageAuthForm from '../components/layout/ManageAuthForm';
+import ManageAuthForm from '@/app/components/layout/ManageAuthForm';
 
 import gittownlogo from '../../public/assets/pictures/gittown.svg';
 import miageLogo from '../../public/assets/pictures/miage.png';

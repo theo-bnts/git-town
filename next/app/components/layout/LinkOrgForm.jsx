@@ -1,16 +1,20 @@
+// /app/components/layout/LinkOrgForm.jsx
 'use client';
 
 import React, { useState } from 'react';
-import Cookies from 'js-cookie';
+
 import postInvite from '@/app/services/users/id/github/postInvite';
-import Button from '../ui/Button';
-import Card from '../ui/Card';
-import Text from '../ui/Text';
+
+import { getCookie } from '@/app/services/cookies';
+
+import Button from '@/app/components/ui/Button';
+import Card from '@/app/components/ui/Card';
+import Text from '@/app/components/ui/Text';
 
 const LinkOrgForm = () => {
   const [error, setError] = useState('');
-  const userId = Cookies.get('userId');
-  const token = Cookies.get('token');
+  const userId = getCookie('userId');
+  const token = getCookie('token');
 
   const handleJoinOrg = async () => {
     if (!userId || !token) {

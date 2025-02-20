@@ -3,11 +3,12 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+
 import { postTemporaryCode } from '@/app/services/users/id/temporaryCode/postTemporaryCode';
 
-import CheckEmailForm from './CheckEmailForm';
-import DefinePasswordForm from './DefinePasswordForm';
-import LoginForm from './LoginForm';
+import CheckEmailForm from '@/app/components/layout/CheckEmailForm';
+import DefinePasswordForm from '@/app/components/layout/DefinePasswordForm';
+import LoginForm from '@/app/components/layout/LoginForm';
 
 const ManageAuthForm = () => {
   const [step, setStep] = useState('email');
@@ -50,7 +51,7 @@ const ManageAuthForm = () => {
           email={email}
           onSuccess={handleLoginSuccess}
           onBack={handleBackToEmail}
-          onClick={handleGoToDefinePassword}
+          onGoToDefinePassword={handleGoToDefinePassword}
         />
       )}
       {step === 'definePassword' && (

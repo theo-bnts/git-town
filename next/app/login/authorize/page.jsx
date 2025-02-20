@@ -2,11 +2,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Cookies from 'js-cookie';
-import { useSearchParams } from 'next/navigation';
 
 import postOAuthCode from '@/app/services/users/id/github/postOAuthCode';
+
+import { getCookie } from '@/app/services/cookies';
 
 import gittownhublogo from '../../../public/assets/pictures/gittownhub.svg';
 import miageLogo from '../../../public/assets/pictures/miage.png';
@@ -14,19 +15,20 @@ import LinkOrgForm from '../../components/layout/LinkOrgForm';
 
 export default function AuthorizePage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const code = searchParams.get('code');
 
   const [githubLinked, setGithubLinked] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const userId = Cookies.get('userId');
-    const token = Cookies.get('token');
+    const userId = getCookie('userId');
+    const token = getCookie('token');
 
     if (code && userId && token) {
       const linkAccount = async () => {
         try {
-          const response = await postOAuthCode(userId, code, token);
+          await postOAuthCode(userId, code, token);
           setGithubLinked(true);
         } catch (err) {
           setError(err.message);
@@ -38,6 +40,12 @@ export default function AuthorizePage() {
       setError("Informations de connexion manquantes. Veuillez vous reconnecter.");
     }
   }, [code]);
+
+  useEffect(() => {
+    if (error) {
+      router.push("/login/link");
+    }
+  }, [error, router]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -62,7 +70,6 @@ export default function AuthorizePage() {
 
         <div className="flex-1 flex items-center justify-center w-full">
           <div className="w-full sm:max-w-md">
-          {error && <Text variant="warn">{error}</Text>}
             {!githubLinked ? (
               <LinkOrgForm />
             ) : (

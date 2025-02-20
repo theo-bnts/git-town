@@ -1,6 +1,6 @@
 // app/components/ui/Input.jsx
 import React, { useState } from 'react';
-import { inputStyles } from '../../styles/tailwindStyles';
+import { inputStyles } from '@/app/styles/tailwindStyles';
 
 const Input = ({ variant, placeholder, value: propValue, onChange, disabled, ...props }) => {
   const [localValue, setLocalValue] = useState('');

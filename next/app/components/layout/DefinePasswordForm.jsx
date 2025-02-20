@@ -6,10 +6,12 @@ import { InfoIcon } from '@primer/octicons-react';
 
 import { postPassword } from '@/app/services/users/id/password/postPassword';
 
-import Button from '../ui/Button';
-import Card from '../ui/Card';
-import Input from '../ui/Input';
-import Text from '../ui/Text';
+import { isPasswordValid } from '@/app/services/validators';
+
+import Button from '@/app/components/ui/Button';
+import Card from '@/app/components/ui/Card';
+import Input from '@/app/components/ui/Input';
+import Text from '@/app/components/ui/Text';
 
 const DefinePasswordForm = ({ userId, email, onBack }) => {
   const [code, setCode] = useState('');
@@ -19,8 +21,7 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [tooltips, setTooltips] = useState({ code: false, password: false });
 
-  const validatePassword = (password) =>
-    password.length >= Number(process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH);
+  const validatePassword = (password) => isPasswordValid(password);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -1,7 +1,7 @@
 // app/components/ui/Button.jsx
 import React from 'react';
-import LoadingSpinner from './LoadingSpinner';
-import { buttonStyles } from '../../styles/tailwindStyles';
+import LoadingSpinner from '@/app/components/ui/LoadingSpinner';
+import { buttonStyles } from '@/app/styles/tailwindStyles';
 
 const Button = ({ variant, children, loading, ...props }) => {
   const appliedStyle = loading
