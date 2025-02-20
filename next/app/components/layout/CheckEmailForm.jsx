@@ -58,7 +58,9 @@ const CheckEmailForm = ({ onSuccess }) => {
     <Card variant="default">
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
-          <Text variant="bold">Adresse e-mail universitaire</Text>
+          <Text variant="bold">
+            Adresse e-mail universitaire
+          </Text>
           <Input
             variant="default"
             placeholder="Saisir votre adresse e-mail universitaire"
@@ -68,7 +70,9 @@ const CheckEmailForm = ({ onSuccess }) => {
           {error && <Text variant="warn">{error}</Text>}
           <div className="flex justify-center">
             <Button variant="default" type="submit" loading={isLoading}>
-              <Text variant="boldWhite">Suivant</Text>
+              <Text variant="boldWhite">
+                Suivant
+              </Text>
             </Button>
           </div>
         </div>

@@ -15,13 +15,17 @@ const LinkGitForm = () => {
   return (
     <Card variant="default">
       <div className="space-y-4">
-        <Text variant="bold">Dernière étape ! (enfin presque...)</Text>
+        <Text variant="bold">
+          Dernière étape ! (enfin presque...)
+        </Text>
         <Text variant="default">
           Cliquez sur le bouton ci-dessous pour lier votre compte GitHub.
         </Text>
         <div className="flex justify-center">
           <Button variant="default" onClick={handleGithubLink} type="button">
-            <Text variant="boldWhite">Lier mon compte GitHub</Text>
+            <Text variant="boldWhite">
+              Lier mon compte GitHub
+            </Text>
           </Button>
         </div>
       </div>

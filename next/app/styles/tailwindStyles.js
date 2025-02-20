@@ -9,10 +9,10 @@ const textStyles = {
 };
 
 const buttonStyles = {
-  default: `bg-[var(--accent-color)] py-2 px-4 rounded-[12.5px]`,
-  warn: `bg-[var(--warn-color)] py-2 px-4 rounded-[12.5px]`,
+  default: `bg-[var(--accent-color)] py-2 px-4 rounded-[12.5px] hover:bg-[var(--accent-color-hover)] transition-colors duration-200`,
+  warn: `bg-[var(--warn-color)] py-2 px-4 rounded-[12.5px] hover:bg-[var(--warn-color-hover)] transition-colors duration-200`,
   loading: `bg-[var(--accent-color)] py-2 px-4 rounded-[12.5px]`,
-  outline: `bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)]`,
+  outline: `bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)] hover:bg-[var(--primary-color-hover)] transition-colors duration-200`,
 };
 
 const cardStyles = {

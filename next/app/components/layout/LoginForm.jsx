@@ -63,12 +63,16 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Text variant="bold">Adresse e-mail universitaire</Text>
+            <Text variant="bold">
+              Adresse e-mail universitaire
+            </Text>
             <Input variant="disabled" value={email} disabled />
           </div>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <Text variant="bold">Mot de passe</Text>
+              <Text variant="bold">
+                Mot de passe
+              </Text>
               <div
                 className="relative inline-block"
                 onMouseLeave={() => setIsEnvelopeTooltipOpen(false)}
@@ -83,7 +87,7 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
                   <div className="absolute w-40 lg:w-80 p-1 z-50">
                     <Card variant="info">
                       <Text variant="defaultWhite">
-                        Vous pouvez changer votre mot de passe en cliquant sur l'enveloppe
+                        Vous pouvez changer votre mot de passe en cliquant sur l'enveloppe.
                       </Text>
                     </Card>
                   </div>
@@ -108,10 +112,14 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
           {error && <Text variant="warn">{error}</Text>}
           <div className="flex justify-between">
             <Button variant="outline" type="button" onClick={onBack}>
-              <Text variant="bold">Précédent</Text>
+              <Text variant="bold">
+                Précédent
+              </Text>
             </Button>
             <Button variant="default" type="submit" loading={isLoading}>
-              <Text variant="boldWhite">Connexion</Text>
+              <Text variant="boldWhite">
+                Connexion
+              </Text>
             </Button>
           </div>
         </div>

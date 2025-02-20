@@ -99,7 +99,9 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
           </div>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <Text variant="bold">Nouveau mot de passe</Text>
+              <Text variant="bold">
+                Nouveau mot de passe
+              </Text>
               <div
                 className="relative inline-block"
                 onMouseLeave={() => handleTooltipToggle('password', false)}
@@ -130,7 +132,9 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
             />
           </div>
           <div className="space-y-2">
-            <Text variant="bold">Confirmation mot de passe</Text>
+            <Text variant="bold">
+              Confirmation mot de passe
+            </Text>
             <Input
               variant="default"
               placeholder="Saisir à nouveau votre nouveau mot de passe"
@@ -142,10 +146,14 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
           {error && <Text variant="warn">{error}</Text>}
           <div className="flex justify-between">
             <Button variant="outline" type="button" onClick={onBack}>
-              <Text variant="bold">Précédent</Text>
+              <Text variant="bold">
+                Précédent
+              </Text>
             </Button>
             <Button variant="default" type="submit" loading={isLoading}>
-              <Text variant="boldWhite">Définir le mot de passe</Text>
+              <Text variant="boldWhite">
+                Définir le mot de passe
+              </Text>
             </Button>
           </div>
         </div>

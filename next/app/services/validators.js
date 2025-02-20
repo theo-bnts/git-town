@@ -1,4 +1,5 @@
-// app/utils/validators.js
+// app/services/validators.js
+
 export const isEmailValid = (email) => {
   const pattern = new RegExp(process.env.NEXT_PUBLIC_USER_EMAIL_ADDRESS_PATTERN, 'u');
   return pattern.test(email.trim());
