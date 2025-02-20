@@ -26,7 +26,7 @@ const ManageAuthForm = () => {
   };
 
   const handleDefinePasswordSuccess = () => {
-    router.push('/login/link');
+    router.push('/home');
   };
 
   const handleBackToEmail = () => {
@@ -50,7 +50,7 @@ const ManageAuthForm = () => {
           email={email}
           onSuccess={handleLoginSuccess}
           onBack={handleBackToEmail}
-          onGoToDefinePassword={handleGoToDefinePassword}
+          onClick={handleGoToDefinePassword}
         />
       )}
       {step === 'definePassword' && (

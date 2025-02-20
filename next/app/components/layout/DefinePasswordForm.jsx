@@ -138,7 +138,7 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
-          {error && <Text variant="warn" className="text-sm">{error}</Text>}
+          {error && <Text variant="warn">{error}</Text>}
           <div className="flex justify-between">
             <Button variant="outline" type="button" onClick={onBack}>
               <Text variant="bold">Précédent</Text>

@@ -1,4 +1,4 @@
-// utils/apiErrorHandler.js (par exemple)
+// /app/services/errorHandler.jsx
 import { API_ERRORS } from "@/app/services/errorCodes";
 
 export function handleApiError(res, data) {

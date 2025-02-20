@@ -1,6 +1,7 @@
 // /app/services/errorCodes.jsx
 export const API_ERRORS = {
   400: {
+    FST_ERR_CTP_EMPTY_JSON_BODY: "(400) : Corps de la requête vide.",
     default: "(400) : Requête incorrecte.",
   },
   401: {

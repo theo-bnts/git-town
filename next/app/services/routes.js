@@ -16,3 +16,6 @@ export const passwordRoute = (userId) =>
 
 export const githubRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}/github/oauth-code`;
+
+export const joinOrganizationRoute = (userId) =>
+  `${API_BASE_URL}/users/${userId}/github/invite`;

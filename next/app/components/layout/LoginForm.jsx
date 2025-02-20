@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Cookies from 'js-cookie';
 
 import { InfoIcon, MailIcon } from '@primer/octicons-react';
 import { postToken } from '@/app/services/users/id/token/postToken';
@@ -35,7 +36,7 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
     setIsLoading(true);
     try {
       const data = await postToken(userId, password);
-      document.cookie = `token=${data.Value}; max-age=${60 * 60 * 24 * 7}; path=/; SameSite=Strict;`;
+      Cookies.set('token', data.Value, { expires: 7, sameSite: 'strict', path: '/' });
       onSuccess(data.Value);
     } catch (err) {
       setError(err.message);
@@ -103,7 +104,7 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
               />
             </div>
           </div>
-          {error && <Text variant="warn" className="text-sm">{error}</Text>}
+          {error && <Text variant="warn">{error}</Text>}
           <div className="flex justify-between">
             <Button variant="outline" type="button" onClick={onBack}>
               <Text variant="bold">Précédent</Text>

@@ -3,9 +3,10 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Cookies from 'js-cookie';
 import { useSearchParams } from 'next/navigation';
 
-import postGithub from '@/app/services/users/id/github/postGithub';
+import postOAuthCode from '@/app/services/users/id/github/postOAuthCode';
 
 import gittownhublogo from '../../../public/assets/pictures/gittownhub.svg';
 import miageLogo from '../../../public/assets/pictures/miage.png';
@@ -14,35 +15,20 @@ import LinkOrgForm from '../../components/layout/LinkOrgForm';
 export default function AuthorizePage() {
   const searchParams = useSearchParams();
   const code = searchParams.get('code');
-  console.log('code', code);
 
   const [githubLinked, setGithubLinked] = useState(false);
   const [error, setError] = useState(null);
 
-  /**
-   * Récupère la valeur d’un cookie donné.
-   * @param {string} name - Le nom du cookie.
-   * @returns {string|null} - La valeur du cookie ou null s'il n'existe pas.
-   */
-  const getCookie = (name) => {
-    const cookieValue = `; ${document.cookie}`;
-    const parts = cookieValue.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-  };
-
   useEffect(() => {
-    const userId = getCookie('userId');
-    const token = getCookie('token');
+    const userId = Cookies.get('userId');
+    const token = Cookies.get('token');
 
     if (code && userId && token) {
       const linkAccount = async () => {
         try {
-          const response = await postGithub(userId, code, token);
-          console.log('Réponse de la liaison GitHub:', response);
+          const response = await postOAuthCode(userId, code, token);
           setGithubLinked(true);
         } catch (err) {
-          console.error(err);
           setError(err.message);
         }
       };
@@ -76,11 +62,7 @@ export default function AuthorizePage() {
 
         <div className="flex-1 flex items-center justify-center w-full">
           <div className="w-full sm:max-w-md">
-            {error && (
-              <div className="mb-4">
-                <p className="text-red-600">{error}</p>
-              </div>
-            )}
+          {error && <Text variant="warn">{error}</Text>}
             {!githubLinked ? (
               <LinkOrgForm />
             ) : (

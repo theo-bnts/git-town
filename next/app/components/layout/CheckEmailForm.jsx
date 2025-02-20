@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Cookies from 'js-cookie';
 
 import { getEmailAddress } from '@/app/services/users/emailAddress/getEmailAddress';
 import { postTemporaryCode } from '@/app/services/users/id/temporaryCode/postTemporaryCode';
@@ -37,13 +38,13 @@ const CheckEmailForm = ({ onSuccess }) => {
 
     setIsLoading(true);
     try {
-      const emailData = await getEmailAddress(trimmedEmail);
-      document.cookie = `userId=${emailData.Id}; path=/;`;
+      const data = await getEmailAddress(trimmedEmail);
+      Cookies.set('userId', data.Id, { expires: 7, sameSite: 'strict', path: '/' });
 
-      if (!emailData.PasswordDefined) {
-        await postTemporaryCode(emailData.Id);
+      if (!data.PasswordDefined) {
+        await postTemporaryCode(data.Id);
       }
-      onSuccess(emailData.Id, emailData.PasswordDefined, trimmedEmail);
+      onSuccess(data.Id, data.PasswordDefined, trimmedEmail);
     } catch (err) {
       setError(err.message);
     } finally {
