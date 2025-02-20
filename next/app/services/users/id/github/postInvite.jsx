@@ -1,5 +1,5 @@
 // app/services/users/id/github/postInvite.jsx
-import { joinOrganizationRoute } from "@/app/services/routes";
+import { githubInviteRoute } from "@/app/services/routes";
 import { handleApiError } from "@/app/services/errorHandler";
 
 /**
@@ -12,7 +12,7 @@ import { handleApiError } from "@/app/services/errorHandler";
  * @throws {Error} - En cas d’erreur de la requête.
  */
 export default async function postInvite(userId, token) {
-  const url = joinOrganizationRoute(userId);
+  const url = githubInviteRoute(userId);
   const res = await fetch(url, {
     method: "POST",
     headers: {

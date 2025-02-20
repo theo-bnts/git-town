@@ -1,5 +1,5 @@
 // app/services/users/id/github/postOAuthCode.jsx
-import { githubRoute } from "@/app/services/routes";
+import { githubOAuthRoute } from "@/app/services/routes";
 import { handleApiError } from "@/app/services/errorHandler";
 
 /**
@@ -13,7 +13,7 @@ import { handleApiError } from "@/app/services/errorHandler";
  * @throws {Error} - En cas d’erreur de la requête.
  */
 export default async function postOAuthCode(userId, code, token) {
-  const url = githubRoute(userId);
+  const url = githubOAuthRoute(userId);
   const res = await fetch(url, {
     method: "POST",
     headers: {

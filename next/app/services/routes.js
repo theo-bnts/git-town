@@ -2,7 +2,7 @@
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-export const publicUserRoute = (email) =>
+export const publicRoute = (email) =>
   `${API_BASE_URL}/users/${encodeURIComponent(email)}/public`;
 
 export const tokenRoute = (userId) =>
@@ -14,8 +14,8 @@ export const temporaryCodeRoute = (userId) =>
 export const passwordRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}/password`;
 
-export const githubRoute = (userId) =>
+export const githubOAuthRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}/github/oauth-code`;
 
-export const joinOrganizationRoute = (userId) =>
+export const githubInviteRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}/github/invite`;

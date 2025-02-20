@@ -1,4 +1,4 @@
-import { publicUserRoute } from "@/app/services/routes";
+import { publicRoute } from "@/app/services/routes";
 import { handleApiError } from "@/app/services/errorHandler";
 
 /**
@@ -10,7 +10,7 @@ import { handleApiError } from "@/app/services/errorHandler";
  * @throws {Error} - En cas d’erreur de la requête.
  */
 export async function getEmailAddress(emailAddress) {
-  const url = publicUserRoute(emailAddress);
+  const url = publicRoute(emailAddress);
   const res = await fetch(url);
   const data = await res.json();
 
