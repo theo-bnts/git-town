@@ -18,22 +18,19 @@ export async function middleware(request) {
         const userData = await apiResponse.json();
 
         if (!userData.GitHubId) {
-          if (request.nextUrl.pathname !== "/login/link") {
+          if (request.nextUrl.pathname === "/login/authorize" && request.nextUrl.searchParams.get("code")) {
+            return NextResponse.next();
+          } else if (request.nextUrl.pathname !== "/login/link") {
             return NextResponse.redirect(new URL("/login/link", request.url));
           }
-        }
-        else {
-          if (userData.GitHubOrganizationMember) {
-            if (
-              request.nextUrl.pathname === "/login/authorize" ||
-              request.nextUrl.pathname === "/login/link"
-            ) {
-              return NextResponse.redirect(new URL("/home", request.url));
-            }
-          }
-          else {
+        } else {
+          if (!userData.GitHubOrganizationMember) {
             if (request.nextUrl.pathname !== "/login/authorize") {
               return NextResponse.redirect(new URL("/login/authorize", request.url));
+            }
+          } else {
+            if (request.nextUrl.pathname.startsWith("/login")) {
+              return NextResponse.redirect(new URL("/home", request.url));
             }
           }
         }

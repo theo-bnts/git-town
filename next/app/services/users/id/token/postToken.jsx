@@ -10,7 +10,7 @@ import { handleApiError } from "@/app/services/errorHandler";
  * @returns {Promise<Object>} - L’objet contenant le token.
  * @throws {Error} - En cas d’erreur de la requête.
  */
-export async function postToken(userId, password) {
+export default async function postToken(userId, password) {
   const url = tokenRoute(userId);
   const res = await fetch(url, {
     method: "POST",

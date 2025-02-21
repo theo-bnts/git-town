@@ -3,8 +3,8 @@
 
 import React, { useState } from 'react';
 
-import { getEmailAddress } from '@/app/services/users/emailAddress/getEmailAddress';
-import { postTemporaryCode } from '@/app/services/users/id/temporaryCode/postTemporaryCode';
+import getEmailAddress from '@/app/services/users/emailAddress/getEmailAddress';
+import postTemporaryCode from '@/app/services/users/id/temporaryCode/postTemporaryCode';
 
 import { isEmailValid } from '@/app/services/validators';
 import { setCookie }  from '@/app/services/cookies';

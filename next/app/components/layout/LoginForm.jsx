@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 
 import { InfoIcon, MailIcon } from '@primer/octicons-react';
-import { postToken } from '@/app/services/users/id/token/postToken';
+import postToken from '@/app/services/users/id/token/postToken';
 
 import { isPasswordValid } from '@/app/services/validators';
 import { setCookie } from '@/app/services/cookies';

@@ -2,7 +2,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+
 import Image from 'next/image';
 
 import postOAuthCode from '@/app/services/users/id/github/postOAuthCode';
@@ -15,10 +16,10 @@ import LinkOrgForm from '../../components/layout/LinkOrgForm';
 
 export default function AuthorizePage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const code = searchParams.get('code');
+  const router = useRouter();
 
-  const [githubLinked, setGithubLinked] = useState(false);
+  const [githubLinked, setGithubLinked] = useState(!code);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -30,8 +31,9 @@ export default function AuthorizePage() {
         try {
           await postOAuthCode(userId, code, token);
           setGithubLinked(true);
+          console.log('GitHub linked');
         } catch (err) {
-          setError(err.message);
+          router.push('/login/link');
         }
       };
 
@@ -45,7 +47,15 @@ export default function AuthorizePage() {
     if (error) {
       router.push("/login/link");
     }
-  }, [error, router]);
+  }, [error]);
+
+  useEffect(() => {
+    if (githubLinked) {
+      setTimeout(() => {
+        router.push("/home");
+      }, 2500);
+    }
+  }, [githubLinked]);  
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -70,8 +80,8 @@ export default function AuthorizePage() {
 
         <div className="flex-1 flex items-center justify-center w-full">
           <div className="w-full sm:max-w-md">
-            {!githubLinked ? (
-              <LinkOrgForm />
+            {githubLinked ? (
+              <LinkOrgForm router={router} />
             ) : (
               <div className="text-center">
                 <p>En cours de liaison avec GitHub...</p>

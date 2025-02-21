@@ -9,3 +9,8 @@ export const isPasswordValid = (password) => {
   const minLength = Number(process.env.NEXT_PUBLIC_USER_PASSWORD_MIN_LENGTH);
   return password.length >= minLength;
 };
+
+export const isTokenValid = (token) => {
+  const pattern = Number(process.env.NEXT_PUBLIC_USER_TOKEN_LENGTH);
+  return token.length === pattern;
+}

@@ -11,7 +11,7 @@ import { handleApiError } from "@/app/services/errorHandler";
  * @returns {Promise<Object>} - La réponse du serveur.
  * @throws {Error} - En cas d’erreur de la requête.
  */
-export async function postPassword(userId, temporaryCode, newPassword) {
+export default async function postPassword(userId, temporaryCode, newPassword) {
   const url = passwordRoute(userId);
   const res = await fetch(url, {
     method: "POST",

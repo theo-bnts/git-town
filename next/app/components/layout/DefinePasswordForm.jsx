@@ -4,9 +4,10 @@
 import React, { useState } from 'react';
 import { InfoIcon } from '@primer/octicons-react';
 
-import { postPassword } from '@/app/services/users/id/password/postPassword';
+import postPassword from '@/app/services/users/id/password/postPassword';
 
 import { isPasswordValid } from '@/app/services/validators';
+import { isTokenValid } from '@/app/services/validators';
 
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
@@ -33,6 +34,10 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
     }
     if (newPassword.trim() !== confirmPassword.trim()) {
       setError("Les mots de passe ne correspondent pas.");
+      return;
+    }
+    if (!isTokenValid(code)) {
+      setError("Code invalide, veuillez réessayer.");
       return;
     }
     if (!userId) {

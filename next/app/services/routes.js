@@ -5,6 +5,9 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 export const publicRoute = (email) =>
   `${API_BASE_URL}/users/${encodeURIComponent(email)}/public`;
 
+export const userRoute = (userId) =>
+  `${API_BASE_URL}/users/${userId}`;
+
 export const tokenRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}/token`;
 
