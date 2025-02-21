@@ -37,7 +37,7 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
       return;
     }
     if (!isTokenValid(code)) {
-      setError("Code invalide, veuillez réessayer.");
+      setError("Le code temporaire doit contenir 6 caractères.");
       return;
     }
     if (!userId) {
