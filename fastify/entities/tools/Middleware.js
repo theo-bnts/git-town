@@ -12,9 +12,9 @@ export default class Middleware {
 
   static async assertGitHubWebhookAuthentication(request) {
     const { 'x-hub-signature-256': signature } = request.headers;
-    const { body } = request;
+    const { rawBody } = request;
 
-    if (signature === undefined || signature === null || signature !== `sha256=${Security.hashGitHubWebhookSecret(body)}`) {
+    if (signature === undefined || signature === null || signature !== `sha256=${Security.hashGitHubWebhookSecret(rawBody)}`) {
       throw { statusCode: 401, error: 'INVALID_SIGNATURE' };
     }
   }

@@ -28,10 +28,10 @@ export default class Security {
       .digest('hex');
   }
 
-  static hashGitHubWebhookSecret(body) {
+  static hashGitHubWebhookSecret(rawBody) {
     return crypto
       .createHmac('sha256', process.env.GITHUB_WEBHOOKS_SECRET)
-      .update(body.toString())
+      .update(rawBody)
       .digest('hex');
   }
 }

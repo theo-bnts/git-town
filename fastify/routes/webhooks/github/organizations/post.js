@@ -53,11 +53,18 @@ export default async function route(app) {
         required: ['action', 'membership', 'organization'],
       },
     },
+    config: {
+      rawBody: true,
+    },
     preHandler: async (request) => {
       await Middleware.assertGitHubWebhookAuthentication(request);
     },
     handler: async (request) => {
       const { action, membership: { user: { id: gitHubUserId } } } = request.body;
+
+      if (!await User.isGitHubIdInserted(BigInt(gitHubUserId))) {
+        throw { statusCode: 404, error: 'UNKNOWN_GITHUB_USER_ID' };
+      }
 
       const user = await User.fromGitHubId(BigInt(gitHubUserId));
 
