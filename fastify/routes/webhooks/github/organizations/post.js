@@ -31,7 +31,7 @@ export default async function route(app) {
                 properties: {
                   id: {
                     type: 'integer',
-                    min: process.env.USER_GITHUB_ID_MIN,
+                    minimum: Number(process.env.USER_GITHUB_ID_MIN),
                   },
                 },
                 required: ['id'],
@@ -59,7 +59,7 @@ export default async function route(app) {
     handler: async (request) => {
       const { action, membership: { user: { id: gitHubUserId } } } = request.body;
 
-      const user = await User.fromGitHubId(gitHubUserId);
+      const user = await User.fromGitHubId(BigInt(gitHubUserId));
 
       user.GitHubOrganizationMember = action === 'member_added';
 
