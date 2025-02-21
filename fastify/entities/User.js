@@ -247,6 +247,41 @@ export default class User {
     );
   }
 
+  static async fromGitHubId(gitHubId) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          email_address,
+          password_hash_salt,
+          password_hash,
+          full_name,
+          role_id,
+          github_organization_member
+        FROM public.user
+        WHERE github_id = $1::bigint
+      `,
+      [gitHubId],
+    );
+
+    const role = await Role.fromKeyword('user');
+
+    return new this(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      row.email_address,
+      row.password_hash_salt,
+      row.password_hash,
+      row.full_name,
+      role,
+      gitHubId,
+      row.github_organization_member,
+    );
+  }
+
   static async all() {
     const rows = await DatabasePool.Instance.execute(
       /* sql */ `
