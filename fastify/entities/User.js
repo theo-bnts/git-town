@@ -266,7 +266,7 @@ export default class User {
       [gitHubId],
     );
 
-    const role = await Role.fromKeyword('user');
+    const role = await Role.fromKeyword(row.role_id);
 
     return new this(
       row.id,

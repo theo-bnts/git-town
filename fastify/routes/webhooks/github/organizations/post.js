@@ -68,9 +68,11 @@ export default async function route(app) {
 
       const user = await User.fromGitHubId(BigInt(gitHubUserId));
 
-      user.GitHubOrganizationMember = action === 'member_added';
+      if (user.GitHubOrganizationMember !== (action === 'member_added')) {
+        user.GitHubOrganizationMember = !user.GitHubOrganizationMember;
 
-      await user.update();
+        await user.update();
+      }
 
       return user;
     },
