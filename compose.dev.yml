@@ -10,6 +10,8 @@ services:
       - postgres_data_volume:/var/lib/postgresql/data:rw
     networks:
       - postgres_network
+    ports:
+      - 5432:5432
   nginx:
     image: nginx:1.26-alpine
     container_name: git_town_nginx
@@ -19,6 +21,8 @@ services:
       - nginx_cache:/var/cache/nginx:rw
     networks:
       - nginx_network
+    ports:
+      - 8080:80
   fastify:
     depends_on:
       - postgres
@@ -30,17 +34,19 @@ services:
     command: >
       sh -c "
         npm install --no-save &&
-        npm run start
+        npm run dev
       "
     env_file:
       - ./fastify/.env
     volumes:
-      - ./fastify:/app:ro
+      - ./fastify:/app:rw
       - fastify_node_modules:/app/node_modules:rw
     networks:
       - fastify_network
       - postgres_network
       - nginx_network
+    ports:
+      - 8081:80
   next:
     image: node:22-slim
     container_name: git_town_next
@@ -49,16 +55,18 @@ services:
     command: >
       sh -c "
         npm install --no-save &&
-        npm run start
+        npm run dev
       "
     env_file:
       - ./next/.env
     volumes:
-      - ./next:/app:ro
+      - ./next:/app:rw
       - next_node_modules:/app/node_modules:rw
       - next_cache:/app/.next:rw
     networks:
       - next_network
+    ports:
+      - 8082:80
 
 volumes:
   postgres_data_volume:
