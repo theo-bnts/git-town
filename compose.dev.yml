@@ -12,21 +12,20 @@ services:
       - postgres_network
     ports:
       - 5432:5432
-  nginx:
-    image: nginx:1.26-alpine
-    container_name: git_town_nginx
+  squid:
+    image: ubuntu/squid:6.6-24.04_beta
+    container_name: git_town_squid
     restart: unless-stopped
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - nginx_cache:/var/cache/nginx:rw
+      - ./squid/squid.conf:/etc/squid/squid.conf:ro
     networks:
-      - nginx_network
+      - squid_network
     ports:
-      - 8080:80
+      - 3128:3128
   fastify:
     depends_on:
       - postgres
-      - nginx
+      - squid
     image: node:22-slim
     container_name: git_town_fastify
     restart: unless-stopped
@@ -44,7 +43,7 @@ services:
     networks:
       - fastify_network
       - postgres_network
-      - nginx_network
+      - squid_network
     ports:
       - 8081:80
   next:
@@ -71,8 +70,6 @@ services:
 volumes:
   postgres_data_volume:
     name: git_town_postgres_data_volume
-  nginx_cache:
-    name: git_town_nginx_cache
   fastify_node_modules:
     name: git_town_fastify_node_modules
   next_node_modules:
@@ -84,9 +81,9 @@ networks:
   postgres_network:
     driver: bridge
     name: git_town_postgres_network
-  nginx_network:
+  squid_network:
     driver: bridge
-    name: git_town_nginx_network
+    name: git_town_squid_network
   fastify_network:
     driver: bridge
     name: git_town_fastify_network
