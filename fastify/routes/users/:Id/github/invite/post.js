@@ -1,4 +1,4 @@
-import GitHubOrganization from '../../../../../entities/tools/GitHubOrganization.js';
+import GitHubApp from '../../../../../entities/tools/GitHubApp.js';
 import Middleware from '../../../../../entities/tools/Middleware.js';
 import User from '../../../../../entities/User.js';
 
@@ -51,7 +51,7 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'ALREADY_MEMBER' };
       }
 
-      await GitHubOrganization.fromEnvironment().invite(user);
+      await GitHubApp.fromEnvironment().inviteToOrganization(user);
     },
   });
 }

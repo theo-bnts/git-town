@@ -34,12 +34,11 @@ export default class TemporaryCode {
     this.UpdatedAt = row.updated_at;
   }
 
-  toJSON() {
+  toPublicJSON() {
     return {
       Id: this.Id,
       CreatedAt: this.CreatedAt,
-      UpdatedAt: this.UpdatedAt,
-      User: this.User,
+      User: this.User.toPublicJSON(),
     };
   }
 

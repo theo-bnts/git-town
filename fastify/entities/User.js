@@ -124,6 +124,16 @@ export default class User {
     );
   }
 
+  async delete() {
+    await DatabasePool.Instance.execute(
+      /* sql */ `
+        DELETE FROM public.user
+        WHERE id = $1::uuid
+      `,
+      [this.Id],
+    );
+  }
+
   toJSON() {
     return {
       Id: this.Id,
@@ -135,6 +145,13 @@ export default class User {
       Role: this.Role,
       GitHubId: this.GitHubId,
       GitHubOrganizationMember: this.GitHubOrganizationMember,
+    };
+  }
+
+  toPublicJSON() {
+    return {
+      Id: this.Id,
+      PasswordDefined: this.isPasswordDefined(),
     };
   }
 

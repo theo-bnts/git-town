@@ -31,10 +31,7 @@ export default async function route(app) {
 
       const user = await User.fromEmailAddress(emailAddress);
 
-      return {
-        Id: user.Id,
-        PasswordDefined: user.isPasswordDefined(),
-      };
+      return user.toPublicJSON();
     },
   });
 }

@@ -48,7 +48,7 @@ export default async function route(app) {
         temporaryCode,
       );
 
-      return temporaryCode;
+      return temporaryCode.toPublicJSON();
     },
   });
 }

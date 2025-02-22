@@ -23,8 +23,8 @@ const app = fastify({
   },
 });
 
-await app.register(rawBody, {
-  global: false,
+await app.register(cors, {
+  origin: process.env.CORS_ORIGIN,
 });
 
 await app.register(rateLimit, {
@@ -42,8 +42,8 @@ await app.register(rateLimit, {
   errorResponseBuilder: () => ({ statusCode: 429, error: 'RATE_LIMIT_EXCEEDED' }),
 });
 
-await app.register(cors, {
-  origin: process.env.CORS_ORIGIN,
+await app.register(rawBody, {
+  global: false,
 });
 
 await app.register(autoLoad, {
