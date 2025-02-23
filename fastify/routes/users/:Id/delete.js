@@ -44,10 +44,13 @@ export default async function route(app) {
       const requestedUser = await User.fromId(id);
 
       // TODO: Remove test
+      const githubApp = GitHubApp.fromEnvironment();
       // eslint-disable-next-line no-console
-      console.log(await GitHubApp.fromEnvironment().getOrganizationInvitations());
+      console.log(await githubApp.getOrganizationInvitations());
       // eslint-disable-next-line no-console
-      console.log((await GitHubApp.fromEnvironment().getRateLimit()).rate.used);
+      console.log(await githubApp.getOrganizationInvitations());
+      // eslint-disable-next-line no-console
+      console.log((await githubApp.getRateLimit()).rate);
       return;
 
       // eslint-disable-next-line no-unreachable

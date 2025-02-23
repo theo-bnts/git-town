@@ -29,6 +29,15 @@ export default class GitHubApp {
     );
   }
 
+  // WARNING: For development purposes only
+  async getInstallationToken() {
+    const { token } = await this.Octokit.auth({
+      type: 'installation',
+    });
+
+    return token;
+  }
+
   async getUser(applicationUser) {
     const { data: user } = await this.Octokit.rest.users.getById({
       account_id: Number(applicationUser.GitHubId),

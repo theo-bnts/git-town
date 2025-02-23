@@ -11,11 +11,12 @@ services:
     networks:
       - postgres_network
   squid:
-    image: ubuntu/squid:6.6-24.04_beta
+    image: ghcr.io/b4tman/squid-ssl-bump:6.6
     container_name: git_town_squid
     restart: unless-stopped
     volumes:
       - ./squid/squid.conf:/etc/squid/squid.conf:ro
+      - ./squid/combined.pem:/etc/squid/combined.pem:ro
     networks:
       - squid_network
   fastify:
