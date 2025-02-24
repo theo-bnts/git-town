@@ -1,0 +1,28 @@
+/* /app/styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-color: hsl(0, 0%, 100%);      /* #FFFFFF 100% */
+  --primary-color-hover: hsl(0, 0%, 90%);  /* #F7F7F7 100% */
+  --secondary-color: hsl(0, 0%, 0%);      /* #000000 100% */
+  --accent-color: hsl(187, 47%, 33%);     /* #2A727E 100% */
+  --accent-color-hover: hsl(187, 55%, 37%);/* #2A8692 100% */
+  --selected-color: hsl(240, 77%, 61%);   /* #5656E4 100% */
+  --warn-color: hsl(344, 100%, 41%);      /* #D20038 100% */
+  --warn-color-hover: hsl(344, 100%, 45%);/* #E6003D 100% */
+  --hint-color: hsl(0, 0%, 53%);          /* #888888 100% */
+  --popup-color: hsla(0, 0%, 0%, 0.75);   /* #000000 75%  */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+
+  }
+}
+
+body {
+  background: var(--primary-color);
+  font-family: var(--font);
+}
