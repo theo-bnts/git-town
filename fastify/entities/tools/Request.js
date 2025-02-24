@@ -14,7 +14,13 @@ export default class Request {
 
     const auth = authHeader.parse(request.headers.authorization);
 
-    return Token.isValidValue(auth.token);
+    if (!Token.isValidValue(auth.token)) {
+      return false;
+    }
+
+    const token = await Token.fromValue(auth.token);
+
+    return token.isValid();
   }
 
   static async getUsedToken(request) {

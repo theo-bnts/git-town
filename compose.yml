@@ -6,16 +6,34 @@ services:
     env_file:
       - ./postgres/.env
     volumes:
-      - postgres_data_volume:/var/lib/postgresql/data:rw
       - ./postgres:/docker-entrypoint-initdb.d:ro
+      - postgres_data_volume:/var/lib/postgresql/data:rw
     networks:
       - postgres_network
-    # Remove the following 2 lines in production
-    ports:
-      - 5432:5432
+  varnish:
+    image: varnish:7.6-alpine
+    container_name: git_town_varnish
+    restart: unless-stopped
+    volumes:
+      - ./varnish/default.vcl:/etc/varnish/default.vcl:ro
+    networks:
+      - varnish_network
+  hitch:
+    depends_on:
+      - varnish
+    image: hitch:1.8
+    container_name: git_town_hitch
+    restart: unless-stopped
+    volumes:
+      - ./hitch/hitch.conf:/etc/hitch/hitch.conf:ro
+      - ./hitch/combined.pem:/etc/hitch/combined.pem:ro
+    networks:
+      - hitch_network
+      - varnish_network
   fastify:
     depends_on:
       - postgres
+      - hitch
     image: node:22-slim
     container_name: git_town_fastify
     restart: unless-stopped
@@ -23,21 +41,17 @@ services:
     command: >
       sh -c "
         npm install --no-save &&
-        npm run dev
+        npm run start
       "
     env_file:
       - ./fastify/.env
     volumes:
       - ./fastify:/app:ro
-      # Remove the following line in production
-      - ./fastify:/app:rw
       - fastify_node_modules:/app/node_modules:rw
     networks:
       - fastify_network
       - postgres_network
-    # Remove the following 2 lines in production
-    ports:
-      - 8080:80
+      - hitch_network
   next:
     image: node:22-slim
     container_name: git_town_next
@@ -46,21 +60,16 @@ services:
     command: >
       sh -c "
         npm install --no-save &&
-        npm run dev
+        npm run start
       "
     env_file:
       - ./next/.env
     volumes:
       - ./next:/app:ro
-      # Remove the following line in production
-      - ./next:/app:rw
       - next_node_modules:/app/node_modules:rw
       - next_cache:/app/.next:rw
     networks:
       - next_network
-    # Remove the following 2 lines in production
-    ports:
-      - 8081:80
 
 volumes:
   postgres_data_volume:
@@ -76,6 +85,12 @@ networks:
   postgres_network:
     driver: bridge
     name: git_town_postgres_network
+  varnish_network:
+    driver: bridge
+    name: git_town_varnish_network
+  hitch_network:
+    driver: bridge
+    name: git_town_hitch_network
   fastify_network:
     driver: bridge
     name: git_town_fastify_network

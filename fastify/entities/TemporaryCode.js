@@ -34,12 +34,11 @@ export default class TemporaryCode {
     this.UpdatedAt = row.updated_at;
   }
 
-  toJSON() {
+  toPublicJSON() {
     return {
       Id: this.Id,
       CreatedAt: this.CreatedAt,
-      UpdatedAt: this.UpdatedAt,
-      User: this.User,
+      User: this.User.toPublicJSON(),
     };
   }
 
@@ -58,7 +57,7 @@ export default class TemporaryCode {
           AND tc2.created_at > tc.created_at
         )
       `,
-      [user.Id, value, process.env.TEMPORARY_CODE_EXPIRATION_SECONDS],
+      [user.Id, value, Number(process.env.TEMPORARY_CODE_EXPIRATION_SECONDS)],
     );
 
     return row.count === 1n;

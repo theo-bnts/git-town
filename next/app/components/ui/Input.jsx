@@ -1,9 +1,12 @@
 // app/components/ui/Input.jsx
+
+'use client';
+
 import React, { useState } from 'react';
 
 import { inputStyles } from '@/app/styles/tailwindStyles';
 
-const Input = ({ variant, placeholder, value: propValue, onChange, disabled, ...props }) => {
+export default function Input({ variant, placeholder, value: propValue, onChange, disabled, ...props }) {
   const [localValue, setLocalValue] = useState('');
   const value = propValue !== undefined ? propValue : localValue;
 
@@ -26,5 +29,3 @@ const Input = ({ variant, placeholder, value: propValue, onChange, disabled, ...
     />
   );
 };
-
-export default Input;

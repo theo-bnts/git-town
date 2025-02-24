@@ -77,6 +77,7 @@ export default async function route(app) {
         fullName,
         role,
         null,
+        false,
       );
 
       await user.insert();

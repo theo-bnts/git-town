@@ -7,7 +7,7 @@ export async function middleware(request) {
   if (token && userId) {
     try {
       const apiResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
@@ -30,7 +30,7 @@ export async function middleware(request) {
             }
           } else {
             if (request.nextUrl.pathname.startsWith("/login")) {
-              return NextResponse.redirect(new URL("/home", request.url));
+              return NextResponse.redirect(new URL("/", request.url));
             }
           }
         }

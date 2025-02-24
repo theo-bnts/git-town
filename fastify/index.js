@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import fastify from 'fastify';
 import { join } from 'desm';
 import rateLimit from '@fastify/rate-limit';
+import rawBody from 'fastify-raw-body';
 
 import DatabasePool from './entities/tools/DatabasePool.js';
 import MailTransporter from './entities/tools/MailTransporter.js';
@@ -11,43 +12,50 @@ import Request from './entities/tools/Request.js';
 DatabasePool.Instance = new DatabasePool();
 MailTransporter.Instance = new MailTransporter();
 
+/* eslint-disable-next-line no-extend-native */
+BigInt.prototype.toJSON = function toJSON() {
+  return this.toString();
+};
+
 const app = fastify({
   logger: {
     level: process.env.SERVER_LOG_LEVEL,
   },
 });
 
+await app.register(cors, {
+  origin: process.env.CORS_ORIGIN,
+});
+
+await app.register(rateLimit, {
+  max: Number(process.env.RATE_LIMIT_AUTHENTICATED_MAX),
+  timeWindow: process.env.RATE_LIMIT_TIME_WINDOW,
+  hook: 'preHandler',
+  allowList: async (request) => (!await Request.isAuthenticated(request)),
+  keyGenerator: async (request) => {
+    if (await Request.isAuthenticated(request)) {
+      const token = await Request.getUsedToken(request);
+      return token.User.Id;
+    }
+    return null;
+  },
+  errorResponseBuilder: () => ({ statusCode: 429, error: 'RATE_LIMIT_EXCEEDED' }),
+});
+
+await app.register(rawBody, {
+  global: false,
+});
+
+await app.register(autoLoad, {
+  dir: join(import.meta.url, 'routes'),
+  dirNameRoutePrefix: false,
+});
+
 app.listen(
-  { host: process.env.SERVER_HOST, port: process.env.SERVER_PORT },
+  { host: process.env.SERVER_HOST, port: Number(process.env.SERVER_PORT) },
   (error) => {
     if (error) {
       throw error;
     }
   },
 );
-
-app.register(rateLimit, {
-  max: process.env.RATE_LIMIT_AUTHENTICATED_MAX,
-  timeWindow: process.env.RATE_LIMIT_TIME_WINDOW,
-  hook: 'preHandler',
-  allowList: async (request) => !(await Request.isAuthenticated(request)),
-  keyGenerator: async (request) => {
-    const token = await Request.getUsedToken(request);
-    return token.User.Id;
-  },
-  errorResponseBuilder: () => ({ statusCode: 429, error: 'RATE_LIMIT_EXCEEDED' }),
-});
-
-app.register(cors, {
-  origin: process.env.CORS_ORIGIN,
-});
-
-app.register(autoLoad, {
-  dir: join(import.meta.url, 'routes'),
-  dirNameRoutePrefix: false,
-});
-
-/* eslint-disable-next-line no-extend-native */
-BigInt.prototype.toJSON = function toJSON() {
-  return this.toString();
-};
