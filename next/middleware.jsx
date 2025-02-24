@@ -30,7 +30,7 @@ export async function middleware(request) {
             }
           } else {
             if (request.nextUrl.pathname.startsWith("/login")) {
-              return NextResponse.redirect(new URL("/home", request.url));
+              return NextResponse.redirect(new URL("/", request.url));
             }
           }
         }
