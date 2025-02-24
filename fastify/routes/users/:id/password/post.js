@@ -1,20 +1,26 @@
-import Security from '../../../entities/tools/Security.js';
-import TemporaryCode from '../../../entities/TemporaryCode.js';
-import User from '../../../entities/User.js';
+import Middleware from '../../../../entities/tools/Middleware.js';
+import Security from '../../../../entities/tools/Security.js';
+import TemporaryCode from '../../../../entities/TemporaryCode.js';
+import User from '../../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/user/password',
+    url: '/users/:Id/password',
     schema: {
+      params: {
+        type: 'object',
+        properties: {
+          Id: {
+            type: 'string',
+            pattern: process.env.UUID_PATTERN,
+          },
+        },
+        additionalProperties: false,
+      },
       body: {
         type: 'object',
         properties: {
-          EmailAddress: {
-            type: 'string',
-            format: 'email',
-            pattern: process.env.USER_EMAIL_ADDRESS_PATTERN,
-          },
           TemporaryCode: {
             type: 'string',
             pattern: process.env.TEMPORARY_CODE_PATTERN,
@@ -25,28 +31,23 @@ export default async function route(app) {
             pattern: process.env.GENERIC_PATTERN,
           },
         },
-        required: ['EmailAddress', 'TemporaryCode', 'Password'],
+        additionalProperties: false,
+        required: ['TemporaryCode', 'Password'],
       },
     },
     config: {
       rateLimit: {
         max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
         allowList: false,
-        keyGenerator: (request) => `${request.routerPath}-${request.body.EmailAddress}`,
+        keyGenerator: (request) => `${request.routeOptions.url}-${request.params.Id}`,
       },
     },
-    handler: async function handler(request) {
-      const {
-        EmailAddress: emailAddress,
-        Password: password,
-        TemporaryCode: temporaryCode,
-      } = request.body;
+    preHandler: async (request) => Middleware.assertUserIdExists(request),
+    handler: async (request) => {
+      const { Id: id } = request.params;
+      const { Password: password, TemporaryCode: temporaryCode } = request.body;
 
-      if (!(await User.isEmailAddressInserted(emailAddress))) {
-        throw { statusCode: 404, error: 'UNKNOWN_EMAIL_ADDRESS' };
-      }
-
-      const user = await User.fromEmailAddress(emailAddress);
+      const user = await User.fromId(id);
 
       if (!(await TemporaryCode.isValidValue(temporaryCode, user))) {
         throw { statusCode: 401, error: 'INVALID_TEMPORARY_CODE' };

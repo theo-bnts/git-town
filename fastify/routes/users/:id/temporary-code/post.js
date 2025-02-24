@@ -1,0 +1,54 @@
+import MailTransporter from '../../../../entities/tools/MailTransporter.js';
+import Middleware from '../../../../entities/tools/Middleware.js';
+import Security from '../../../../entities/tools/Security.js';
+import TemporaryCode from '../../../../entities/TemporaryCode.js';
+import User from '../../../../entities/User.js';
+
+export default async function route(app) {
+  app.route({
+    method: 'POST',
+    url: '/users/:Id/temporary-code',
+    schema: {
+      params: {
+        type: 'object',
+        properties: {
+          Id: {
+            type: 'string',
+            pattern: process.env.UUID_PATTERN,
+          },
+        },
+        additionalProperties: false,
+      },
+    },
+    config: {
+      rateLimit: {
+        max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
+        allowList: false,
+        keyGenerator: (request) => `${request.routeOptions.url}-${request.params.Id}`,
+      },
+    },
+    preHandler: async (request) => Middleware.assertUserIdExists(request),
+    handler: async (request) => {
+      const { Id: id } = request.params;
+
+      const user = await User.fromId(id);
+
+      const temporaryCode = new TemporaryCode(
+        null,
+        null,
+        null,
+        user,
+        Security.generateTemporaryCodeValue(),
+      );
+
+      await temporaryCode.insert();
+
+      await MailTransporter.Instance.sendTemporaryCode(
+        user.EmailAddress,
+        temporaryCode,
+      );
+
+      return temporaryCode;
+    },
+  });
+}

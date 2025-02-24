@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@primer/octicons-react": "19",
+    "js-cookie": "3",
     "next": "15",
     "react": "19",
     "react-dom": "19"

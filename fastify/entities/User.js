@@ -43,9 +43,13 @@ export default class User {
     this.GitHubId = gitHubId;
   }
 
+  isPasswordDefined() {
+    return this.PasswordHash !== null;
+  }
+
   isValidPassword(password) {
     return (
-      this.PasswordHash !== null
+      this.isPasswordDefined()
       && Security.hashPassword(password, this.PasswordHashSalt) === this.PasswordHash
     );
   }
@@ -117,10 +121,24 @@ export default class User {
       CreatedAt: this.CreatedAt,
       UpdatedAt: this.UpdatedAt,
       EmailAddress: this.EmailAddress,
+      PasswordDefined: this.isPasswordDefined(),
       FullName: this.FullName,
       Role: this.Role,
       GitHubId: this.GitHubId,
     };
+  }
+
+  static async isIdInserted(id) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.user
+        WHERE id = $1::uuid
+      `,
+      [id],
+    );
+
+    return row.count === 1n;
   }
 
   static async isEmailAddressInserted(emailAddress) {
