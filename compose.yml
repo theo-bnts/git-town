@@ -10,19 +10,30 @@ services:
       - postgres_data_volume:/var/lib/postgresql/data:rw
     networks:
       - postgres_network
-  squid:
-    image: ghcr.io/b4tman/squid-ssl-bump:6.6
-    container_name: git_town_squid
+  varnish:
+    image: varnish:7.6-alpine
+    container_name: git_town_varnish
     restart: unless-stopped
     volumes:
-      - ./squid/squid.conf:/etc/squid/squid.conf:ro
-      - ./squid/combined.pem:/etc/squid/combined.pem:ro
+      - ./varnish/default.vcl:/etc/varnish/default.vcl:ro
     networks:
-      - squid_network
+      - varnish_network
+  hitch:
+    depends_on:
+      - varnish
+    image: hitch:1.8
+    container_name: git_town_hitch
+    restart: unless-stopped
+    volumes:
+      - ./hitch/hitch.conf:/etc/hitch/hitch.conf:ro
+      - ./hitch/combined.pem:/etc/hitch/combined.pem:ro
+    networks:
+      - hitch_network
+      - varnish_network
   fastify:
     depends_on:
       - postgres
-      - squid
+      - hitch
     image: node:22-slim
     container_name: git_town_fastify
     restart: unless-stopped
@@ -40,7 +51,7 @@ services:
     networks:
       - fastify_network
       - postgres_network
-      - squid_network
+      - hitch_network
   next:
     image: node:22-slim
     container_name: git_town_next
@@ -74,9 +85,12 @@ networks:
   postgres_network:
     driver: bridge
     name: git_town_postgres_network
-  squid_network:
+  varnish_network:
     driver: bridge
-    name: git_town_squid_network
+    name: git_town_varnish_network
+  hitch_network:
+    driver: bridge
+    name: git_town_hitch_network
   fastify_network:
     driver: bridge
     name: git_town_fastify_network
