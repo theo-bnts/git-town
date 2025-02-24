@@ -12,7 +12,17 @@ services:
       - postgres_network
     ports:
       - 5432:5432
+  haproxy:
+    image: haproxy:3.1-alpine
+    container_name: git_town_haproxy
+    restart: unless-stopped
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      - haproxy_network
   varnish:
+    depends_on:
+      - haproxy
     image: varnish:7.6-alpine
     container_name: git_town_varnish
     restart: unless-stopped
@@ -20,6 +30,7 @@ services:
       - ./varnish/default.vcl:/etc/varnish/default.vcl:ro
     networks:
       - varnish_network
+      - haproxy_network
   hitch:
     depends_on:
       - varnish
@@ -91,6 +102,9 @@ networks:
   postgres_network:
     driver: bridge
     name: git_town_postgres_network
+  haproxy_network:
+    driver: bridge
+    name: git_town_haproxy_network
   varnish_network:
     driver: bridge
     name: git_town_varnish_network

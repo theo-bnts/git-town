@@ -1,14 +1,14 @@
 vcl 4.1;
 
 backend default {
-  .host = "api.github.com";
-  .port = "443";
+  .host = "haproxy";
+  .port = "80";
 }
 
 sub vcl_recv {
-  if (req.http.Authorization) {
-    unset req.http.Authorization;
-  }
+  //if (req.http.Authorization) {
+  //  unset req.http.Authorization;
+  //}
 
   if (req.method != "GET" && req.method != "HEAD") {
     return (pass);
