@@ -10,6 +10,14 @@ services:
       - postgres_data_volume:/var/lib/postgresql/data:rw
     networks:
       - postgres_network
+  haproxy:
+    image: haproxy:3.1-alpine
+    container_name: git_town_haproxy
+    restart: unless-stopped
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      - haproxy_network
   varnish:
     image: varnish:7.6-alpine
     container_name: git_town_varnish
@@ -26,7 +34,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./hitch/hitch.conf:/etc/hitch/hitch.conf:ro
-      - ./hitch/combined.pem:/etc/hitch/combined.pem:ro
+      - ./hitch/.combined.pem:/etc/hitch/.combined.pem:ro
     networks:
       - hitch_network
       - varnish_network
@@ -85,6 +93,9 @@ networks:
   postgres_network:
     driver: bridge
     name: git_town_postgres_network
+  haproxy_network:
+    driver: bridge
+    name: git_town_haproxy_network
   varnish_network:
     driver: bridge
     name: git_town_varnish_network
