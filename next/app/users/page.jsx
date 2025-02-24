@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Table from "@/app/components/layouts/table/Table";
+import Table from "@/app/components/layout/table/Table";
 import { PencilIcon, MarkGithubIcon, DuplicateIcon } from "@primer/octicons-react";
 import { getUserIdByEmail, getToken } from "@/config/api/token";
 import { getUsers } from "@/config/api/users";
