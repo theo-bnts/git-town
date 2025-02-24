@@ -51,7 +51,7 @@ export default function AuthorizePage() {
   useEffect(() => {
     if (githubLinked) {
       setTimeout(() => {
-        router.push("/home");
+        router.push("/");
       }, 2500);
     }
   }, [githubLinked]);  

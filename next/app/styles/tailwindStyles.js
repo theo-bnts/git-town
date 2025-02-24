@@ -6,6 +6,7 @@ const textStyles = {
   boldWhite: `text-[var(--primary-color)] font-bold`,
   hint: `text-[var(--hint-color)]`,
   warn: `text-[var(--warn-color)]`,
+  url: `underline underline-offset-4 decoration-dotted decoration-gray-400 transition-transform duration-200 hover:scale-105 hover:text-[var(--accent-color)]`
 };
 
 const buttonStyles = {
@@ -13,6 +14,7 @@ const buttonStyles = {
   warn: `bg-[var(--warn-color)] py-2 px-4 rounded-[12.5px] hover:bg-[var(--warn-color-hover)] transition-colors duration-200`,
   loading: `bg-[var(--accent-color)] py-2 px-4 rounded-[12.5px]`,
   outline: `bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)] hover:bg-[var(--primary-color-hover)] transition-colors duration-200`,
+  action: `p-2 transition-transform duration-200 hover:scale-110 hover:text-[var(--accent-color)]`
 };
 
 const cardStyles = {

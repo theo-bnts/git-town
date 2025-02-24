@@ -3,36 +3,35 @@
 
 import React, { useEffect, useState } from 'react';
 
+import getUser from '@/app/services/api/users/id/getUser';
 import postInvite from '@/app/services/api/users/id/github/postInvite';
 
-import getUser from '@/app/services/api/users/id/getUser';
 import { getCookie } from '@/app/services/cookies';
+
+import { textStyles } from '@/app/styles/tailwindStyles';
 
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
-import Text from '@/app/components/ui/Text';
 
-const LinkOrgForm = ({ router }) => {
+export default function LinkOrgForm({ router }) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const userId = getCookie('userId');
   const token = getCookie('token');
 
   const handleJoinOrg = async () => {
-    if (!userId || !token) {
-      return;
-    }
-    setIsLoading(true);
-    try {
-      await postInvite(userId, token);
-      window.open(
-        process.env.NEXT_PUBLIC_GITHUB_JOIN_ORGANIZATION_URL,
-        '_blank',
-        'width=600,height=600,scrollbars=yes,resizable=yes'
-      );
-    } catch (err) {
-      setError(err.message);
-    } finally {
+    if (userId && token) {
+      setIsLoading(true);
+      try {
+        await postInvite(userId, token);
+        window.open(
+          process.env.NEXT_PUBLIC_GITHUB_JOIN_ORGANIZATION_URL,
+          '_blank',
+          'width=600,height=600,scrollbars=yes,resizable=yes'
+        );
+      } catch (err) {
+        setError(err.message);
+      }
       setIsLoading(false);
     }
   };
@@ -43,10 +42,10 @@ const LinkOrgForm = ({ router }) => {
         const user = await getUser(userId, token);
         if (user?.GitHubOrganizationMember) {
           clearInterval(interval);
-          router.push('/home');
+          router.push('/');
         }
       } catch (e) {
-        console.error(e);
+        setError(e.message);
       }
     }, 2500);
 
@@ -56,23 +55,17 @@ const LinkOrgForm = ({ router }) => {
   return (
     <Card variant="default">
       <div className="space-y-4">
-        <Text variant="bold">
-          Dernière étape ! (promis)
-        </Text>
-        <Text variant="default">
+        <p className={textStyles.bold}>Dernière étape ! (promis)</p>
+        <p className={textStyles.default}>
           Cliquez sur le bouton ci-dessous pour rejoindre l’organisation.
-        </Text>
-        {error && <Text variant="warn">{error}</Text>}
+        </p>
+        {error && <p className={textStyles.warn}>{error}</p>}
         <div className="flex justify-center">
           <Button variant="default" onClick={handleJoinOrg} type="button" loading={isLoading}>
-            <Text variant="boldWhite">
-              Rejoindre l’organisation
-            </Text>
+            <p className={textStyles.boldWhite}>Rejoindre l’organisation</p>
           </Button>
         </div>
       </div>
     </Card>
   );
 };
-
-export default LinkOrgForm;

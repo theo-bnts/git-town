@@ -1,11 +1,12 @@
 // app/components/ui/Button.jsx
+
+'use client';
+
 import React from 'react';
 
-import LoadingSpinner from '@/app/components/ui/LoadingSpinner';
+import { buttonStyles, spinnerStyles } from '@/app/styles/tailwindStyles';
 
-import { buttonStyles } from '@/app/styles/tailwindStyles';
-
-const Button = ({ variant, children, loading, ...props }) => {
+export default function Button({ variant, loading, children, ...props }) {
   const appliedStyle = loading
     ? `${buttonStyles[variant]} opacity-70 cursor-not-allowed relative`
     : buttonStyles[variant];
@@ -15,11 +16,9 @@ const Button = ({ variant, children, loading, ...props }) => {
       {children}
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <LoadingSpinner />
+          <div className={spinnerStyles.default}/>
         </div>
       )}
     </button>
   );
 };
-
-export default Button;

@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation';
 
 import postTemporaryCode from '@/app/services/api/users/id/temporaryCode/postTemporaryCode';
 
-import CheckEmailForm from '@/app/components/layout/CheckEmailForm';
-import DefinePasswordForm from '@/app/components/layout/DefinePasswordForm';
-import LoginForm from '@/app/components/layout/LoginForm';
+import CheckEmailForm from '@/app/components/layout/forms/auth/CheckEmailForm';
+import DefinePasswordForm from '@/app/components/layout/forms/auth/DefinePasswordForm';
+import LoginForm from '@/app/components/layout/forms/auth/LoginForm';
 
-const ManageAuthForm = () => {
+export default function ManageAuthForm() {
   const [step, setStep] = useState('email');
   const [userId, setUserId] = useState(null);
   const [email, setEmail] = useState('');
@@ -22,22 +22,17 @@ const ManageAuthForm = () => {
     setStep(passwordDefined ? 'login' : 'definePassword');
   };
 
-  const handleLoginSuccess = () => {
-    router.push('/home');
-  };
+  const handleLoginSuccess = () => router.push('/');
 
-  const handleDefinePasswordSuccess = () => {
-    router.push('/home');
-  };
+  const handleDefinePasswordSuccess = () => router.push('/');
 
-  const handleBackToEmail = () => {
-    setStep('email');
-  };
+  const handleBackToEmail = () => setStep('email');
 
   const handleGoToDefinePassword = async () => {
-    if (!userId) return;
-    await postTemporaryCode(userId);
-    setStep('definePassword');
+    if (userId) {
+      await postTemporaryCode(userId);
+      setStep('definePassword');
+    }
   };
 
   return (
@@ -65,5 +60,3 @@ const ManageAuthForm = () => {
     </>
   );
 };
-
-export default ManageAuthForm;

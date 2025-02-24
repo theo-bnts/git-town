@@ -8,6 +8,9 @@ export const publicRoute = (email) =>
 export const userRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}`;
 
+export const usersRoute = () =>
+  `${API_BASE_URL}/users`;
+
 export const tokenRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}/token`;
 

@@ -1,17 +1,16 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useRef } from "react";
-import TableHeader from "./TableHeader";
-import TableRow from "./TableRow";
-import EmptyTableCard from "./EmptyTableCard";
+import React, { useState, useEffect, useRef } from 'react';
 
-const Table = ({ columns, data }) => {
+import EmptyTableCard from '@/app/components/layout/table/EmptyTableCard';
+import TableHeader from '@/app/components/layout/table/TableHeader';
+import TableRow from '@/app/components/layout/table/TableRow';
+
+export default function Table ({ columns, data }) {
   const [sortedData, setSortedData] = useState(data);
-
   const [visibleCount, setVisibleCount] = useState(0);
   const [sortColumn, setSortColumn] = useState(null);
-  const [sortOrder, setSortOrder] = useState("asc");
-
+  const [sortOrder, setSortOrder] = useState('asc');
   const containerRef = useRef(null);
   const sentinelRef = useRef(null);
 
@@ -37,11 +36,9 @@ const Table = ({ columns, data }) => {
     const observer = new IntersectionObserver(
       (entries) => {
         const lastEntry = entries[0];
-        if (lastEntry.isIntersecting) {
-          loadMoreRows();
-        }
+        if (lastEntry.isIntersecting) loadMoreRows();
       },
-      { threshold: 0.1, rootMargin: "0px 0px 20px 0px" }
+      { threshold: 0.1, rootMargin: '0px 0px 20px 0px' }
     );
     if (sentinelRef.current) {
       observer.observe(sentinelRef.current);
@@ -50,20 +47,21 @@ const Table = ({ columns, data }) => {
   }, [sentinelRef, sortedData, visibleCount]);
 
   const handleSort = (columnKey) => {
-    const newOrder =
-      sortColumn === columnKey && sortOrder === "asc" ? "desc" : "asc";
+    const newOrder = (sortColumn === columnKey && sortOrder === 'asc') 
+      ? 'desc' 
+      : 'asc';
     setSortColumn(columnKey);
     setSortOrder(newOrder);
 
     const sorted = [...data].sort((a, b) => {
       if (!columnKey) return 0;
-      return newOrder === "asc"
+      return newOrder === 'asc'
         ? a[columnKey] > b[columnKey]
           ? 1
           : -1
         : a[columnKey] < b[columnKey]
-        ? 1
-        : -1;
+          ? 1
+          : -1;
     });
     setSortedData(sorted);
     if (containerRef.current) {
@@ -109,7 +107,7 @@ const Table = ({ columns, data }) => {
             ) : (
               <tr>
                 <td colSpan={columns.length} className="py-4">
-                  <EmptyTableCard message="Aucune donnée disponible" />
+                  <EmptyTableCard />
                 </td>
               </tr>
             )}
@@ -119,5 +117,3 @@ const Table = ({ columns, data }) => {
     </div>
   );
 };
-
-export default Table;

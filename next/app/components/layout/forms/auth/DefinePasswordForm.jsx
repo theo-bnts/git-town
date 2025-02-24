@@ -1,25 +1,27 @@
 // app/components/layout/DefinePasswordForm.jsx
-'use client';
-
 import React, { useState } from 'react';
 import { InfoIcon } from '@primer/octicons-react';
+
+import { userRoute } from '@/app/services/routes';
 
 import postPassword from '@/app/services/api/users/id/password/postPassword';
 import { isPasswordValid } from '@/app/services/validators';
 import { isTokenValid } from '@/app/services/validators';
 
+import { textStyles } from '@/app/styles/tailwindStyles';
+
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import Input from '@/app/components/ui/Input';
-import Text from '@/app/components/ui/Text';
 
-const DefinePasswordForm = ({ userId, email, onBack }) => {
+export default function DefinePasswordForm({ userId, email, onBack }) {
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [tooltips, setTooltips] = useState({ code: false, password: false });
+  const router = userRoute();
 
   const validatePassword = (password) => isPasswordValid(password);
 
@@ -28,29 +30,21 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
     setError('');
 
     if (!validatePassword(newPassword.trim())) {
-      setError("Le nouveau mot de passe doit contenir au moins 8 caractères.");
-      return;
-    }
-    if (newPassword.trim() !== confirmPassword.trim()) {
-      setError("Les mots de passe ne correspondent pas.");
-      return;
-    }
-    if (!isTokenValid(code)) {
-      setError("Le code temporaire doit contenir 6 caractères.");
-      return;
-    }
-    if (!userId) {
-      setError("Identifiant utilisateur manquant, veuillez réessayer.");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      await postPassword(userId, code, newPassword);
-      window.location.href = '/login';
-    } catch (err) {
-      setError(err.message);
-    } finally {
+      setError('Le nouveau mot de passe doit contenir au moins 8 caractères.');
+    } else if (newPassword.trim() !== confirmPassword.trim()) {
+      setError('Les mots de passe ne correspondent pas.');
+    } else if (!isTokenValid(code)) {
+      setError('Le code temporaire doit contenir 6 caractères.');
+    } else if (!userId) {
+      setError('Identifiant utilisateur manquant, veuillez réessayer.');
+    } else {
+      setIsLoading(true);
+      try {
+        await postPassword(userId, code, newPassword);
+        router.replace('/login');
+      } catch (err) {
+        setError(err.message);
+      }
       setIsLoading(false);
     }
   };
@@ -67,12 +61,12 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Text variant="bold">Adresse e-mail universitaire</Text>
+            <p className={textStyles.bold}>Adresse e-mail universitaire</p>
             <Input variant="disabled" value={email} disabled />
           </div>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <Text variant="bold">Code reçu par e-mail</Text>
+            <p className={textStyles.bold}>Code reçu par e-mail</p>
               <div
                 className="relative inline-block"
                 onMouseLeave={() => handleTooltipToggle('code', false)}
@@ -86,9 +80,9 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
                 {tooltips.code && (
                   <div className="absolute w-40 lg:w-80 p-1 z-50">
                     <Card variant="info">
-                      <Text variant="defaultWhite">
+                      <p className={textStyles.defaultWhite}>
                         Nous venons de vous envoyer le code par email, il est valide 5 minutes !
-                      </Text>
+                      </p>
                     </Card>
                   </div>
                 )}
@@ -103,9 +97,7 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
           </div>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <Text variant="bold">
-                Nouveau mot de passe
-              </Text>
+              <p className={textStyles.bold}>Nouveau mot de passe</p>
               <div
                 className="relative inline-block"
                 onMouseLeave={() => handleTooltipToggle('password', false)}
@@ -119,9 +111,9 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
                 {tooltips.password && (
                   <div className="absolute w-40 lg:w-80 p-1 z-50">
                     <Card variant="info">
-                      <Text variant="defaultWhite">
+                      <p className={textStyles.defaultWhite}>
                         Votre mot de passe doit contenir au moins 8 caractères.
-                      </Text>
+                      </p>
                     </Card>
                   </div>
                 )}
@@ -136,9 +128,7 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
             />
           </div>
           <div className="space-y-2">
-            <Text variant="bold">
-              Confirmation mot de passe
-            </Text>
+            <p className={textStyles.bold}>Confirmation mot de passe</p>
             <Input
               variant="default"
               placeholder="Saisir à nouveau votre nouveau mot de passe"
@@ -147,17 +137,13 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
-          {error && <Text variant="warn">{error}</Text>}
+          {error && <p className={textStyles.warn}>{error}</p>}
           <div className="flex justify-between">
             <Button variant="outline" type="button" onClick={onBack}>
-              <Text variant="bold">
-                Précédent
-              </Text>
+              <p className={textStyles.bold}>Précédent</p>
             </Button>
             <Button variant="default" type="submit" loading={isLoading}>
-              <Text variant="boldWhite">
-                Définir le mot de passe
-              </Text>
+              <p className={textStyles.boldWhite}>Définir le mot de passe</p>
             </Button>
           </div>
         </div>
@@ -165,5 +151,3 @@ const DefinePasswordForm = ({ userId, email, onBack }) => {
     </Card>
   );
 };
-
-export default DefinePasswordForm;

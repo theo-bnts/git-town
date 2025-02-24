@@ -4,20 +4,22 @@
 import React, { useState } from 'react';
 import { InfoIcon, MailIcon } from '@primer/octicons-react';
 
-import { setCookie } from '@/app/services/cookies';
 import postToken from '@/app/services/api/users/id/token/postToken';
+
 import { isPasswordValid } from '@/app/services/validators';
+import { setCookie } from '@/app/services/cookies';
+
+import { textStyles } from '@/app/styles/tailwindStyles';
 
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import Input from '@/app/components/ui/Input';
-import Text from '@/app/components/ui/Text';
 
-const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) => {
+export default function LoginForm({ userId, email, onSuccess, onBack, onGoToDefinePassword }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isEnvelopeTooltipOpen, setIsEnvelopeTooltipOpen] = useState(false);
+  const [tooltip, setTooltip] = useState(false);
 
   const validatePassword = (password) => isPasswordValid(password);
 
@@ -26,34 +28,31 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
     setError('');
 
     if (!userId) {
-      setError("Identifiant utilisateur manquant, veuillez réessayer.");
-      return;
-    }
-    if (!validatePassword(password)) {
-      setError("Le mot de passe doit contenir au moins 8 caractères.");
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const data = await postToken(userId, password);
-      setCookie('token', data.Value);
-      onSuccess(data.Value);
-    } catch (err) {
-      setError(err.message);
-    } finally {
+      setError('Identifiant utilisateur manquant, veuillez réessayer.');
+    } else if (!validatePassword(password)) {
+      setError('Le mot de passe doit contenir au moins 8 caractères.');
+    } else {
+      setIsLoading(true);
+      try {
+        const data = await postToken(userId, password);
+        setCookie('token', data.Value);
+        onSuccess(data.Value);
+      } catch (err) {
+        setError(err.message);
+      }
       setIsLoading(false);
     }
   };
 
   const handleMailIconClick = async () => {
     if (!userId) {
-      setError("Identifiant utilisateur manquant.");
-      return;
-    }
-    try {
-      await onGoToDefinePassword();
-    } catch (err) {
-      setError(err.message);
+      setError('Identifiant utilisateur manquant.');
+    } else {
+      try {
+        await onGoToDefinePassword();
+      } catch (err) {
+        setError(err.message);
+      }
     }
   };
 
@@ -62,32 +61,28 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Text variant="bold">
-              Adresse e-mail universitaire
-            </Text>
+            <p className={textStyles.bold}>Adresse e-mail universitaire</p>
             <Input variant="disabled" value={email} disabled />
           </div>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <Text variant="bold">
-                Mot de passe
-              </Text>
+              <p className={textStyles.bold}>Mot de passe</p>
               <div
                 className="relative inline-block"
-                onMouseLeave={() => setIsEnvelopeTooltipOpen(false)}
+                onMouseLeave={() => setTooltip(false)}
               >
                 <InfoIcon
                   size={16}
                   className="cursor-pointer"
-                  onClick={() => setIsEnvelopeTooltipOpen(!isEnvelopeTooltipOpen)}
-                  onMouseEnter={() => setIsEnvelopeTooltipOpen(true)}
+                  onClick={() => setTooltip(!tooltip)}
+                  onMouseEnter={() => setTooltip(true)}
                 />
-                {isEnvelopeTooltipOpen && (
+                {tooltip && (
                   <div className="absolute w-40 lg:w-80 p-1 z-50">
                     <Card variant="info">
-                      <Text variant="defaultWhite">
+                      <p className={textStyles.defaultWhite}>
                         Vous pouvez changer votre mot de passe en cliquant sur l'enveloppe.
-                      </Text>
+                      </p>
                     </Card>
                   </div>
                 )}
@@ -108,17 +103,13 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
               />
             </div>
           </div>
-          {error && <Text variant="warn">{error}</Text>}
+          {error && <p className={textStyles.warn}>{error}</p>}
           <div className="flex justify-between">
             <Button variant="outline" type="button" onClick={onBack}>
-              <Text variant="bold">
-                Précédent
-              </Text>
+              <p className={textStyles.bold}>Précédent</p>
             </Button>
             <Button variant="default" type="submit" loading={isLoading}>
-              <Text variant="boldWhite">
-                Connexion
-              </Text>
+              <p className={textStyles.boldWhite}>Connexion</p>
             </Button>
           </div>
         </div>
@@ -126,5 +117,3 @@ const LoginForm = ({ userId, email, onSuccess, onBack, onGoToDefinePassword }) =
     </Card>
   );
 };
-
-export default LoginForm;

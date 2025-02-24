@@ -1,7 +1,10 @@
-import React from 'react';
-import SortButton from '../../ui/SortButton';
+'use client';
 
-const TableHeader = ({ columns, onSort, sortColumn, sortOrder }) => {
+import React from 'react';
+
+import SortButton from '@/app/components/ui/SortButton';
+
+export default function TableHeader({ columns, onSort, sortColumn, sortOrder }) {
   const textColumnsCount = columns.filter(col => col.key !== 'actions').length;
   const thBaseClasses = "py-4 px-6 text-left align-middle select-none";
   const baseTransitionClasses = "transition-colors duration-300 whitespace-nowrap";
@@ -49,5 +52,3 @@ const TableHeader = ({ columns, onSort, sortColumn, sortOrder }) => {
     </thead>
   );
 };
-
-export default TableHeader;
