@@ -8,7 +8,7 @@ export default class MailTransporter {
   constructor() {
     this.Transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
+      port: Number(process.env.SMTP_PORT),
       secure: process.env.SMTP_SECURE === 'true',
       authMethod: process.env.SMTP_AUTH_METHOD,
       auth: {

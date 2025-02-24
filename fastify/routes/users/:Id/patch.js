@@ -102,7 +102,7 @@ export default async function route(app) {
         }
 
         if (requestedUser.Id === authenticatedUser.Id) {
-          throw { statusCode: 403, error: 'OWN_ROLE' };
+          throw { statusCode: 403, error: 'SELF_ROLE' };
         }
 
         if (roleKeyword === 'student' || requestedUser.Role.Keyword === 'student') {

@@ -1,11 +1,11 @@
-import Middleware from '../../../../entities/tools/Middleware.js';
-import OctokitFactory from '../../../../entities/tools/OctokitFactory.js';
-import User from '../../../../entities/User.js';
+import GitHubUser from '../../../../../entities/tools/GitHubUser.js';
+import Middleware from '../../../../../entities/tools/Middleware.js';
+import User from '../../../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/users/:Id/github',
+    url: '/users/:Id/github/oauth-code',
     schema: {
       headers: {
         type: 'object',
@@ -53,16 +53,19 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'GITHUB_ID_ALREADY_DEFINED' };
       }
 
-      let userOctokit;
+      let gitHubUser;
       try {
-        userOctokit = await OctokitFactory.user(oAuthCode);
+        gitHubUser = await GitHubUser.fromOAuthCode(oAuthCode);
       } catch (error) {
-        throw { statusCode: 401, error: 'INVALID_OAUTH_APP_CODE' };
+        throw { statusCode: 401, error: 'INVALID_OAUTH_CODE' };
       }
 
-      const { data: { Id: gitHubId } } = await userOctokit.rest.users.getAuthenticated();
+      user.GitHubId = await gitHubUser.getUserId();
 
-      user.GitHubId = BigInt(gitHubId);
+      if (await User.isGitHubIdInserted(user.GitHubId)) {
+        throw { statusCode: 409, error: 'DUPLICATE_GITHUB_ID' };
+      }
+
       await user.update();
 
       return user;

@@ -1,12 +1,12 @@
 import Middleware from '../../../../entities/tools/Middleware.js';
 import Security from '../../../../entities/tools/Security.js';
-import TemporaryCode from '../../../../entities/TemporaryCode.js';
+import Token from '../../../../entities/Token.js';
 import User from '../../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/users/:Id/password',
+    url: '/users/:Id/token',
     schema: {
       params: {
         type: 'object',
@@ -21,10 +21,6 @@ export default async function route(app) {
       body: {
         type: 'object',
         properties: {
-          TemporaryCode: {
-            type: 'string',
-            pattern: process.env.TEMPORARY_CODE_PATTERN,
-          },
           Password: {
             type: 'string',
             minLength: Number(process.env.USER_PASSWORD_MIN_LENGTH),
@@ -32,33 +28,38 @@ export default async function route(app) {
           },
         },
         additionalProperties: false,
-        required: ['TemporaryCode', 'Password'],
+        required: ['Password'],
       },
     },
     config: {
       rateLimit: {
         max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
         allowList: false,
-        keyGenerator: (request) => `${request.routeOptions.url}-${request.params.Id}`,
+        keyGenerator: (request) => `${request.params.Id}-${request.routeOptions.url}`,
       },
     },
     preHandler: async (request) => Middleware.assertUserIdExists(request),
     handler: async (request) => {
       const { Id: id } = request.params;
-      const { Password: password, TemporaryCode: temporaryCode } = request.body;
+      const { Password: password } = request.body;
 
       const user = await User.fromId(id);
 
-      if (!(await TemporaryCode.isValidValue(temporaryCode, user))) {
-        throw { statusCode: 401, error: 'INVALID_TEMPORARY_CODE' };
+      if (!user.isValidPassword(password)) {
+        throw { statusCode: 401, error: 'INVALID_PASSWORD' };
       }
 
-      await TemporaryCode.deleteAll(user);
+      const token = new Token(
+        null,
+        null,
+        null,
+        user,
+        Security.generateTokenValue(),
+      );
 
-      user.PasswordHashSalt = Security.generateHashSaltValue();
-      user.PasswordHash = Security.hashPassword(password, user.PasswordHashSalt);
+      await token.insert();
 
-      await user.update();
+      return token;
     },
   });
 }

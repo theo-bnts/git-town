@@ -23,6 +23,7 @@ CREATE TABLE public.user (
   full_name varchar(250) NOT NULL,
   role_id uuid NOT NULL,
   github_id int8 DEFAULT NULL,
+  github_organization_member boolean DEFAULT false NOT NULL,
   CONSTRAINT user_pk PRIMARY KEY (id),
   CONSTRAINT user_unique_email_address UNIQUE (email_address),
   CONSTRAINT user_check_email_address CHECK (email_address ~ '^[a-zA-Z0-9\._%+-]+@(?:etud\.)?u-picardie.fr$'),

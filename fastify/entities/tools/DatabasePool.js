@@ -8,11 +8,11 @@ export default class DatabasePool {
   constructor() {
     this.Pool = new pg.Pool({
       host: process.env.DATABASE_HOST,
-      port: process.env.DATABASE_PORT,
+      port: Number(process.env.DATABASE_PORT),
       user: process.env.DATABASE_USER_NAME,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      max: process.env.DATABASE_CONNECTIONS_LIMIT,
+      max: Number(process.env.DATABASE_CONNECTIONS_LIMIT),
     });
 
     pg.types.setTypeParser(pg.types.builtins.INT8, BigInt);

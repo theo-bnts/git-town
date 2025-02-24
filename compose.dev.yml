@@ -10,7 +10,19 @@ services:
       - postgres_data_volume:/var/lib/postgresql/data:rw
     networks:
       - postgres_network
+    ports:
+      - 5432:5432
+  haproxy:
+    image: haproxy:3.1-alpine
+    container_name: git_town_haproxy
+    restart: unless-stopped
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      - haproxy_network
   varnish:
+    depends_on:
+      - haproxy
     image: varnish:7.6-alpine
     container_name: git_town_varnish
     restart: unless-stopped
@@ -18,6 +30,7 @@ services:
       - ./varnish/default.vcl:/etc/varnish/default.vcl:ro
     networks:
       - varnish_network
+      - haproxy_network
   hitch:
     depends_on:
       - varnish
@@ -26,7 +39,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./hitch/hitch.conf:/etc/hitch/hitch.conf:ro
-      - ./hitch/combined.pem:/etc/hitch/combined.pem:ro
+      - ./hitch/.combined.pem:/etc/hitch/.combined.pem:ro
     networks:
       - hitch_network
       - varnish_network
@@ -41,17 +54,19 @@ services:
     command: >
       sh -c "
         npm install --no-save &&
-        npm run start
+        npm run dev
       "
     env_file:
       - ./fastify/.env
     volumes:
-      - ./fastify:/app:ro
+      - ./fastify:/app:rw
       - fastify_node_modules:/app/node_modules:rw
     networks:
       - fastify_network
       - postgres_network
       - hitch_network
+    ports:
+      - 8081:80
   next:
     image: node:22-slim
     container_name: git_town_next
@@ -60,16 +75,18 @@ services:
     command: >
       sh -c "
         npm install --no-save &&
-        npm run start
+        npm run dev
       "
     env_file:
       - ./next/.env
     volumes:
-      - ./next:/app:ro
+      - ./next:/app:rw
       - next_node_modules:/app/node_modules:rw
       - next_cache:/app/.next:rw
     networks:
       - next_network
+    ports:
+      - 8082:80
 
 volumes:
   postgres_data_volume:
@@ -85,6 +102,9 @@ networks:
   postgres_network:
     driver: bridge
     name: git_town_postgres_network
+  haproxy_network:
+    driver: bridge
+    name: git_town_haproxy_network
   varnish_network:
     driver: bridge
     name: git_town_varnish_network

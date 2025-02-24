@@ -19,8 +19,7 @@ export default async function route(app) {
     config: {
       rateLimit: {
         max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
-        allowList: false,
-        keyGenerator: (request) => `${request.routeOptions.url}-${request.query.EmailAddress}`,
+        keyGenerator: (request) => `${request.query.EmailAddress}-${request.routeOptions.url}`,
       },
     },
     handler: async (request) => {
@@ -32,10 +31,7 @@ export default async function route(app) {
 
       const user = await User.fromEmailAddress(emailAddress);
 
-      return {
-        Id: user.Id,
-        PasswordDefined: user.isPasswordDefined(),
-      };
+      return user.toPublicJSON();
     },
   });
 }
