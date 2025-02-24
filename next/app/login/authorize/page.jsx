@@ -11,7 +11,8 @@ import { getCookie } from '@/app/services/cookies';
 
 import gittownhublogo from '../../../public/assets/pictures/gittownhub.svg';
 import miageLogo from '../../../public/assets/pictures/miage.png';
-import LinkOrgForm from '../../components/layout/LinkOrgForm';
+
+import LinkOrgForm from '@/app/components/layout/forms/github/LinkOrgForm';
 
 export default function AuthorizePage() {
   const searchParams = useSearchParams();

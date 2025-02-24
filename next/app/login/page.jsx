@@ -3,10 +3,10 @@
 
 import Image from 'next/image';
 
-import ManageAuthForm from '@/app/components/layout/forms/auth/ManageAuthForm';
-
 import gittownlogo from '../../public/assets/pictures/gittown.svg';
 import miageLogo from '../../public/assets/pictures/miage.png';
+
+import ManageAuthForm from '@/app/components/layout/forms/auth/ManageAuthForm';
 
 export default function LoginPage() {
   return (

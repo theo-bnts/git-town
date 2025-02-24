@@ -4,8 +4,9 @@
 import Image from 'next/image';
 
 import gittownhublogo from '../../../public/assets/pictures/gittownhub.svg';
-import LinkGitForm from '../../components/layout/LinkGitForm';
 import miageLogo from '../../../public/assets/pictures/miage.png';
+
+import LinkGitForm from '@/app/components/layout/forms/github/LinkGitForm';
 
 export default function LinkPage() {
   return (
