@@ -3,10 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-
 import Image from 'next/image';
 
-import postOAuthCode from '@/app/services/users/id/github/postOAuthCode';
+import postOAuthCode from '@/app/services/api/users/id/github/postOAuthCode';
 
 import { getCookie } from '@/app/services/cookies';
 

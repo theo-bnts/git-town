@@ -4,8 +4,7 @@
 import React, { useState } from 'react';
 import { InfoIcon } from '@primer/octicons-react';
 
-import postPassword from '@/app/services/users/id/password/postPassword';
-
+import postPassword from '@/app/services/api/users/id/password/postPassword';
 import { isPasswordValid } from '@/app/services/validators';
 import { isTokenValid } from '@/app/services/validators';
 

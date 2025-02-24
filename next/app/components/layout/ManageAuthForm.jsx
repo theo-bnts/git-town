@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import postTemporaryCode from '@/app/services/users/id/temporaryCode/postTemporaryCode';
+import postTemporaryCode from '@/app/services/api/users/id/temporaryCode/postTemporaryCode';
 
 import CheckEmailForm from '@/app/components/layout/CheckEmailForm';
 import DefinePasswordForm from '@/app/components/layout/DefinePasswordForm';

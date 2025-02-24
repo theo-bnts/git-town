@@ -2,9 +2,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import postInvite from '@/app/services/users/id/github/postInvite';
-import getUser from '@/app/services/users/id/getUser';
+
+import postInvite from '@/app/services/api/users/id/github/postInvite';
+
+import getUser from '@/app/services/api/users/id/getUser';
 import { getCookie } from '@/app/services/cookies';
+
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import Text from '@/app/components/ui/Text';
