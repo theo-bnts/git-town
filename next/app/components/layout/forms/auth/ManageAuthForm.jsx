@@ -1,4 +1,5 @@
 // app/components/layout/ManageAuthForm.jsx
+
 'use client';
 
 import React, { useState } from 'react';
