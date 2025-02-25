@@ -3,8 +3,6 @@ import { createOAuthAppAuth, createOAuthUserAuth } from '@octokit/auth-oauth-app
 import { Octokit } from 'octokit';
 /* eslint-enable */
 
-import Proxy from './Proxy.js';
-
 export default class GitHubUser {
   Octokit;
 
@@ -26,9 +24,6 @@ export default class GitHubUser {
       new Octokit({
         authStrategy: createOAuthUserAuth,
         auth: oAuthUserAuth,
-        request: {
-          fetch: Proxy.fetch,
-        },
       }),
     );
   }

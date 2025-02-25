@@ -39,7 +39,12 @@ CREATE TABLE public.user (
   CONSTRAINT user_check_full_name CHECK (trim(full_name) <> ''),
   CONSTRAINT user_fk_role FOREIGN KEY (role_id) REFERENCES public.role(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT user_unique_github_id UNIQUE (github_id),
-  CONSTRAINT user_check_github_id CHECK (github_id IS NULL OR github_id >= 1)
+  CONSTRAINT user_check_github_id CHECK (github_id IS NULL OR github_id >= 1),
+  CONSTRAINT user_check_github_id_and_github_organization_member_dependent CHECK (
+    (github_id IS NULL AND github_organization_member = false)
+    OR
+    (github_id IS NOT NULL)
+  )
 );
 
 CREATE TABLE public.temporary_code (

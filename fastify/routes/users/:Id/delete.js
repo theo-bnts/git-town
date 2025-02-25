@@ -34,6 +34,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await Middleware.assertAuthentication(request);
       await Middleware.assertSufficientUserRole(request, 'administrator');
+      await Middleware.assertUserIdExists(request);
     },
     handler: async (request) => {
       const { Id: id } = request.params;
@@ -43,17 +44,6 @@ export default async function route(app) {
 
       const requestedUser = await User.fromId(id);
 
-      // TODO: Remove test
-      const githubApp = GitHubApp.fromEnvironment();
-      // eslint-disable-next-line no-console
-      console.log(await githubApp.getOrganizationInvitations());
-      // eslint-disable-next-line no-console
-      console.log(await githubApp.getOrganizationInvitations());
-      // eslint-disable-next-line no-console
-      console.log((await githubApp.getRateLimit()).rate);
-      return;
-
-      // eslint-disable-next-line no-unreachable
       if (requestedUser.Id === authenticatedUser.Id) {
         throw { statusCode: 403, error: 'SELF' };
       }
@@ -74,7 +64,7 @@ export default async function route(app) {
         const gitHubUser = await gitHubApp.getUser(requestedUser);
         const gitHubUsername = gitHubUser.Username;
 
-        if (await requestedUser.GitHubOrganizationMember()) {
+        if (await requestedUser.GitHubOrganizationMember) {
           await gitHubApp.removeFromOrganization(gitHubUsername);
         } else {
           const organizationInvitations = await gitHubApp.getOrganizationInvitations();

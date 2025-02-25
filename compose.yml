@@ -19,6 +19,8 @@ services:
     networks:
       - haproxy_network
   varnish:
+    depends_on:
+      - haproxy
     image: varnish:7.6-alpine
     container_name: git_town_varnish
     restart: unless-stopped
