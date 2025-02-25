@@ -19,7 +19,7 @@ export default async function route(app) {
     },
     preHandler: async (request) => {
       await Middleware.assertAuthentication(request);
-      await Middleware.assertSufficientUserRole(request, 'administrator');
+      await Middleware.assertSufficientUserRole(request, 'teacher');
     },
     handler: async () => {
       return await User.all();
