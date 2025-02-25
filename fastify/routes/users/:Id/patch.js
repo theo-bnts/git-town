@@ -60,6 +60,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await Middleware.assertAuthentication(request);
       await Middleware.assertSufficientUserRole(request, 'administrator');
+      await Middleware.assertUserIdExists(request);
     },
     handler: async (request) => {
       const { Id: id } = request.params;

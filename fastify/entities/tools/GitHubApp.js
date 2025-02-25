@@ -2,8 +2,6 @@ import { createAppAuth } from '@octokit/auth-app';
 // eslint-disable-next-line import/no-unresolved
 import { Octokit } from 'octokit';
 
-import Proxy from './Proxy.js';
-
 export default class GitHubApp {
   Octokit;
 
@@ -21,9 +19,6 @@ export default class GitHubApp {
           clientId: process.env.GITHUB_APP_CLIENT_ID,
           clientSecret: process.env.GITHUB_APP_CLIENT_SECRET,
           installationId: Number(process.env.GITHUB_APP_INSTALLATION_ID),
-        },
-        request: {
-          fetch: Proxy.fetch,
         },
       }),
     );
@@ -63,7 +58,7 @@ export default class GitHubApp {
   }
 
   async cancelOrganizationInvitation(invitationId) {
-    await this.Octokit.rest.orgs.cancelInvitationForUser({
+    await this.Octokit.rest.orgs.cancelInvitation({
       org: Number(process.env.GITHUB_ORGANIZATION_ID),
       invitation_id: invitationId,
     });
