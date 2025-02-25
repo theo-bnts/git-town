@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 
 export const setCookie = (key, value, options = {}) => {
   const validTime = new Date(Date.now() + 60 * 60 * 1000);
-  const defaultOptions = { expires: validTime, sameSite: 'strict', path: '/' };
+  const defaultOptions = { expires: validTime, sameSite: 'lax', path: '/'};
   return Cookies.set(key, value, { ...defaultOptions, ...options });
 };
 

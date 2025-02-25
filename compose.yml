@@ -28,6 +28,7 @@ services:
       - ./varnish/default.vcl:/etc/varnish/default.vcl:ro
     networks:
       - varnish_network
+      - haproxy_network
   hitch:
     depends_on:
       - varnish

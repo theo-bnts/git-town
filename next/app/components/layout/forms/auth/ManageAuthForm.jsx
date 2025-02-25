@@ -1,5 +1,4 @@
 // app/components/layout/ManageAuthForm.jsx
-
 'use client';
 
 import React, { useState } from 'react';
@@ -23,9 +22,9 @@ export default function ManageAuthForm() {
     setStep(passwordDefined ? 'login' : 'definePassword');
   };
 
-  const handleLoginSuccess = () => router.push('/');
+  const handleLoginSuccess = () => router.replace('/');
 
-  const handleDefinePasswordSuccess = () => router.push('/');
+  const handleDefinePasswordSuccess = () => setStep('login');
 
   const handleBackToEmail = () => setStep('email');
 

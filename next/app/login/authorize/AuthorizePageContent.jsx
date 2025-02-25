@@ -4,8 +4,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+
 import postOAuthCode from '@/app/services/api/users/id/github/postOAuthCode';
+
+import { API_ERRORS } from '@/app/services/errorCodes';
 import { getCookie } from '@/app/services/cookies';
+
 import gittownhublogo from '../../../public/assets/pictures/gittownhub.svg';
 import miageLogo from '../../../public/assets/pictures/miage.png';
 import LinkOrgForm from '@/app/components/layout/forms/github/LinkOrgForm';
@@ -27,9 +31,15 @@ export default function AuthorizePageContent() {
         try {
           await postOAuthCode(userId, code, token);
           setGithubLinked(true);
-          console.log('GitHub linked');
         } catch (err) {
-          router.push('/login/link');
+          if (err.response 
+              && err.response.status === 409
+              && err.message === API_ERRORS[409].ALREADY_MEMBER
+            ) {
+            router.replace('/');
+          } else {
+            router.push('/login/link');
+          }
         }
       };
 
@@ -46,12 +56,17 @@ export default function AuthorizePageContent() {
   }, [error]);
 
   useEffect(() => {
-    if (githubLinked) {
-      setTimeout(() => {
+    const handleFocus = () => {
+      if (githubLinked) {
         router.push("/");
-      }, 2500);
-    }
-  }, [githubLinked]);  
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [githubLinked, router]);
 
   return (
     <div className="flex flex-col min-h-screen">
