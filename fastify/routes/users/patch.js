@@ -1,12 +1,12 @@
-import Middleware from '../../../entities/tools/Middleware.js';
-import User from '../../../entities/User.js';
-import Request from '../../../entities/tools/Request.js';
-import Role from '../../../entities/Role.js';
+import Middleware from '../../entities/tools/Middleware.js';
+import User from '../../entities/User.js';
+import Request from '../../entities/tools/Request.js';
+import Role from '../../entities/Role.js';
 
 export default async function route(app) {
   app.route({
     method: 'PATCH',
-    url: '/users/:Id',
+    url: '/users',
     schema: {
       headers: {
         type: 'object',
@@ -18,19 +18,13 @@ export default async function route(app) {
         },
         required: ['authorization'],
       },
-      params: {
+      body: {
         type: 'object',
         properties: {
           Id: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
-        },
-        additionalProperties: false,
-      },
-      body: {
-        type: 'object',
-        properties: {
           EmailAddress: {
             type: 'string',
             format: 'email',
@@ -53,21 +47,21 @@ export default async function route(app) {
             required: ['Keyword'],
           },
         },
+        required: ['Id'],
         additionalProperties: false,
-        minProperties: 1,
+        minProperties: 2,
       },
     },
     preHandler: async (request) => {
       await Middleware.assertAuthentication(request);
       await Middleware.assertSufficientUserRole(request, 'administrator');
-      await Middleware.assertUserIdExists(request);
     },
     handler: async (request) => {
-      const { Id: id } = request.params;
-      const { EmailAddress: emailAddress, FullName: fullName, Role: role } = request.body;
+      const { Id: id, EmailAddress: emailAddress, FullName: fullName, Role: role } = request.body;
 
-      const token = await Request.getUsedToken(request);
-      const authenticatedUser = token.User;
+      if (!await User.isIdInserted(id)) {
+        throw { statusCode: 404, error: 'UNKNOWN_USER_ID' };
+      }
 
       const requestedUser = await User.fromId(id);
 
@@ -102,12 +96,15 @@ export default async function route(app) {
           throw { statusCode: 409, error: 'SAME_ROLE_KEYWORD' };
         }
 
-        if (requestedUser.Id === authenticatedUser.Id) {
-          throw { statusCode: 403, error: 'SELF_ROLE' };
-        }
-
         if (roleKeyword === 'student' || requestedUser.Role.Keyword === 'student') {
           throw { statusCode: 409, error: 'STUDENT_ROLE' };
+        }
+
+        const token = await Request.getUsedToken(request);
+        const authenticatedUser = token.User;
+
+        if (requestedUser.Id === authenticatedUser.Id) {
+          throw { statusCode: 403, error: 'SELF_ROLE' };
         }
 
         requestedUser.Role = await Role.fromKeyword(roleKeyword);

@@ -1,14 +1,14 @@
-import GitHubApp from '../../../entities/tools/GitHubApp.js';
-import Middleware from '../../../entities/tools/Middleware.js';
-import User from '../../../entities/User.js';
-import Request from '../../../entities/tools/Request.js';
-import UserRepository from '../../../entities/UserRepository.js';
-import UserPromotion from '../../../entities/UserPromotion.js';
+import GitHubApp from '../../entities/tools/GitHubApp.js';
+import Middleware from '../../entities/tools/Middleware.js';
+import User from '../../entities/User.js';
+import Request from '../../entities/tools/Request.js';
+import UserRepository from '../../entities/UserRepository.js';
+import UserPromotion from '../../entities/UserPromotion.js';
 
 export default async function route(app) {
   app.route({
     method: 'DELETE',
-    url: '/users/:Id',
+    url: '/users',
     schema: {
       headers: {
         type: 'object',
@@ -20,7 +20,7 @@ export default async function route(app) {
         },
         required: ['authorization'],
       },
-      params: {
+      body: {
         type: 'object',
         properties: {
           Id: {
@@ -28,21 +28,25 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
+        required: ['Id'],
         additionalProperties: false,
       },
     },
     preHandler: async (request) => {
       await Middleware.assertAuthentication(request);
       await Middleware.assertSufficientUserRole(request, 'administrator');
-      await Middleware.assertUserIdExists(request);
     },
     handler: async (request) => {
-      const { Id: id } = request.params;
+      const { Id: id } = request.body;
+
+      if (!await User.isIdInserted(id)) {
+        throw { statusCode: 404, error: 'UNKNOWN_USER_ID' };
+      }
+
+      const requestedUser = await User.fromId(id);
 
       const token = await Request.getUsedToken(request);
       const authenticatedUser = token.User;
-
-      const requestedUser = await User.fromId(id);
 
       if (requestedUser.Id === authenticatedUser.Id) {
         throw { statusCode: 403, error: 'SELF' };
@@ -54,7 +58,7 @@ export default async function route(app) {
       }
 
       // TODO: Test
-      if (await UserPromotion.isMemberOfAnyPromotion(requestedUser)) {
+      if (await UserPromotion.isUserInserted(requestedUser)) {
         throw { statusCode: 409, error: 'HAS_PROMOTIONS' };
       }
 

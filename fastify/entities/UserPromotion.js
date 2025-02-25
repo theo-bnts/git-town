@@ -1,4 +1,5 @@
 import DatabasePool from './tools/DatabasePool.js';
+import Promotion from './Promotion.js';
 
 export default class UserPromotion {
   Id;
@@ -38,14 +39,13 @@ export default class UserPromotion {
     await DatabasePool.Instance.execute(
       /* sql */ `
         DELETE FROM public.user_promotion
-        WHERE user_id = $1::uuid
-        AND promotion_id = $2::uuid
+        WHERE id = $1::uuid
       `,
-      [this.User.Id, this.Promotion.Id],
+      [this.Id],
     );
   }
 
-  static async isMemberOfAnyPromotion(user) {
+  static async isUserInserted(user) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
         SELECT COUNT(*) AS count
@@ -56,5 +56,62 @@ export default class UserPromotion {
     );
 
     return row.count > 0;
+  }
+
+  static async isUserAndPromotionInserted(user, promotion) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.user_promotion
+        WHERE user_promotion.user_id = $1::uuid
+        AND user_promotion.promotion_id = $2::uuid
+      `,
+      [user.Id, promotion.Id],
+    );
+
+    return row.count === 1n;
+  }
+
+  static async fromUserAndPromotion(user, promotion) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at
+        FROM public.user_promotion
+        WHERE user_id = $1::uuid
+        AND promotion_id = $2::uuid
+      `,
+      [user.Id, promotion.Id],
+    );
+
+    return new UserPromotion(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      user,
+      promotion,
+    );
+  }
+
+  static async getPromotionsForUser(user) {
+    const rows = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          user_id,
+          promotion_id
+        FROM public.user_promotion
+        WHERE user_id = $1::uuid
+      `,
+      [user.Id],
+    );
+
+    return Promise.all(
+      rows.map((row) => Promotion.fromId(row.promotion_id)),
+    );
   }
 }
