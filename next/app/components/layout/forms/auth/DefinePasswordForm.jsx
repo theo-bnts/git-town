@@ -1,8 +1,9 @@
 // app/components/layout/DefinePasswordForm.jsx
+'use client';
+
 import React, { useState } from 'react';
 import { InfoIcon } from '@primer/octicons-react';
-
-import { userRoute } from '@/app/services/routes';
+import { useRouter } from 'next/navigation';
 
 import postPassword from '@/app/services/api/users/id/password/postPassword';
 import { isPasswordValid } from '@/app/services/validators';
@@ -14,14 +15,14 @@ import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import Input from '@/app/components/ui/Input';
 
-export default function DefinePasswordForm({ userId, email, onBack }) {
+export default function DefinePasswordForm({ userId, email, onSuccess, onBack }) {
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [tooltips, setTooltips] = useState({ code: false, password: false });
-  const router = userRoute();
+  const router = useRouter();
 
   const validatePassword = (password) => isPasswordValid(password);
 
@@ -41,7 +42,7 @@ export default function DefinePasswordForm({ userId, email, onBack }) {
       setIsLoading(true);
       try {
         await postPassword(userId, code, newPassword);
-        router.replace('/login');
+        onSuccess();
       } catch (err) {
         setError(err.message);
       }

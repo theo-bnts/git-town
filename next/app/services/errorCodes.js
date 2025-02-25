@@ -30,7 +30,7 @@ export const API_ERRORS = {
     OWN_ROLE: "(409) : Vous ne pouvez pas vous attribuer ce rôle.",
     STUDENT_ROLE: "(409) : Le rôle étudiant n’est pas autorisé.",
     GITHUB_ID_ALREADY_DEFINED: "(409) : GitHub ID déjà défini.",
-    USER_ALREADY_ORGANIZATION_MEMBER: "(409) : Membre de l’organisation GitHub.",
+    ALREADY_MEMBER: "(409) : Membre de l’organisation GitHub.",
     DUPLICATE_GITHUB_ID: "(409) : GitHub ID déjà utilisé.",
     default: "(409) : Conflit de requête.",
   },
