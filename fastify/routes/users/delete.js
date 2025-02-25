@@ -53,7 +53,7 @@ export default async function route(app) {
       }
 
       // TODO: Test
-      if (await UserRepository.isCollaboratorOfAnyRepository(requestedUser)) {
+      if (await UserRepository.isUserInserted(requestedUser)) {
         throw { statusCode: 409, error: 'HAS_REPOSITORIES' };
       }
 

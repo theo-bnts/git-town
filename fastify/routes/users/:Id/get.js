@@ -34,9 +34,7 @@ export default async function route(app) {
     handler: async (request) => {
       const { Id: id } = request.params;
 
-      const user = await User.fromId(id);
-
-      return user;
+      return await User.fromId(id);
     },
   });
 }

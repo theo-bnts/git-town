@@ -110,9 +110,7 @@ export default async function route(app) {
         requestedUser.Role = await Role.fromKeyword(roleKeyword);
       }
 
-      await requestedUser.update();
-
-      return requestedUser;
+      return await requestedUser.update();
     },
   });
 }

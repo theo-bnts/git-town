@@ -1,10 +1,10 @@
 import Middleware from '../../entities/tools/Middleware.js';
-import User from '../../entities/User.js';
+import Promotion from '../../entities/Promotion.js';
 
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/users',
+    url: '/promotions',
     schema: {
       headers: {
         type: 'object',
@@ -22,7 +22,7 @@ export default async function route(app) {
       await Middleware.assertSufficientUserRole(request, 'administrator');
     },
     handler: async () => {
-      return await User.all();
+      return await Promotion.all();
     },
   });
 }

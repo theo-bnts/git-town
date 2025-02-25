@@ -44,7 +44,7 @@ export default class UserRepository {
     );
   }
 
-  static async isCollaboratorOfAnyRepository(user) {
+  static async isUserInserted(user) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
         SELECT COUNT(*) AS count

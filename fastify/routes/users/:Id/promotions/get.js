@@ -38,9 +38,7 @@ export default async function route(app) {
 
       const user = await User.fromId(id);
 
-      const userPromotions = await UserPromotion.getPromotionsForUser(user);
-
-      return userPromotions;
+      return await UserPromotion.getPromotionsForUser(user);
     },
   });
 }

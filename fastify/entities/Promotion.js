@@ -27,7 +27,7 @@ export default class Promotion {
   async insert() {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
-        INSERT INTO public.promotion (diploma, promotion_level, year)
+        INSERT INTO public.promotion (diploma_id, promotion_level_id, year)
         VALUES ($1::uuid, $2::integer, $3::integer)
         RETURNING id, created_at, updated_at
       `,
@@ -69,8 +69,8 @@ export default class Promotion {
           id,
           created_at,
           updated_at,
-          diploma,
-          promotion_level,
+          diploma_id,
+          promotion_level_id,
           year
         FROM public.promotion
         WHERE id = $1::uuid
@@ -78,7 +78,7 @@ export default class Promotion {
       [id],
     );
 
-    const diploma = await Diploma.fromId(row.diploma);
+    const diploma = await Diploma.fromId(row.diploma_id);
     const promotionLevel = await PromotionLevel.fromId(row.promotion_level);
 
     return new this(
@@ -88,6 +88,34 @@ export default class Promotion {
       diploma,
       promotionLevel,
       row.year,
+    );
+  }
+
+  static async all() {
+    const rows = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          diploma_id
+          promotion_level_id,
+          year
+        FROM public.promotion
+      `,
+    );
+
+    return Promise.all(
+      rows.map((row) => {
+        return new this(
+          row.id,
+          row.created_at,
+          row.updated_at,
+          Diploma.fromId(row.diploma_id),
+          PromotionLevel.fromId(row.promotion_level_id),
+          row.year,
+        );
+      }),
     );
   }
 }
