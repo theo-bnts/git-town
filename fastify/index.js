@@ -35,8 +35,10 @@ await app.register(rateLimit, {
   keyGenerator: async (request) => {
     if (await Request.isAuthenticated(request)) {
       const token = await Request.getUsedToken(request);
+      
       return token.User.Id;
     }
+
     return null;
   },
   errorResponseBuilder: () => ({ statusCode: 429, error: 'RATE_LIMIT_EXCEEDED' }),

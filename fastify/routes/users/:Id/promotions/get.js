@@ -1,10 +1,11 @@
-import Middleware from '../../../entities/tools/Middleware.js';
-import User from '../../../entities/User.js';
+import Middleware from '../../../../entities/tools/Middleware.js';
+import User from '../../../../entities/User.js';
+import UserPromotion from '../../../../entities/UserPromotion.js';
 
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/users/:Id',
+    url: '/users/:Id/promotions',
     schema: {
       headers: {
         type: 'object',
@@ -29,12 +30,15 @@ export default async function route(app) {
     },
     preHandler: async (request) => {
       await Middleware.assertAuthentication(request);
-      await Middleware.assertUserIdMatch(request);
+      await Middleware.assertSufficientUserRole(request, 'administrator');
+      await Middleware.assertUserIdExists(request);
     },
     handler: async (request) => {
       const { Id: id } = request.params;
 
-      return await User.fromId(id);
+      const user = await User.fromId(id);
+
+      return await UserPromotion.getPromotionsForUser(user);
     },
   });
 }

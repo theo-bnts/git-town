@@ -38,14 +38,13 @@ export default class UserRepository {
     await DatabasePool.Instance.execute(
       /* sql */ `
         DELETE FROM public.user_repository
-        WHERE user_id = $1::uuid
-        AND repository_id = $2::uuid
+        WHERE id = $1::uuid
       `,
-      [this.User.Id, this.Repository.Id],
+      [this.Id],
     );
   }
 
-  static async isCollaboratorOfAnyRepository(user) {
+  static async isUserInserted(user) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
         SELECT COUNT(*) AS count

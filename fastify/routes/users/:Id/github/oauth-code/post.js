@@ -67,8 +67,6 @@ export default async function route(app) {
       }
 
       await user.update();
-
-      return user;
     },
   });
 }

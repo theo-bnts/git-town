@@ -50,7 +50,7 @@ export default class Role {
       [id],
     );
 
-    return new Role(
+    return new this(
       id,
       row.created_at,
       row.updated_at,
@@ -75,7 +75,7 @@ export default class Role {
       [keyword],
     );
 
-    return new Role(
+    return new this(
       row.id,
       row.created_at,
       row.updated_at,
