@@ -7,7 +7,6 @@ import Image from 'next/image';
 
 import postOAuthCode from '@/app/services/api/users/id/github/postOAuthCode';
 
-import { API_ERRORS } from '@/app/services/errorCodes';
 import { getCookie } from '@/app/services/cookies';
 
 import gittownhublogo from '../../../public/assets/pictures/gittownhub.svg';
@@ -32,14 +31,7 @@ export default function AuthorizePageContent() {
           await postOAuthCode(userId, code, token);
           setGithubLinked(true);
         } catch (err) {
-          if (err.response 
-              && err.response.status === 409
-              && err.message === API_ERRORS[409].ALREADY_MEMBER
-            ) {
-            router.replace('/');
-          } else {
-            router.push('/login/link');
-          }
+            router.replace('/login/link');
         }
       };
 
@@ -51,22 +43,9 @@ export default function AuthorizePageContent() {
 
   useEffect(() => {
     if (error) {
-      router.push("/login/link");
+      router.replace("/login/link");
     }
   }, [error]);
-
-  useEffect(() => {
-    const handleFocus = () => {
-      if (githubLinked) {
-        router.push("/");
-      }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [githubLinked, router]);
 
   return (
     <div className="flex flex-col min-h-screen">
