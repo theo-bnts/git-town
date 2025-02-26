@@ -1,14 +1,12 @@
-import Diploma from '../../../../entities/Diploma.js';
-import Middleware from '../../../../entities/tools/Middleware.js';
-import Promotion from '../../../../entities/Promotion.js';
-import PromotionLevel from '../../../../entities/PromotionLevel.js';
-import User from '../../../../entities/User.js';
-import UserPromotion from '../../../../entities/UserPromotion.js';
+import Diploma from '../../../entities/Diploma.js';
+import Middleware from '../../../entities/tools/Middleware.js';
+import Promotion from '../../../entities/Promotion.js';
+import PromotionLevel from '../../../entities/PromotionLevel.js';
 
 export default async function route(app) {
   app.route({
-    method: 'DELETE',
-    url: '/users/:UserId/promotions',
+    method: 'PATCH',
+    url: '/promotions/:PromotionId',
     schema: {
       headers: {
         type: 'object',
@@ -23,7 +21,7 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          UserId: {
+          PromotionId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -67,11 +65,9 @@ export default async function route(app) {
     },
     preHandler: async (request) => {
       await Middleware.assertAuthentication(request);
-      await Middleware.assertSufficientUserRole(request, 'administrator');
-      await Middleware.assertUserIdExists(request);
+      await Middleware.assertSufficientUserRole(request, 'teacher');
     },
     handler: async (request) => {
-      const { UserId: userId } = request.params;
       const {
         Diploma: { Initialism: diplomaInitialism },
         PromotionLevel: { Initialism: promotionLevelInitialism },
@@ -89,28 +85,22 @@ export default async function route(app) {
       const diploma = await Diploma.fromInitialism(diplomaInitialism);
       const promotionLevel = await PromotionLevel.fromInitialism(promotionLevelInitialism);
 
-      if (!await Promotion.isDiplomaPromotionLevelAndYearInserted(diploma, promotionLevel, year)) {
-        throw { statusCode: 404, error: 'UNKNOWN_PROMOTION' };
+      if (await Promotion.isDiplomaPromotionLevelAndYearInserted(diploma, promotionLevel, year)) {
+        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
       }
 
-      const user = await User.fromId(userId);
-      const promotion = await Promotion.fromDiplomaPromotionLevelAndYear(
+      const promotion = new Promotion(
+        null,
+        null,
+        null,
         diploma,
         promotionLevel,
         year,
       );
 
-      if (!await UserPromotion.isUserAndPromotionInserted(user, promotion)) {
-        throw { statusCode: 404, error: 'UNKNOWN_USER_PROMOTION' };
-      }
+      await promotion.insert();
 
-      if (user.Role.Keyword !== 'student') {
-        throw { statusCode: 409, error: 'NOT_STUDENT_ROLE' };
-      }
-
-      const userPromotion = await UserPromotion.fromUserAndPromotion(user, promotion);
-
-      await userPromotion.delete();
+      return promotion;
     },
   });
 }

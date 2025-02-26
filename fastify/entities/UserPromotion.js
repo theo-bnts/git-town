@@ -72,6 +72,36 @@ export default class UserPromotion {
     return row.count === 1n;
   }
 
+  static async fromUser(user) {
+    const rows = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          user_id,
+          promotion_id
+        FROM public.user_promotion
+        WHERE user_id = $1::uuid
+      `,
+      [user.Id],
+    );
+
+    return Promise.all(
+      rows.map(async (row) => {
+        const promotion = await Promotion.fromId(row.promotion_id);
+
+        return new UserPromotion(
+          row.id,
+          row.created_at,
+          row.updated_at,
+          user,
+          promotion,
+        );
+      }),
+    );
+  }
+
   static async fromUserAndPromotion(user, promotion) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
@@ -92,26 +122,6 @@ export default class UserPromotion {
       row.updated_at,
       user,
       promotion,
-    );
-  }
-
-  static async getPromotionsForUser(user) {
-    const rows = await DatabasePool.Instance.execute(
-      /* sql */ `
-        SELECT
-          id,
-          created_at,
-          updated_at,
-          user_id,
-          promotion_id
-        FROM public.user_promotion
-        WHERE user_id = $1::uuid
-      `,
-      [user.Id],
-    );
-
-    return Promise.all(
-      rows.map((row) => Promotion.fromId(row.promotion_id)),
     );
   }
 }

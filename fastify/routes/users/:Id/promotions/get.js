@@ -5,7 +5,7 @@ import UserPromotion from '../../../../entities/UserPromotion.js';
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/users/:Id/promotions',
+    url: '/users/:UserId/promotions',
     schema: {
       headers: {
         type: 'object',
@@ -20,7 +20,7 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          Id: {
+          UserId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -34,11 +34,11 @@ export default async function route(app) {
       await Middleware.assertUserIdExists(request);
     },
     handler: async (request) => {
-      const { Id: id } = request.params;
+      const { UserId: userId } = request.params;
 
-      const user = await User.fromId(id);
+      const user = await User.fromId(userId);
 
-      return UserPromotion.getPromotionsForUser(user);
+      return UserPromotion.fromUser(user);
     },
   });
 }

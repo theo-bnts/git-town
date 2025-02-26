@@ -1,3 +1,4 @@
+import Promotion from '../Promotion.js';
 import Request from './Request.js';
 import Role from '../Role.js';
 import User from '../User.js';
@@ -21,20 +22,28 @@ export default class Middleware {
 
   static async assertSufficientUserRole(request, requiredRoleKeyword) {
     const token = await Request.getUsedToken(request);
-    const { Role: userRole } = token.User;
+    const { Role: authenticatedUserRole } = token.User;
 
     const requiredRole = await Role.fromKeyword(requiredRoleKeyword);
 
-    if (userRole.HierarchyLevel < requiredRole.HierarchyLevel) {
+    if (authenticatedUserRole.HierarchyLevel < requiredRole.HierarchyLevel) {
       throw { statusCode: 403, error: 'INSUFFICIENT_PERMISSIONS' };
     }
   }
 
   static async assertUserIdExists(request) {
-    const { Id: requestedUserId } = request.params;
+    const { UserId: userId } = request.params;
 
-    if (!(await User.isIdInserted(requestedUserId))) {
+    if (!(await User.isIdInserted(userId))) {
       throw { statusCode: 404, error: 'UNKNOWN_USER_ID' };
+    }
+  }
+
+  static async assertPromotionIdExists(request) {
+    const { PromotionId: promotionId } = request.params;
+
+    if (!(await Promotion.isIdInserted(promotionId))) {
+      throw { statusCode: 404, error: 'UNKNOWN_PROMOTION_ID' };
     }
   }
 
@@ -42,9 +51,9 @@ export default class Middleware {
     const { Id: requestedUserId } = request.params;
 
     const token = await Request.getUsedToken(request);
-    const { Id: userId } = token.User;
+    const { Id: authenticatedUserId } = token.User;
 
-    if (requestedUserId !== userId) {
+    if (requestedUserId !== authenticatedUserId) {
       throw { statusCode: 403, error: 'USER_ID_MISMATCH' };
     }
   }

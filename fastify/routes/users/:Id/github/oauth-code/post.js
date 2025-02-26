@@ -5,7 +5,7 @@ import User from '../../../../../entities/User.js';
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/users/:Id/github/oauth-code',
+    url: '/users/:UserId/github/oauth-code',
     schema: {
       headers: {
         type: 'object',
@@ -20,7 +20,7 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          Id: {
+          UserId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -44,10 +44,10 @@ export default async function route(app) {
       await Middleware.assertUserIdMatch(request);
     },
     handler: async (request) => {
-      const { Id: id } = request.params;
+      const { UserId: userId } = request.params;
       const { OAuthCode: oAuthCode } = request.body;
 
-      const user = await User.fromId(id);
+      const user = await User.fromId(userId);
 
       if (user.GitHubId !== null) {
         throw { statusCode: 409, error: 'GITHUB_ID_ALREADY_DEFINED' };
