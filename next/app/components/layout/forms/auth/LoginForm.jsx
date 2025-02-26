@@ -104,7 +104,7 @@ export default function LoginForm({ userId, email, onSuccess, onBack, onGoToDefi
             </div>
           </div>
           {error && <p className={textStyles.warn}>{error}</p>}
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-2">
             <Button variant="outline" type="button" onClick={onBack}>
               <p className={textStyles.bold}>Précédent</p>
             </Button>

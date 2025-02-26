@@ -1,9 +1,8 @@
 // /app/components/layout/LinkOrgForm.jsx
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-import getUser from '@/app/services/api/users/id/getUser';
 import postInvite from '@/app/services/api/users/id/github/postInvite';
 
 import { getCookie } from '@/app/services/cookies';
@@ -16,6 +15,8 @@ import Card from '@/app/components/ui/Card';
 export default function LinkOrgForm({ router }) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [inviteSent, setInviteSent] = useState(false);
+
   const userId = getCookie('userId');
   const token = getCookie('token');
 
@@ -29,28 +30,21 @@ export default function LinkOrgForm({ router }) {
           '_blank',
           'width=600,height=600,scrollbars=yes,resizable=yes'
         );
+        setInviteSent(true);
       } catch (err) {
-        setError(err.message);
+        if (err.message === '(409) : Membre de l’organisation GitHub.') {
+          router.replace('/');
+        } else {
+          setError(err.message);
+        }
       }
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const user = await getUser(userId, token);
-        if (user?.GitHubOrganizationMember) {
-          clearInterval(interval);
-          router.push('/');
-        }
-      } catch (e) {
-        setError(e.message);
-      }
-    }, 2500);
-
-    return () => clearInterval(interval);
-  }, [userId, token, router]);
+  const handleOrgJoined = () => {
+    router.replace('/');
+  };
 
   return (
     <Card variant="default">
@@ -60,10 +54,15 @@ export default function LinkOrgForm({ router }) {
           Cliquez sur le bouton ci-dessous pour rejoindre l’organisation.
         </p>
         {error && <p className={textStyles.warn}>{error}</p>}
-        <div className="flex justify-center">
+        <div className={inviteSent ? "flex justify-between gap-2" : "flex justify-center"}>
           <Button variant="default" onClick={handleJoinOrg} type="button" loading={isLoading}>
             <p className={textStyles.boldWhite}>Rejoindre l’organisation</p>
           </Button>
+          {inviteSent && (
+            <Button variant="default" onClick={handleOrgJoined} type="button" loading={isLoading}>
+              <p className={textStyles.boldWhite}>C'est fait ?</p>
+            </Button>
+          )}
         </div>
       </div>
     </Card>

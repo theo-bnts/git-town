@@ -22,9 +22,10 @@ export default async function postOAuthCode(userId, code, token) {
     },
     body: JSON.stringify({ OAuthCode: code.trim() }),
   });
-  const data = await res.json();
 
-  if (res.ok) 
-    return data;
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : {};
+
+  if (res.ok) return data;
   handleApiError(res, data);
 }
