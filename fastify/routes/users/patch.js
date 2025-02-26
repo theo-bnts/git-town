@@ -57,7 +57,9 @@ export default async function route(app) {
       await Middleware.assertSufficientUserRole(request, 'administrator');
     },
     handler: async (request) => {
-      const { Id: id, EmailAddress: emailAddress, FullName: fullName, Role: role } = request.body;
+      const {
+        Id: id, EmailAddress: emailAddress, FullName: fullName, Role: role,
+      } = request.body;
 
       if (!await User.isIdInserted(id)) {
         throw { statusCode: 404, error: 'UNKNOWN_USER_ID' };
@@ -110,7 +112,7 @@ export default async function route(app) {
         requestedUser.Role = await Role.fromKeyword(roleKeyword);
       }
 
-      return await requestedUser.update();
+      return requestedUser.update();
     },
   });
 }

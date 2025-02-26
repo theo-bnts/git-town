@@ -19,6 +19,19 @@ export default class PromotionLevel {
     this.Name = name;
   }
 
+  static async isInitialismInserted(initialism) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.promotion_level
+        WHERE initialism = $1::text
+      `,
+      [initialism],
+    );
+
+    return row.count === 1n;
+  }
+
   static async fromId(id) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
@@ -36,6 +49,30 @@ export default class PromotionLevel {
 
     return new this(
       id,
+      row.created_at,
+      row.updated_at,
+      row.initialism,
+      row.name,
+    );
+  }
+
+  static async fromInitialism(initialism) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          initialism,
+          name
+        FROM public.promotion_level
+        WHERE initialism = $1::text
+      `,
+      [initialism],
+    );
+
+    return new this(
+      row.id,
       row.created_at,
       row.updated_at,
       row.initialism,

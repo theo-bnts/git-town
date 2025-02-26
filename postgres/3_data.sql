@@ -4,7 +4,7 @@ INSERT INTO public.role (id, created_at, updated_at, keyword, name, hierarchy_le
   ('8d4b62b8-737a-4c53-bff7-1f19b36ceee0'::uuid, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'administrator', 'Administrateur', 3);
 
 INSERT INTO public.user (id, created_at, updated_at, email_address, password_hash_salt, password_hash, full_name, role_id, github_id, github_organization_member) VALUES
-  ('a940c6f9-fa0b-4154-8656-7b9c05d60963'::uuid, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'anne.lapujade@u-picardie.fr', NULL, NULL, 'LAPUJADE ANNE', '8d4b62b8-737a-4c53-bff7-1f19b36ceee0'::uuid, NULL, false);
+  ('a940c6f9-fa0b-4154-8656-7b9c05d60963'::uuid, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'anne.lapujade@u-picardie.fr', NULL, NULL, 'LAPUJADE ANNE', '8d4b62b8-737a-4c53-bff7-1f19b36ceee0'::uuid, 59023491, true);
 
 INSERT INTO public.diploma (id, created_at, updated_at, initialism, name) VALUES
   ('392f9a18-78e9-4c8b-a304-a92a74ea7e5c'::uuid, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'MIAGE', 'Méthodes Informatiques Appliquées à la Gestion des Entreprises');

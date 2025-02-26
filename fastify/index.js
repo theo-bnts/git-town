@@ -35,7 +35,7 @@ await app.register(rateLimit, {
   keyGenerator: async (request) => {
     if (await Request.isAuthenticated(request)) {
       const token = await Request.getUsedToken(request);
-      
+
       return token.User.Id;
     }
 

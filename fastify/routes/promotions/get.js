@@ -21,8 +21,6 @@ export default async function route(app) {
       await Middleware.assertAuthentication(request);
       await Middleware.assertSufficientUserRole(request, 'teacher');
     },
-    handler: async () => {
-      return await Promotion.all();
-    },
+    handler: () => Promotion.all(),
   });
 }

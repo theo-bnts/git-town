@@ -31,10 +31,10 @@ export default async function route(app) {
       await Middleware.assertAuthentication(request);
       await Middleware.assertUserIdMatch(request);
     },
-    handler: async (request) => {
+    handler: (request) => {
       const { Id: id } = request.params;
 
-      return await User.fromId(id);
+      return User.fromId(id);
     },
   });
 }
