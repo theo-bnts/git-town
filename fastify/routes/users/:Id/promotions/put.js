@@ -8,7 +8,7 @@ import UserPromotion from '../../../../entities/UserPromotion.js';
 export default async function route(app) {
   app.route({
     method: 'PUT',
-    url: '/users/:Id/promotions',
+    url: '/users/:UserId/promotions',
     schema: {
       headers: {
         type: 'object',
@@ -23,7 +23,7 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          Id: {
+          UserId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -33,35 +33,42 @@ export default async function route(app) {
       body: {
         type: 'object',
         properties: {
-          Diploma: {
+          Promotion: {
             type: 'object',
             properties: {
-              Initialism: {
-                type: 'string',
-                pattern: process.env.DIPLOMA_INITIALISM_PATTERN,
+              Diploma: {
+                type: 'object',
+                properties: {
+                  Initialism: {
+                    type: 'string',
+                    pattern: process.env.DIPLOMA_INITIALISM_PATTERN,
+                  },
+                },
+                required: ['Initialism'],
+                additionalProperties: false,
+              },
+              PromotionLevel: {
+                type: 'object',
+                properties: {
+                  Initialism: {
+                    type: 'string',
+                    pattern: process.env.PROMOTION_LEVEL_INITIALISM_PATTERN,
+                  },
+                },
+                required: ['Initialism'],
+                additionalProperties: false,
+              },
+              Year: {
+                type: 'integer',
+                minimum: Number(process.env.PROMOTION_YEAR_MIN),
+                maximum: Number(process.env.PROMOTION_YEAR_MAX),
               },
             },
-            required: ['Initialism'],
+            required: ['Diploma', 'PromotionLevel', 'Year'],
             additionalProperties: false,
-          },
-          PromotionLevel: {
-            type: 'object',
-            properties: {
-              Initialism: {
-                type: 'string',
-                pattern: process.env.PROMOTION_LEVEL_INITIALISM_PATTERN,
-              },
-            },
-            required: ['Initialism'],
-            additionalProperties: false,
-          },
-          Year: {
-            type: 'integer',
-            minimum: Number(process.env.PROMOTION_YEAR_MIN),
-            maximum: Number(process.env.PROMOTION_YEAR_MAX),
           },
         },
-        required: ['Diploma', 'PromotionLevel', 'Year'],
+        required: ['Promotion'],
         additionalProperties: false,
       },
     },
@@ -71,25 +78,31 @@ export default async function route(app) {
       await Middleware.assertUserIdExists(request);
     },
     handler: async (request) => {
-      const { Id: userId } = request.params;
+      const { UserId: userId } = request.params;
       const {
-        Diploma: { Initialism: diplomaInitialism },
-        PromotionLevel: { Initialism: promotionLevelInitialism },
-        Year: year,
+        Promotion: {
+          Diploma: { Initialism: promotionDiplomaInitialism },
+          PromotionLevel: { Initialism: promotionLevelInitialism },
+          Year: promotionYear,
+        },
       } = request.body;
 
-      if (!await Diploma.isInitialismInserted(diplomaInitialism)) {
-        throw { statusCode: 404, error: 'UNKNOWN_DIPLOMA_INITIALISM' };
+      if (!await Diploma.isInitialismInserted(promotionDiplomaInitialism)) {
+        throw { statusCode: 404, error: 'UNKNOWN_PROMOTION_DIPLOMA_INITIALISM' };
       }
 
       if (!await PromotionLevel.isInitialismInserted(promotionLevelInitialism)) {
         throw { statusCode: 404, error: 'UNKNOWN_PROMOTION_LEVEL_INITIALISM' };
       }
 
-      const diploma = await Diploma.fromInitialism(diplomaInitialism);
+      const diploma = await Diploma.fromInitialism(promotionDiplomaInitialism);
       const promotionLevel = await PromotionLevel.fromInitialism(promotionLevelInitialism);
 
-      if (!await Promotion.isDiplomaPromotionLevelAndYearInserted(diploma, promotionLevel, year)) {
+      if (!await Promotion.isDiplomaPromotionLevelAndYearInserted(
+        diploma,
+        promotionLevel,
+        promotionYear)
+      ) {
         throw { statusCode: 404, error: 'UNKNOWN_PROMOTION' };
       }
 
@@ -97,15 +110,15 @@ export default async function route(app) {
       const promotion = await Promotion.fromDiplomaPromotionLevelAndYear(
         diploma,
         promotionLevel,
-        year,
+        promotionYear,
       );
-
-      if (user.Role.Keyword !== 'student') {
-        throw { statusCode: 409, error: 'NOT_STUDENT_ROLE' };
-      }
 
       if (await UserPromotion.isUserAndPromotionInserted(user, promotion)) {
         throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+      }
+
+      if (user.Role.Keyword !== 'student') {
+        throw { statusCode: 409, error: 'NOT_STUDENT_ROLE' };
       }
 
       const userPromotion = new UserPromotion(

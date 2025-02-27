@@ -3,12 +3,12 @@ import User from '../../../entities/User.js';
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/users/:EmailAddress/public',
+    url: '/users/:UserEmailAddress/public',
     schema: {
       params: {
         type: 'object',
         properties: {
-          EmailAddress: {
+          UserEmailAddress: {
             type: 'string',
             pattern: process.env.USER_EMAIL_ADDRESS_PATTERN,
           },
@@ -20,17 +20,17 @@ export default async function route(app) {
       rateLimit: {
         max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
         allowList: false,
-        keyGenerator: (request) => `${request.params.EmailAddress}-${request.routeOptions.url}`,
+        keyGenerator: (request) => `${request.params.UserEmailAddress}-${request.routeOptions.url}`,
       },
     },
     handler: async (request) => {
-      const { EmailAddress: emailAddress } = request.params;
+      const { UserEmailAddress: userEmailAddress } = request.params;
 
-      if (!(await User.isEmailAddressInserted(emailAddress))) {
+      if (!(await User.isEmailAddressInserted(userEmailAddress))) {
         throw { statusCode: 404, error: 'UNKNOWN_EMAIL_ADDRESS' };
       }
 
-      const user = await User.fromEmailAddress(emailAddress);
+      const user = await User.fromEmailAddress(userEmailAddress);
 
       return user.toPublicJSON();
     },

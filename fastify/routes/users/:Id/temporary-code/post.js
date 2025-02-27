@@ -7,12 +7,12 @@ import User from '../../../../entities/User.js';
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/users/:Id/temporary-code',
+    url: '/users/:UserId/temporary-code',
     schema: {
       params: {
         type: 'object',
         properties: {
-          Id: {
+          UserId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -24,14 +24,14 @@ export default async function route(app) {
       rateLimit: {
         max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
         allowList: false,
-        keyGenerator: (request) => `${request.params.Id}-${request.routeOptions.url}`,
+        keyGenerator: (request) => `${request.params.UserId}-${request.routeOptions.url}`,
       },
     },
     preHandler: async (request) => Middleware.assertUserIdExists(request),
     handler: async (request) => {
-      const { Id: id } = request.params;
+      const { UserId: userId } = request.params;
 
-      const user = await User.fromId(id);
+      const user = await User.fromId(userId);
 
       const temporaryCode = new TemporaryCode(
         null,

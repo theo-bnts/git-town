@@ -4,7 +4,7 @@ import Request from '../../../../entities/tools/Request.js';
 export default async function route(app) {
   app.route({
     method: 'DELETE',
-    url: '/users/:Id/token',
+    url: '/users/:UserId/token',
     schema: {
       headers: {
         type: 'object',
@@ -19,7 +19,7 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          Id: {
+          UserId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },

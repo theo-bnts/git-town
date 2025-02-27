@@ -1,14 +1,14 @@
-import GitHubApp from '../../entities/tools/GitHubApp.js';
-import Middleware from '../../entities/tools/Middleware.js';
-import User from '../../entities/User.js';
-import Request from '../../entities/tools/Request.js';
-import UserRepository from '../../entities/UserRepository.js';
-import UserPromotion from '../../entities/UserPromotion.js';
+import GitHubApp from '../../../entities/tools/GitHubApp.js';
+import Middleware from '../../../entities/tools/Middleware.js';
+import User from '../../../entities/User.js';
+import Request from '../../../entities/tools/Request.js';
+import UserRepository from '../../../entities/UserRepository.js';
+import UserPromotion from '../../../entities/UserPromotion.js';
 
 export default async function route(app) {
   app.route({
     method: 'DELETE',
-    url: '/users',
+    url: '/users/:UserId',
     schema: {
       headers: {
         type: 'object',
@@ -20,30 +20,26 @@ export default async function route(app) {
         },
         required: ['authorization'],
       },
-      body: {
+      params: {
         type: 'object',
         properties: {
-          Id: {
+          UserId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
         },
-        required: ['Id'],
         additionalProperties: false,
       },
     },
     preHandler: async (request) => {
       await Middleware.assertAuthentication(request);
       await Middleware.assertSufficientUserRole(request, 'administrator');
+      await Middleware.assertUserIdExists(request);
     },
     handler: async (request) => {
-      const { Id: id } = request.body;
+      const { UserId: userId } = request.params;
 
-      if (!await User.isIdInserted(id)) {
-        throw { statusCode: 404, error: 'UNKNOWN_USER_ID' };
-      }
-
-      const requestedUser = await User.fromId(id);
+      const requestedUser = await User.fromId(userId);
 
       const token = await Request.getUsedToken(request);
       const authenticatedUser = token.User;
@@ -52,12 +48,10 @@ export default async function route(app) {
         throw { statusCode: 403, error: 'SELF' };
       }
 
-      // TODO: Test
       if (await UserRepository.isUserInserted(requestedUser)) {
         throw { statusCode: 409, error: 'HAS_REPOSITORIES' };
       }
 
-      // TODO: Test
       if (await UserPromotion.isUserInserted(requestedUser)) {
         throw { statusCode: 409, error: 'HAS_PROMOTIONS' };
       }

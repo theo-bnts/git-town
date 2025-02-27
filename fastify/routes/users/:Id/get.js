@@ -4,7 +4,7 @@ import User from '../../../entities/User.js';
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/users/:Id',
+    url: '/users/:UserId',
     schema: {
       headers: {
         type: 'object',
@@ -19,7 +19,7 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          Id: {
+          UserId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -32,9 +32,9 @@ export default async function route(app) {
       await Middleware.assertUserIdMatch(request);
     },
     handler: (request) => {
-      const { Id: id } = request.params;
+      const { UserId: userId } = request.params;
 
-      return User.fromId(id);
+      return User.fromId(userId);
     },
   });
 }
