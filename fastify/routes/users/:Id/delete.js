@@ -57,15 +57,13 @@ export default async function route(app) {
       }
 
       if (await requestedUser.GitHubId !== null) {
-        const gitHubApp = GitHubApp.fromEnvironment();
-
-        const gitHubUser = await gitHubApp.getUser(requestedUser);
+        const gitHubUser = await GitHubApp.Instance.getUser(requestedUser);
         const gitHubUsername = gitHubUser.Username;
 
         if (await requestedUser.GitHubOrganizationMember) {
-          await gitHubApp.removeFromOrganization(gitHubUsername);
+          await GitHubApp.Instance.removeFromOrganization(gitHubUsername);
         } else {
-          const organizationInvitations = await gitHubApp.getOrganizationInvitations();
+          const organizationInvitations = await GitHubApp.Instance.getOrganizationInvitations();
 
           const userOrganizationInvitations = organizationInvitations.filter(
             (invitation) => invitation.User.Username === gitHubUsername,
@@ -73,7 +71,7 @@ export default async function route(app) {
 
           await Promise.all(
             userOrganizationInvitations.map(
-              (invitation) => gitHubApp.cancelOrganizationInvitation(invitation.Id),
+              (invitation) => GitHubApp.Instance.cancelOrganizationInvitation(invitation.Id),
             ),
           );
         }

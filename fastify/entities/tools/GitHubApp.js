@@ -1,3 +1,5 @@
+// eslint-disable-next-line import/no-unresolved
+import { cache } from '@security-alliance/octokit-plugin-cache';
 import { createAppAuth } from '@octokit/auth-app';
 // eslint-disable-next-line import/no-unresolved
 import { Octokit } from 'octokit';
@@ -5,32 +7,25 @@ import { Octokit } from 'octokit';
 export default class GitHubApp {
   Octokit;
 
-  constructor(octokit) {
-    this.Octokit = octokit;
-  }
+  static Instance;
 
-  static fromEnvironment() {
-    return new this(
-      new Octokit({
-        authStrategy: createAppAuth,
-        auth: {
-          appId: Number(process.env.GITHUB_APP_ID),
-          privateKey: process.env.GITHUB_APP_PRIVATE_KEY,
-          clientId: process.env.GITHUB_APP_CLIENT_ID,
-          clientSecret: process.env.GITHUB_APP_CLIENT_SECRET,
-          installationId: Number(process.env.GITHUB_APP_INSTALLATION_ID),
-        },
-      }),
-    );
-  }
-
-  // WARNING: For development purposes only
-  async getInstallationToken() {
-    const { token } = await this.Octokit.auth({
-      type: 'installation',
+  constructor() {
+    this.Octokit = new Octokit({
+      authStrategy: createAppAuth,
+      auth: {
+        appId: Number(process.env.GITHUB_APP_ID),
+        privateKey: process.env.GITHUB_APP_PRIVATE_KEY,
+        clientId: process.env.GITHUB_APP_CLIENT_ID,
+        clientSecret: process.env.GITHUB_APP_CLIENT_SECRET,
+        installationId: Number(process.env.GITHUB_APP_INSTALLATION_ID),
+      },
     });
 
-    return token;
+    cache(this.Octokit, {
+      cache: {
+        enabled: true,
+      },
+    });
   }
 
   async getUser(applicationUser) {
@@ -76,6 +71,15 @@ export default class GitHubApp {
       org: Number(process.env.GITHUB_ORGANIZATION_ID),
       username,
     });
+  }
+
+  // WARNING: For development purposes only
+  async getInstallationToken() {
+    const { token } = await this.Octokit.auth({
+      type: 'installation',
+    });
+
+    return token;
   }
 
   // WARNING: For development purposes only
