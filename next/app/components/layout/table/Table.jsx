@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import EmptyTableCard from '@/app/components/layout/table/EmptyTableCard';
 import TableHeader from '@/app/components/layout/table/TableHeader';
 import TableRow from '@/app/components/layout/table/TableRow';
+import TableToolbar from '@/app/components/layout/table/TableToolbar';
 
 export default function Table ({ columns, data }) {
   const [sortedData, setSortedData] = useState(data);
@@ -82,6 +83,9 @@ export default function Table ({ columns, data }) {
 
   return (
     <div className="max-w-screen-xl mx-auto px-4">
+
+      <TableToolbar/>
+
       <div
         ref={containerRef}
         className="overflow-auto"
