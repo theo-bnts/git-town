@@ -48,7 +48,7 @@ export default class Middleware {
   }
 
   static async assertUserIdMatch(request) {
-    const { Id: requestedUserId } = request.params;
+    const { UserId: requestedUserId } = request.params;
 
     const token = await Request.getUsedToken(request);
     const { Id: authenticatedUserId } = token.User;
