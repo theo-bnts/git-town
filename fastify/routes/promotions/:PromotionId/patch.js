@@ -59,46 +59,63 @@ export default async function route(app) {
             maximum: Number(process.env.PROMOTION_YEAR_MAX),
           },
         },
-        required: ['Diploma', 'PromotionLevel', 'Year'],
         additionalProperties: false,
+        minProperties: 1,
       },
     },
     preHandler: async (request) => {
       await Middleware.assertAuthentication(request);
-      await Middleware.assertSufficientUserRole(request, 'teacher');
+      await Middleware.assertSufficientUserRole(request, 'administrator');
+      await Middleware.assertPromotionIdExists(request);
     },
     handler: async (request) => {
-      const {
-        Diploma: { Initialism: diplomaInitialism },
-        PromotionLevel: { Initialism: promotionLevelInitialism },
-        Year: year,
-      } = request.body;
+      const { PromotionId: promotionId } = request.params;
+      const { Diploma: diploma, PromotionLevel: promotionLevel, Year: year } = request.body;
 
-      if (!await Diploma.isInitialismInserted(diplomaInitialism)) {
-        throw { statusCode: 404, error: 'UNKNOWN_DIPLOMA_INITIALISM' };
+      const promotion = await Promotion.fromId(promotionId);
+
+      if (diploma !== undefined) {
+        const { Initialism: diplomaInitialism } = diploma;
+
+        if (!await Diploma.isInitialismInserted(diplomaInitialism)) {
+          throw { statusCode: 404, error: 'UNKNOWN_DIPLOMA_INITIALISM' };
+        }
+
+        if (diplomaInitialism === promotion.Diploma.Initialism) {
+          throw { statusCode: 409, error: 'SAME_DIPLOMA_INITIALISM' };
+        }
+
+        promotion.Diploma = await Diploma.fromInitialism(diplomaInitialism);
       }
 
-      if (!await PromotionLevel.isInitialismInserted(promotionLevelInitialism)) {
-        throw { statusCode: 404, error: 'UNKNOWN_PROMOTION_LEVEL_INITIALISM' };
+      if (promotionLevel !== undefined) {
+        const { Initialism: promotionLevelInitialism } = promotionLevel;
+
+        if (!await PromotionLevel.isInitialismInserted(promotionLevelInitialism)) {
+          throw { statusCode: 404, error: 'UNKNOWN_PROMOTION_LEVEL_INITIALISM' };
+        }
+
+        if (promotionLevelInitialism === promotion.PromotionLevel.Initialism) {
+          throw { statusCode: 409, error: 'SAME_PROMOTION_LEVEL_INITIALISM' };
+        }
+
+        promotion.PromotionLevel = await PromotionLevel
+          .fromInitialism(promotionLevelInitialism);
       }
 
-      const diploma = await Diploma.fromInitialism(diplomaInitialism);
-      const promotionLevel = await PromotionLevel.fromInitialism(promotionLevelInitialism);
+      if (year !== undefined) {
+        if (year === promotion.Year) {
+          throw { statusCode: 409, error: 'SAME_YEAR' };
+        }
+
+        promotion.Year = year;
+      }
 
       if (await Promotion.isDiplomaPromotionLevelAndYearInserted(diploma, promotionLevel, year)) {
         throw { statusCode: 409, error: 'ALREADY_EXISTS' };
       }
 
-      const promotion = new Promotion(
-        null,
-        null,
-        null,
-        diploma,
-        promotionLevel,
-        year,
-      );
-
-      await promotion.insert();
+      promotion.update();
 
       return promotion;
     },
