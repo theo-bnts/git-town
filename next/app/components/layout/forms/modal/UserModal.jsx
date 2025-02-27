@@ -61,12 +61,9 @@ export default function UserModal({ isOpen, onClose, onCreate }) {
         
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold">Edition</h2>
-          <button
-            className="p-1 text-gray-600 hover:text-gray-900 transition"
-            onClick={onClose}
-          >
-            <XIcon size={20} />
-          </button>
+          <Button variant="action_sq" onClick={onClose}>
+            <XIcon size={24}/>
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
