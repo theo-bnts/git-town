@@ -54,7 +54,7 @@ export default class Promotion {
         this.Diploma.Id,
         this.PromotionLevel.Id,
         this.Year,
-        this.Id
+        this.Id,
       ],
     );
 

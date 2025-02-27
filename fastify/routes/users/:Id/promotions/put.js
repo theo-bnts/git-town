@@ -98,10 +98,12 @@ export default async function route(app) {
       const diploma = await Diploma.fromInitialism(promotionDiplomaInitialism);
       const promotionLevel = await PromotionLevel.fromInitialism(promotionLevelInitialism);
 
-      if (!await Promotion.isDiplomaPromotionLevelAndYearInserted(
-        diploma,
-        promotionLevel,
-        promotionYear)
+      if (
+        !await Promotion.isDiplomaPromotionLevelAndYearInserted(
+          diploma,
+          promotionLevel,
+          promotionYear,
+        )
       ) {
         throw { statusCode: 404, error: 'UNKNOWN_PROMOTION' };
       }

@@ -1,5 +1,6 @@
 import DatabasePool from './tools/DatabasePool.js';
 import Promotion from './Promotion.js';
+import User from './User.js';
 
 export default class UserPromotion {
   Id;
@@ -58,6 +59,19 @@ export default class UserPromotion {
     return row.count > 0;
   }
 
+  static async isPromotionInserted(promotion) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.user_promotion
+        WHERE user_promotion.promotion_id = $1::uuid
+      `,
+      [promotion.Id],
+    );
+
+    return row.count > 0;
+  }
+
   static async isUserAndPromotionInserted(user, promotion) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
@@ -102,6 +116,35 @@ export default class UserPromotion {
     );
   }
 
+  static async fromPromotion(promotion) {
+    const rows = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          user_id
+        FROM public.user_promotion
+        WHERE promotion_id = $1::uuid
+      `,
+      [promotion.Id],
+    );
+
+    return Promise.all(
+      rows.map(async (row) => {
+        const user = await User.fromId(row.user_id);
+
+        return new UserPromotion(
+          row.id,
+          row.created_at,
+          row.updated_at,
+          user,
+          promotion,
+        );
+      }),
+    );
+  }
+
   static async fromUserAndPromotion(user, promotion) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
@@ -122,6 +165,18 @@ export default class UserPromotion {
       row.updated_at,
       user,
       promotion,
+    );
+  }
+
+  static async replicateUsers(sourcePromotion, targetPromotion) {
+    await DatabasePool.Instance.execute(
+      /* sql */ `
+        INSERT INTO public.user_promotion (user_id, promotion_id)
+        SELECT user_id, $1::uuid
+        FROM public.user_promotion
+        WHERE promotion_id = $2::uuid
+      `,
+      [targetPromotion.Id, sourcePromotion.Id],
     );
   }
 }

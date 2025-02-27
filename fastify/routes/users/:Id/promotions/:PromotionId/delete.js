@@ -1,7 +1,5 @@
-import Diploma from '../../../../../entities/Diploma.js';
 import Middleware from '../../../../../entities/tools/Middleware.js';
 import Promotion from '../../../../../entities/Promotion.js';
-import PromotionLevel from '../../../../../entities/PromotionLevel.js';
 import User from '../../../../../entities/User.js';
 import UserPromotion from '../../../../../entities/UserPromotion.js';
 
