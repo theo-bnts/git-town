@@ -4,12 +4,13 @@ import React, { useState, useEffect } from 'react';
 import Button from '@/app/components/ui/Button';
 import Input from '@/app/components/ui/Input';
 import Card from '@/app/components/ui/Card';
+import ComboBox from '@/app/components/ui/ComboBox';
 
 import { XIcon } from '@primer/octicons-react';
 import { textStyles } from '@/app/styles/tailwindStyles';
 
 export default function UserModal({ isOpen, onClose, onCreate }) {
-  const initialFormState = { name: '', email: '' };
+  const initialFormState = { name: '', email: '', role: '' };
   const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +30,9 @@ export default function UserModal({ isOpen, onClose, onCreate }) {
     if (!formData.email.trim() || !formData.email.includes('@')) {
       newErrors.email = "Une adresse e-mail valide est requise.";
     }
+    if (!formData.role) {
+      newErrors.role = "Le rôle est requis.";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -37,6 +41,11 @@ export default function UserModal({ isOpen, onClose, onCreate }) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: '' }));
+  };
+
+  const handleRoleChange = (role) => {
+    setFormData((prev) => ({ ...prev, role }));
+    setErrors((prev) => ({ ...prev, role: '' }));
   };
 
   const handleSubmit = async (e) => {
@@ -86,6 +95,10 @@ export default function UserModal({ isOpen, onClose, onCreate }) {
               onChange={handleInputChange}
             />
             {errors.email && <p className={textStyles.warn}>{errors.email}</p>}
+          </div>
+          <div>
+            <ComboBox options={["Administrateur", "Enseignant", "Étudiant"]} onSelect={handleRoleChange} value={formData.role} />
+            {errors.role && <p className={textStyles.warn}>{errors.role}</p>}
           </div>
           {errors.form && <p className={textStyles.warn}>{errors.form}</p>}
 
