@@ -145,7 +145,7 @@ export default function ComboBox({ options, onSelect }) {
     <div className="relative w-full max-w-xs" ref={comboBoxRef}>
       <Input
         ref={inputRef}
-        variant="default"
+        variant={selectedOption ? "selected" : "default"}
         value={searchTerm}
         onChange={handleSearchChange}
         onFocus={() => setIsOpen(true)}
