@@ -6,7 +6,7 @@ import Button from '@/app/components/ui/Button';
 import { IssueClosedIcon, XIcon, ChevronDownIcon, ChevronUpIcon } from '@primer/octicons-react';
 import { textStyles } from '@/app/styles/tailwindStyles';
 
-const MAX_VISIBLE_ITEMS = 8;
+const MAX_ITEMS = 8; // Max item chargé à la fois
 
 function normalizeString(str) {
   return str.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -26,7 +26,13 @@ function highlightMatch(text, query) {
   );
 }
 
-function ComboBoxOption({ option, onSelect, searchTerm, isHighlighted, isSelected, isFirst, isLast }) {
+function ComboBoxOption({ 
+  option, 
+  onSelect, 
+  searchTerm, 
+  isHighlighted, 
+  isSelected 
+}) {
   const optionRef = useRef(null);
 
   useEffect(() => {
@@ -41,10 +47,11 @@ function ComboBoxOption({ option, onSelect, searchTerm, isHighlighted, isSelecte
   return (
     <div
       ref={optionRef}
-      className={`p-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center 
-        ${isHighlighted ? 'bg-gray-100' : ''} 
-        ${isFirst ? 'rounded-t-lg' : ''} 
-        ${isLast ? 'rounded-b-lg' : ''}`}
+      className={`
+        p-2 hover:bg-gray-100 cursor-pointer 
+        flex justify-between items-center
+        ${isHighlighted ? 'bg-gray-100' : ''}
+      `}
       onClick={() => onSelect(option)}
     >
       <span>{highlightMatch(option.value, searchTerm)}</span>
@@ -53,7 +60,14 @@ function ComboBoxOption({ option, onSelect, searchTerm, isHighlighted, isSelecte
   );
 }
 
-function ComboBoxList({ options, onSelect, searchTerm, highlightedIndex, selectedOption, loadMore }) {
+function ComboBoxList({ 
+  options, 
+  onSelect, 
+  searchTerm, 
+  highlightedIndex, 
+  selectedOption, 
+  loadMore 
+}) {
   return (
     <div className="max-h-60 overflow-auto" onScroll={loadMore}>
       {options.length > 0 ? (
@@ -65,8 +79,6 @@ function ComboBoxList({ options, onSelect, searchTerm, highlightedIndex, selecte
             searchTerm={searchTerm}
             isHighlighted={index === highlightedIndex}
             isSelected={option.id === selectedOption?.id}
-            isFirst={index === 0}
-            isLast={index === options.length - 1}
           />
         ))
       ) : (
@@ -76,10 +88,29 @@ function ComboBoxList({ options, onSelect, searchTerm, highlightedIndex, selecte
   );
 }
 
-function ComboBoxPopover({ options, onSelect, searchTerm, highlightedIndex, selectedOption, loadMore }) {
+function ComboBoxPopover({ 
+  options, 
+  onSelect, 
+  searchTerm, 
+  highlightedIndex, 
+  selectedOption, 
+  loadMore 
+}) {
   return (
-    <div className="absolute w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-      <ComboBoxList options={options} onSelect={onSelect} searchTerm={searchTerm} highlightedIndex={highlightedIndex} selectedOption={selectedOption} loadMore={loadMore} />
+    <div
+      className="
+        absolute w-full mt-2 bg-white border border-gray-300 
+        rounded-lg shadow-lg z-10 overflow-hidden
+      "
+    >
+      <ComboBoxList
+        options={options}
+        onSelect={onSelect}
+        searchTerm={searchTerm}
+        highlightedIndex={highlightedIndex}
+        selectedOption={selectedOption}
+        loadMore={loadMore}
+      />
     </div>
   );
 }
@@ -107,7 +138,7 @@ export default function ComboBox({ options, onSelect }) {
   }, []);
 
   useEffect(() => {
-    setDisplayedOptions(filteredOptions.slice(0, MAX_VISIBLE_ITEMS));
+    setDisplayedOptions(filteredOptions.slice(0, MAX_ITEMS));
   }, [filteredOptions]);
 
   const handleSearchChange = (e) => {
@@ -124,7 +155,7 @@ export default function ComboBox({ options, onSelect }) {
     setSelectedOption(option);
     setSearchTerm(option.value);
     setFilteredOptions(options);
-    setDisplayedOptions(options.slice(0, MAX_VISIBLE_ITEMS));
+    setDisplayedOptions(options.slice(0, MAX_ITEMS));
     setHighlightedIndex(0);
     setIsOpen(false);
     onSelect(option);
@@ -135,7 +166,7 @@ export default function ComboBox({ options, onSelect }) {
     setSelectedOption(null);
     setSearchTerm('');
     setFilteredOptions(options);
-    setDisplayedOptions(options.slice(0, MAX_VISIBLE_ITEMS));
+    setDisplayedOptions(options.slice(0, MAX_ITEMS));
     setHighlightedIndex(0);
     setIsOpen(true);
     onSelect(null);
@@ -169,7 +200,7 @@ export default function ComboBox({ options, onSelect }) {
 
   const loadMore = useCallback((e) => {
     if (e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight) {
-      setDisplayedOptions(prev => [...prev, ...filteredOptions.slice(prev.length, prev.length + MAX_VISIBLE_ITEMS)]);
+      setDisplayedOptions(prev => [...prev, ...filteredOptions.slice(prev.length, prev.length + MAX_ITEMS)]);
     }
   }, [filteredOptions]);
 
