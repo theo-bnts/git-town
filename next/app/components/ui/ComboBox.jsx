@@ -3,20 +3,38 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
-import { IssueClosedIcon, XIcon, ChevronDownIcon, ChevronUpIcon } from '@primer/octicons-react';
+import { 
+  IssueClosedIcon, 
+  IssueOpenedIcon, 
+  XIcon, 
+  ChevronDownIcon, 
+  ChevronUpIcon,
+  SearchIcon 
+} from '@primer/octicons-react';
 import { textStyles } from '@/app/styles/tailwindStyles';
 
-const MAX_ITEMS = 8; // Max item chargé à la fois
+const MAX_ITEMS = 8;
 
+/**
+ * Normalise une chaîne de caractères pour ignorer les accents
+ * et comparer en minuscules.
+ */
 function normalizeString(str) {
-  return str.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  return str
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
 }
 
+/**
+ * Met en évidence la partie de text qui correspond à query.
+ * Retourne un JSX où la sous-chaîne correspondante est englobée par <strong>.
+ */
 function highlightMatch(text, query) {
   if (!query) return text;
-  let matchIndex = normalizeString(text).indexOf(normalizeString(query));
+  const matchIndex = normalizeString(text).indexOf(normalizeString(query));
   if (matchIndex === -1) return text;
-  
+
   return (
     <>
       {text.substring(0, matchIndex)}
@@ -26,6 +44,11 @@ function highlightMatch(text, query) {
   );
 }
 
+/**
+ * Composant d'un item dans la liste du ComboBox.
+ * Au survol (hover), l'icône IssueOpenedIcon apparaît.
+ * Si l'option est sélectionnée, l'icône IssueClosedIcon est affichée à la place.
+ */
 function ComboBoxOption({ 
   option, 
   onSelect, 
@@ -50,16 +73,35 @@ function ComboBoxOption({
       className={`
         p-2 hover:bg-gray-100 cursor-pointer 
         flex justify-between items-center
+        group
         ${isHighlighted ? 'bg-gray-100' : ''}
       `}
       onClick={() => onSelect(option)}
     >
       <span>{highlightMatch(option.value, searchTerm)}</span>
-      {isSelected && <IssueClosedIcon className="text-[var(--selected-color)]" />}
+
+      {/* 
+        Si l’option est sélectionnée => IssueClosedIcon permanent
+        Sinon => IssueOpenedIcon qui apparaît uniquement au survol
+      */}
+      {isSelected ? (
+        <IssueClosedIcon className="text-[var(--selected-color)]" />
+      ) : (
+        <IssueOpenedIcon
+          className="
+            text-gray-500
+            opacity-0 
+            group-hover:opacity-100
+          "
+        />
+      )}
     </div>
   );
 }
 
+/**
+ * Liste d'options du ComboBox, avec scroll infini.
+ */
 function ComboBoxList({ 
   options, 
   onSelect, 
@@ -88,7 +130,11 @@ function ComboBoxList({
   );
 }
 
+/**
+ * Conteneur du popover, avec animation d'apparition/disparition (fade + scale).
+ */
 function ComboBoxPopover({ 
+  isOpen,
   options, 
   onSelect, 
   searchTerm, 
@@ -98,10 +144,12 @@ function ComboBoxPopover({
 }) {
   return (
     <div
-      className="
+      className={`
         absolute w-full mt-2 bg-white border border-gray-300 
         rounded-lg shadow-lg z-10 overflow-hidden
-      "
+        transition-all duration-200 transform origin-top
+        ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
+      `}
     >
       <ComboBoxList
         options={options}
@@ -115,6 +163,9 @@ function ComboBoxPopover({
   );
 }
 
+/**
+ * Composant principal ComboBox (Input + Popover + Gestion de sélection).
+ */
 export default function ComboBox({ options, onSelect }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -122,9 +173,11 @@ export default function ComboBox({ options, onSelect }) {
   const [displayedOptions, setDisplayedOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+
   const comboBoxRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Fermer le menu si on clique en dehors
   useEffect(() => {
     function handleClickOutside(event) {
       if (comboBoxRef.current && !comboBoxRef.current.contains(event.target)) {
@@ -137,19 +190,25 @@ export default function ComboBox({ options, onSelect }) {
     };
   }, []);
 
+  // Mettre à jour les options affichées quand filteredOptions change
   useEffect(() => {
     setDisplayedOptions(filteredOptions.slice(0, MAX_ITEMS));
   }, [filteredOptions]);
 
+  // Gère le changement dans l'input (recherche)
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
     setSelectedOption(null);
-    const filtered = options.filter(option => normalizeString(option.value).startsWith(normalizeString(value)));
+
+    const filtered = options.filter(option => 
+      normalizeString(option.value).startsWith(normalizeString(value))
+    );
     setFilteredOptions(filtered);
     setHighlightedIndex(0);
   };
 
+  // Sélection d'une option
   const handleSelect = (option) => {
     if (!option) return;
     setSelectedOption(option);
@@ -162,6 +221,7 @@ export default function ComboBox({ options, onSelect }) {
     inputRef.current?.blur();
   };
 
+  // Effacer la sélection
   const clearSelection = () => {
     setSelectedOption(null);
     setSearchTerm('');
@@ -171,8 +231,9 @@ export default function ComboBox({ options, onSelect }) {
     setIsOpen(true);
     onSelect(null);
     setTimeout(() => inputRef.current?.focus(), 0);
-  };  
+  };
 
+  // Gère les événements clavier
   const handleKeyDown = (e) => {
     if (isOpen) {
       if (e.key === 'Enter' && highlightedIndex >= 0) {
@@ -198,9 +259,13 @@ export default function ComboBox({ options, onSelect }) {
     }
   };
 
+  // Chargement d'options supplémentaires au scroll bas
   const loadMore = useCallback((e) => {
     if (e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight) {
-      setDisplayedOptions(prev => [...prev, ...filteredOptions.slice(prev.length, prev.length + MAX_ITEMS)]);
+      setDisplayedOptions(prev => [
+        ...prev, 
+        ...filteredOptions.slice(prev.length, prev.length + MAX_ITEMS)
+      ]);
     }
   }, [filteredOptions]);
 
@@ -213,7 +278,7 @@ export default function ComboBox({ options, onSelect }) {
         onChange={handleSearchChange}
         onFocus={() => setIsOpen(true)}
         onKeyDown={handleKeyDown}
-        placeholder="Votre sélection..."
+        placeholder="Sélectionner..."
       />
       <Button
         type="button"
@@ -241,9 +306,17 @@ export default function ComboBox({ options, onSelect }) {
           <ChevronDownIcon size={16} className={textStyles.defaultWhite} />
         )}
       </Button>
-      {isOpen && (
-        <ComboBoxPopover options={displayedOptions} onSelect={handleSelect} searchTerm={searchTerm} highlightedIndex={highlightedIndex} selectedOption={selectedOption} loadMore={loadMore} />
-      )}
+
+      {/* Rendu inconditionnel du popover, avec animation contrôlée par isOpen */}
+      <ComboBoxPopover
+        isOpen={isOpen}
+        options={displayedOptions}
+        onSelect={handleSelect}
+        searchTerm={searchTerm}
+        highlightedIndex={highlightedIndex}
+        selectedOption={selectedOption}
+        loadMore={loadMore}
+      />
     </div>
   );
 }
