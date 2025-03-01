@@ -24,10 +24,10 @@ function highlightMatch(text, query) {
   );
 }
 
-function ComboBoxOption({ option, onSelect, searchTerm, isHighlighted, isSelected }) {
+function ComboBoxOption({ option, onSelect, searchTerm, isHighlighted, isSelected, isFirst, isLast }) {
   return (
     <div
-      className={`p-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center ${isHighlighted ? 'bg-gray-100' : ''}`}
+      className={`p-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center ${isHighlighted ? 'bg-gray-100' : ''} ${isFirst ? 'rounded-t-lg' : ''} ${isLast ? 'rounded-b-lg' : ''}`}
       onClick={() => onSelect(option)}
     >
       <span>{highlightMatch(option, searchTerm)}</span>
@@ -48,6 +48,8 @@ function ComboBoxList({ options, onSelect, searchTerm, highlightedIndex, selecte
             searchTerm={searchTerm}
             isHighlighted={index === highlightedIndex}
             isSelected={option === selectedOption}
+            isFirst={index === 0}
+            isLast={index === options.length - 1}
           />
         ))
       ) : (
