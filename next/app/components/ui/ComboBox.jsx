@@ -2,7 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Input from '@/app/components/ui/Input';
-import { IssueClosedIcon, XIcon, ChevronDownIcon } from '@primer/octicons-react';
+import Button from '@/app/components/ui/Button';
+import { IssueClosedIcon, XIcon, ChevronDownIcon, ChevronUpIcon } from '@primer/octicons-react';
+import { textStyles } from '@/app/styles/tailwindStyles';
 
 function normalizeString(str) {
   return str.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -10,8 +12,6 @@ function normalizeString(str) {
 
 function highlightMatch(text, query) {
   if (!query) return text;
-  const normalizedText = text.normalize("NFD");
-  const normalizedQuery = query.normalize("NFD");
   let matchIndex = normalizeString(text).indexOf(normalizeString(query));
   if (matchIndex === -1) return text;
   
@@ -31,7 +31,7 @@ function ComboBoxOption({ option, onSelect, searchTerm, isHighlighted, isSelecte
       onClick={() => onSelect(option)}
     >
       <span>{highlightMatch(option, searchTerm)}</span>
-      {isSelected && <IssueClosedIcon className="text-green-600" />}
+      {isSelected && <IssueClosedIcon className="text-[var(--selected-color)]" />}
     </div>
   );
 }
@@ -53,7 +53,7 @@ function ComboBoxList({ options, onSelect, searchTerm, highlightedIndex, selecte
           />
         ))
       ) : (
-        <div className="p-2 text-gray-500">Aucun résultat</div>
+        <div className="p-2 text-gray-500">Aucun résultat.</div>
       )}
     </div>
   );
@@ -150,18 +150,24 @@ export default function ComboBox({ options, onSelect }) {
         onChange={handleSearchChange}
         onFocus={() => setIsOpen(true)}
         onKeyDown={handleKeyDown}
-        placeholder="Sélectionnez une option..."
+        placeholder="Votre sélection..."
       />
-      <button
+      <Button
         type="button"
-        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+        variant={selectedOption ? "popover_selected_sq" : "popover_default_sq"}
         onClick={(e) => {
           e.preventDefault();
           setIsOpen((prev) => !prev);
         }}
       >
-        {searchTerm ? <XIcon size={16} onClick={clearSelection} /> : <ChevronDownIcon size={16} />}
-      </button>
+        {selectedOption ? (
+          <XIcon size={16} onClick={clearSelection} className={textStyles.defaultWhite} />
+        ) : isOpen ? (
+          <ChevronUpIcon size={16} className={textStyles.defaultWhite} />
+        ) : (
+          <ChevronDownIcon size={16} className={textStyles.defaultWhite} />
+        )}
+      </Button>
       {isOpen && (
         <ComboBoxPopover options={filteredOptions} onSelect={handleSelect} searchTerm={searchTerm} highlightedIndex={highlightedIndex} selectedOption={selectedOption} />
       )}
