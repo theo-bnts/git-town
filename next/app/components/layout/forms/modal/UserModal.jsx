@@ -15,12 +15,12 @@ export default function UserModal({ isOpen, onClose, onCreate }) {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const options = [
-    { id: 1, value: "Administrateur" },
-    { id: 2, value: "Enseignant" },
-    { id: 3, value: "Étudiant" }
-  ]
+  const options = [];
 
+  for (let i = 1; i <= 100; i++) {
+    options.push({ id: i, value: `Role ${i}` });
+  }
+ 
   useEffect(() => {
     if (!isOpen) {
       setFormData(initialFormState);
