@@ -30,7 +30,7 @@ function ComboBoxOption({ option, onSelect, searchTerm, isHighlighted, isSelecte
       className={`p-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center ${isHighlighted ? 'bg-gray-100' : ''} ${isFirst ? 'rounded-t-lg' : ''} ${isLast ? 'rounded-b-lg' : ''}`}
       onClick={() => onSelect(option)}
     >
-      <span>{highlightMatch(option, searchTerm)}</span>
+      <span>{highlightMatch(option.value, searchTerm)}</span>
       {isSelected && <IssueClosedIcon className="text-[var(--selected-color)]" />}
     </div>
   );
@@ -42,12 +42,12 @@ function ComboBoxList({ options, onSelect, searchTerm, highlightedIndex, selecte
       {options.length > 0 ? (
         options.map((option, index) => (
           <ComboBoxOption
-            key={index}
+            key={option.id}
             option={option}
             onSelect={onSelect}
             searchTerm={searchTerm}
             isHighlighted={index === highlightedIndex}
-            isSelected={option === selectedOption}
+            isSelected={option.id === selectedOption?.id}
             isFirst={index === 0}
             isLast={index === options.length - 1}
           />
@@ -72,7 +72,7 @@ export default function ComboBox({ options, onSelect }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredOptions, setFilteredOptions] = useState(options);
   const [selectedOption, setSelectedOption] = useState(null);
-  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const comboBoxRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -96,14 +96,16 @@ export default function ComboBox({ options, onSelect }) {
       clearSelection();
     } else {
       setFilteredOptions(
-        options.filter(option => normalizeString(option).startsWith(normalizeString(value)))
+        options.filter(option => normalizeString(option.value).startsWith(normalizeString(value)))
       );
+      setHighlightedIndex(0); // Présélectionner la première option trouvée
     }
   };
 
   const handleSelect = (option) => {
+    if (!option) return;
     setSelectedOption(option);
-    setSearchTerm(option);
+    setSearchTerm(option.value);
     setFilteredOptions(options);
     setIsOpen(false);
     onSelect(option);
@@ -115,6 +117,7 @@ export default function ComboBox({ options, onSelect }) {
     setSearchTerm('');
     setFilteredOptions(options);
     setIsOpen(true);
+    setHighlightedIndex(0);
     onSelect(null);
   };
 
@@ -122,18 +125,14 @@ export default function ComboBox({ options, onSelect }) {
     if (isOpen) {
       if (e.key === 'Enter') {
         e.preventDefault();
-        if (highlightedIndex >= 0) {
+        if (filteredOptions.length > 0) {
           handleSelect(filteredOptions[highlightedIndex]);
         }
       } else if (e.key === 'Escape') {
         setIsOpen(false);
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
-        if (highlightedIndex === -1) {
-          setHighlightedIndex(0);
-        } else {
-          setHighlightedIndex((prev) => (prev + 1 < filteredOptions.length ? prev + 1 : prev));
-        }
+        setHighlightedIndex((prev) => (prev + 1 < filteredOptions.length ? prev + 1 : prev));
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : prev));
@@ -157,11 +156,11 @@ export default function ComboBox({ options, onSelect }) {
         variant={selectedOption ? "popover_selected_sq" : "popover_default_sq"}
         onClick={(e) => {
           e.preventDefault();
-          setIsOpen((prev) => !prev);
+          selectedOption ? clearSelection() : setIsOpen((prev) => !prev);
         }}
       >
         {selectedOption ? (
-          <XIcon size={16} onClick={clearSelection} className={textStyles.defaultWhite} />
+          <XIcon size={16} className={textStyles.defaultWhite} />
         ) : isOpen ? (
           <ChevronUpIcon size={16} className={textStyles.defaultWhite} />
         ) : (

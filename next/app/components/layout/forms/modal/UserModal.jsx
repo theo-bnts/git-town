@@ -15,6 +15,12 @@ export default function UserModal({ isOpen, onClose, onCreate }) {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
+  const options = [
+    { id: 1, value: "Administrateur" },
+    { id: 2, value: "Enseignant" },
+    { id: 3, value: "Étudiant" }
+  ]
+
   useEffect(() => {
     if (!isOpen) {
       setFormData(initialFormState);
@@ -97,7 +103,7 @@ export default function UserModal({ isOpen, onClose, onCreate }) {
             {errors.email && <p className={textStyles.warn}>{errors.email}</p>}
           </div>
           <div>
-            <ComboBox options={["Administrateur", "Enseignant", "Étudiant"]} onSelect={handleRoleChange} value={formData.role} />
+            <ComboBox options={options} onSelect={handleRoleChange} value={formData.role} />
             {errors.role && <p className={textStyles.warn}>{errors.role}</p>}
           </div>
           {errors.form && <p className={textStyles.warn}>{errors.form}</p>}
