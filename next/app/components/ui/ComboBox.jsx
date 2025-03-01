@@ -15,10 +15,6 @@ import { textStyles } from '@/app/styles/tailwindStyles';
 
 const MAX_ITEMS = 8;
 
-/**
- * Normalise une chaîne de caractères pour ignorer les accents
- * et comparer en minuscules.
- */
 function normalizeString(str) {
   return str
     .normalize("NFD")
@@ -26,10 +22,6 @@ function normalizeString(str) {
     .toLowerCase();
 }
 
-/**
- * Met en évidence la partie de text qui correspond à query.
- * Retourne un JSX où la sous-chaîne correspondante est englobée par <strong>.
- */
 function highlightMatch(text, query) {
   if (!query) return text;
   const matchIndex = normalizeString(text).indexOf(normalizeString(query));
@@ -44,11 +36,6 @@ function highlightMatch(text, query) {
   );
 }
 
-/**
- * Composant d'un item dans la liste du ComboBox.
- * Au survol (hover), l'icône IssueOpenedIcon apparaît.
- * Si l'option est sélectionnée, l'icône IssueClosedIcon est affichée à la place.
- */
 function ComboBoxOption({ 
   option, 
   onSelect, 
@@ -80,10 +67,6 @@ function ComboBoxOption({
     >
       <span>{highlightMatch(option.value, searchTerm)}</span>
 
-      {/* 
-        Si l’option est sélectionnée => IssueClosedIcon permanent
-        Sinon => IssueOpenedIcon qui apparaît uniquement au survol
-      */}
       {isSelected ? (
         <IssueClosedIcon className="text-[var(--selected-color)]" />
       ) : (
@@ -99,9 +82,6 @@ function ComboBoxOption({
   );
 }
 
-/**
- * Liste d'options du ComboBox, avec scroll infini.
- */
 function ComboBoxList({ 
   options, 
   onSelect, 
@@ -130,9 +110,6 @@ function ComboBoxList({
   );
 }
 
-/**
- * Conteneur du popover, avec animation d'apparition/disparition (fade + scale).
- */
 function ComboBoxPopover({ 
   isOpen,
   options, 
@@ -163,9 +140,6 @@ function ComboBoxPopover({
   );
 }
 
-/**
- * Composant principal ComboBox (Input + Popover + Gestion de sélection).
- */
 export default function ComboBox({ options, onSelect }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -177,7 +151,6 @@ export default function ComboBox({ options, onSelect }) {
   const comboBoxRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Fermer le menu si on clique en dehors
   useEffect(() => {
     function handleClickOutside(event) {
       if (comboBoxRef.current && !comboBoxRef.current.contains(event.target)) {
@@ -190,12 +163,10 @@ export default function ComboBox({ options, onSelect }) {
     };
   }, []);
 
-  // Mettre à jour les options affichées quand filteredOptions change
   useEffect(() => {
     setDisplayedOptions(filteredOptions.slice(0, MAX_ITEMS));
   }, [filteredOptions]);
 
-  // Gère le changement dans l'input (recherche)
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -208,7 +179,6 @@ export default function ComboBox({ options, onSelect }) {
     setHighlightedIndex(0);
   };
 
-  // Sélection d'une option
   const handleSelect = (option) => {
     if (!option) return;
     setSelectedOption(option);
@@ -221,7 +191,6 @@ export default function ComboBox({ options, onSelect }) {
     inputRef.current?.blur();
   };
 
-  // Effacer la sélection
   const clearSelection = () => {
     setSelectedOption(null);
     setSearchTerm('');
@@ -233,7 +202,6 @@ export default function ComboBox({ options, onSelect }) {
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
-  // Gère les événements clavier
   const handleKeyDown = (e) => {
     if (isOpen) {
       if (e.key === 'Enter' && highlightedIndex >= 0) {
@@ -259,7 +227,6 @@ export default function ComboBox({ options, onSelect }) {
     }
   };
 
-  // Chargement d'options supplémentaires au scroll bas
   const loadMore = useCallback((e) => {
     if (e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight) {
       setDisplayedOptions(prev => [
@@ -307,7 +274,6 @@ export default function ComboBox({ options, onSelect }) {
         )}
       </Button>
 
-      {/* Rendu inconditionnel du popover, avec animation contrôlée par isOpen */}
       <ComboBoxPopover
         isOpen={isOpen}
         options={displayedOptions}
