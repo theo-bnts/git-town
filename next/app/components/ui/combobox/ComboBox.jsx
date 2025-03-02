@@ -1,22 +1,16 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-
-import { 
-  XIcon, 
-  ChevronDownIcon, 
-  ChevronUpIcon 
-} from '@primer/octicons-react';
+import { XIcon, ChevronDownIcon, ChevronUpIcon } from '@primer/octicons-react';
 
 import { textStyles } from '@/app/styles/tailwindStyles';
-
 import { normalizeString } from '@/app/utils/stringUtils';
 
 import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
 import ComboBoxPopover from '@/app/components/ui/combobox/ComboBoxPopover';
 
-const MAX_ITEMS = 8;
+const MAX_ITEMS = 8; // Nombre de lignes chargées à la fois.
 
 export default function ComboBox({ options, onSelect }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,9 +29,9 @@ export default function ComboBox({ options, onSelect }) {
         setIsOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -45,11 +39,46 @@ export default function ComboBox({ options, onSelect }) {
     setDisplayedOptions(filteredOptions.slice(0, MAX_ITEMS));
   }, [filteredOptions]);
 
+  const ensureSelectedOptionVisible = (option) => {
+    if (!option) {
+      setHighlightedIndex(-1);
+      return;
+    }
+
+    const idx = filteredOptions.findIndex((o) => o.id === option.id);
+    if (idx < 0) {
+      setHighlightedIndex(-1);
+      return;
+    }
+
+    let newDisplayed = [...displayedOptions];
+    while (idx >= newDisplayed.length) {
+      const nextSlice = filteredOptions.slice(
+        newDisplayed.length, 
+        newDisplayed.length + MAX_ITEMS
+      );
+      if (nextSlice.length === 0) {
+        break;
+      }
+      newDisplayed = [...newDisplayed, ...nextSlice];
+    }
+    setDisplayedOptions(newDisplayed);
+    setHighlightedIndex(idx);
+  };
+
+  const handleOpenPopover = () => {
+    setIsOpen(true);
+    if (selectedOption) {
+      ensureSelectedOptionVisible(selectedOption);
+    } else {
+      setHighlightedIndex(-1);
+    }
+  };
+
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
     setSelectedOption(null);
-
     const filtered = options.filter((option) =>
       normalizeString(option.value).startsWith(normalizeString(value))
     );
@@ -98,8 +127,7 @@ export default function ComboBox({ options, onSelect }) {
       }
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setIsOpen(true);
-      setHighlightedIndex(0);
+      handleOpenPopover();
     }
   };
 
@@ -122,7 +150,7 @@ export default function ComboBox({ options, onSelect }) {
         variant={selectedOption ? 'selected' : 'default'}
         value={searchTerm}
         onChange={handleSearchChange}
-        onFocus={() => setIsOpen(true)}
+        onFocus={handleOpenPopover}
         onKeyDown={handleKeyDown}
         placeholder="Sélectionner..."
       />
@@ -138,7 +166,10 @@ export default function ComboBox({ options, onSelect }) {
             setIsOpen((prev) => {
               const newState = !prev;
               if (newState) {
-                setTimeout(() => inputRef.current?.focus(), 0);
+                setTimeout(() => {
+                  inputRef.current?.focus();
+                  handleOpenPopover();
+                }, 0);
               }
               return newState;
             });
