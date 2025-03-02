@@ -24,7 +24,7 @@ export default function ComboBox({ options, onSelect }) {
   const [filteredOptions, setFilteredOptions] = useState(options);
   const [displayedOptions, setDisplayedOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   const comboBoxRef = useRef(null);
   const inputRef = useRef(null);
@@ -74,7 +74,7 @@ export default function ComboBox({ options, onSelect }) {
     setSearchTerm('');
     setFilteredOptions(options);
     setDisplayedOptions(options.slice(0, MAX_ITEMS));
-    setHighlightedIndex(0);
+    setHighlightedIndex(-1);
     setIsOpen(true);
     onSelect(null);
     setTimeout(() => inputRef.current?.focus(), 0);
@@ -89,13 +89,9 @@ export default function ComboBox({ options, onSelect }) {
         setIsOpen(false);
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
-        if (highlightedIndex === -1) {
-          setHighlightedIndex(0);
-        } else {
-          setHighlightedIndex((prev) =>
-            prev + 1 < displayedOptions.length ? prev + 1 : prev
-          );
-        }
+        setHighlightedIndex((prev) =>
+          prev === -1 ? 0 : Math.min(prev + 1, displayedOptions.length - 1)
+        );
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : prev));

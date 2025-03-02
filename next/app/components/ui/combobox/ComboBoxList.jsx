@@ -13,7 +13,10 @@ export default function ComboBoxList({
   loadMore 
 }) {
   return (
-    <div className="max-h-60 overflow-auto" onScroll={loadMore}>
+    <div 
+      className="max-h-60 overflow-auto scroll-smooth shadow-inner transition-all duration-200 hover:shadow-md"
+      onScroll={loadMore}
+    >
       {options.length > 0 ? (
         options.map((option, index) => (
           <ComboBoxOption
