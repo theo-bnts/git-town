@@ -51,7 +51,7 @@ export default function UserModal({ isOpen, onClose, onCreate }) {
 
   const handleRoleChange = (role) => {
     setFormData((prev) => ({ ...prev, role }));
-    setErrors((prev) => ({ ...prev, role: '' }));
+    setErrors((prev) => ({ ...prev, role: [] }));
   };
 
   const handleSubmit = async (e) => {

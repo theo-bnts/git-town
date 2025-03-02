@@ -44,7 +44,6 @@ export default function ComboBox({ placeholder, options, onSelect }) {
       setHighlightedIndex(-1);
       return;
     }
-
     const idx = filteredOptions.findIndex((o) => o.id === option.id);
     if (idx < 0) {
       setHighlightedIndex(-1);
@@ -54,7 +53,7 @@ export default function ComboBox({ placeholder, options, onSelect }) {
     let newDisplayed = [...displayedOptions];
     while (idx >= newDisplayed.length) {
       const nextSlice = filteredOptions.slice(
-        newDisplayed.length, 
+        newDisplayed.length,
         newDisplayed.length + MAX_ITEMS
       );
       if (nextSlice.length === 0) {
@@ -79,6 +78,7 @@ export default function ComboBox({ placeholder, options, onSelect }) {
     const value = e.target.value;
     setSearchTerm(value);
     setSelectedOption(null);
+    onSelect?.(null);
     const filtered = options.filter((option) =>
       normalizeString(option.value).startsWith(normalizeString(value))
     );
@@ -105,7 +105,7 @@ export default function ComboBox({ placeholder, options, onSelect }) {
     setDisplayedOptions(options.slice(0, MAX_ITEMS));
     setHighlightedIndex(-1);
     setIsOpen(true);
-    onSelect(null);
+    onSelect?.(null);
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
@@ -158,11 +158,11 @@ export default function ComboBox({ placeholder, options, onSelect }) {
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           leftIcon={
-            <SearchIcon size={16} 
-            className={
-              selectedOption ? textStyles.default : textStyles.hint
-            } 
-          />}
+            <SearchIcon
+              size={16}
+              className={selectedOption ? textStyles.default : textStyles.hint}
+            />
+          }
         />
 
         <Button
