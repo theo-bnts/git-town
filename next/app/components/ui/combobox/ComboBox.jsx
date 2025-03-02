@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { XIcon, ChevronDownIcon, ChevronUpIcon } from '@primer/octicons-react';
+import { ChevronDownIcon, ChevronUpIcon, SearchIcon, XIcon } from '@primer/octicons-react';
 
 import { textStyles, comboboxStyles } from '@/app/styles/tailwindStyles';
 import { normalizeString } from '@/app/utils/stringUtils';
@@ -157,6 +157,12 @@ export default function ComboBox({ placeholder, options, onSelect }) {
           onFocus={handleOpenPopover}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
+          leftIcon={
+            <SearchIcon size={16} 
+            className={
+              selectedOption ? textStyles.default : textStyles.hint
+            } 
+          />}
         />
 
         <Button

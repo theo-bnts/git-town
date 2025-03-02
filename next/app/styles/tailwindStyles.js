@@ -18,8 +18,8 @@ const buttonStyles = {
   action_sq: `p-2 transition-transform duration-200 hover:scale-110 hover:text-[var(--accent-color)]`,
   default_sq: `bg-[var(--accent-color)] p-2 rounded-[12.5px] hover:bg-[var(--accent-color-hover)] transition-colors duration-200`,
   
-  popover_default_sq: `flex items-center p-3 bg-[var(--accent-color)] rounded-r-[12.5px]`,
-  popover_selected_sq: `flex items-center p-3 bg-[var(--selected-color)] rounded-r-[12.5px]`,
+  popover_default_sq: `flex items-center p-2 bg-[var(--accent-color)] rounded-r-[12.5px]`,
+  popover_selected_sq: `flex items-center p-2 bg-[var(--selected-color)] rounded-r-[12.5px]`,
 };
 
 const cardStyles = {
