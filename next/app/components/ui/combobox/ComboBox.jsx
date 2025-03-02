@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { XIcon, ChevronDownIcon, ChevronUpIcon } from '@primer/octicons-react';
 
-import { textStyles } from '@/app/styles/tailwindStyles';
+import { textStyles, comboboxStyles } from '@/app/styles/tailwindStyles';
 import { normalizeString } from '@/app/utils/stringUtils';
 
 import Input from '@/app/components/ui/Input';
@@ -12,7 +12,7 @@ import ComboBoxPopover from '@/app/components/ui/combobox/ComboBoxPopover';
 
 const MAX_ITEMS = 8; // Nombre de lignes chargées à la fois.
 
-export default function ComboBox({ options, onSelect }) {
+export default function ComboBox({ placeholder, options, onSelect }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredOptions, setFilteredOptions] = useState(options);
@@ -144,46 +144,51 @@ export default function ComboBox({ options, onSelect }) {
   );
 
   return (
-    <div className="relative w-full max-w-xs" ref={comboBoxRef}>
-      <Input
-        ref={inputRef}
-        variant={selectedOption ? 'selected' : 'default'}
-        value={searchTerm}
-        onChange={handleSearchChange}
-        onFocus={handleOpenPopover}
-        onKeyDown={handleKeyDown}
-        placeholder="Sélectionner..."
-      />
+    <div
+      ref={comboBoxRef}
+      className={selectedOption ? comboboxStyles.selected : comboboxStyles.default}
+    >
+      <div className="flex items-center">
+        <Input
+          ref={inputRef}
+          variant={selectedOption ? 'selected' : 'default'}
+          value={searchTerm}
+          onChange={handleSearchChange}
+          onFocus={handleOpenPopover}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+        />
 
-      <Button
-        type="button"
-        variant={selectedOption ? 'popover_selected_sq' : 'popover_default_sq'}
-        onClick={(e) => {
-          e.preventDefault();
-          if (selectedOption) {
-            clearSelection();
-          } else {
-            setIsOpen((prev) => {
-              const newState = !prev;
-              if (newState) {
-                setTimeout(() => {
-                  inputRef.current?.focus();
-                  handleOpenPopover();
-                }, 0);
-              }
-              return newState;
-            });
-          }
-        }}
-      >
-        {selectedOption ? (
-          <XIcon size={16} className={textStyles.defaultWhite} />
-        ) : isOpen ? (
-          <ChevronUpIcon size={16} className={textStyles.defaultWhite} />
-        ) : (
-          <ChevronDownIcon size={16} className={textStyles.defaultWhite} />
-        )}
-      </Button>
+        <Button
+          type="button"
+          variant={selectedOption ? 'popover_selected_sq' : 'popover_default_sq'}
+          onClick={(e) => {
+            e.preventDefault();
+            if (selectedOption) {
+              clearSelection();
+            } else {
+              setIsOpen((prev) => {
+                const newState = !prev;
+                if (newState) {
+                  setTimeout(() => {
+                    inputRef.current?.focus();
+                    handleOpenPopover();
+                  }, 0);
+                }
+                return newState;
+              });
+            }
+          }}
+        >
+          {selectedOption ? (
+            <XIcon size={16} className={textStyles.defaultWhite} />
+          ) : isOpen ? (
+            <ChevronUpIcon size={16} className={textStyles.defaultWhite} />
+          ) : (
+            <ChevronDownIcon size={16} className={textStyles.defaultWhite} />
+          )}
+        </Button>
+      </div>
 
       <ComboBoxPopover
         isOpen={isOpen}

@@ -18,8 +18,8 @@ const buttonStyles = {
   action_sq: `p-2 transition-transform duration-200 hover:scale-110 hover:text-[var(--accent-color)]`,
   default_sq: `bg-[var(--accent-color)] p-2 rounded-[12.5px] hover:bg-[var(--accent-color-hover)] transition-colors duration-200`,
   
-  popover_default_sq: `absolute inset-y-0 right-0 flex items-center p-3 bg-[var(--accent-color)] p-2 rounded-r-[12.5px]`,
-  popover_selected_sq: `absolute inset-y-0 right-0 flex items-center p-3 bg-[var(--selected-color)] p-2 rounded-r-[12.5px]`,
+  popover_default_sq: `flex items-center p-3 bg-[var(--accent-color)] rounded-r-[12.5px]`,
+  popover_selected_sq: `flex items-center p-3 bg-[var(--selected-color)] rounded-r-[12.5px]`,
 };
 
 const cardStyles = {
@@ -38,4 +38,9 @@ const spinnerStyles = {
   default: `inline-block h-8 w-8 animate-[spinner-grow_0.75s_linear_infinite] rounded-full bg-current align-[-0.125em] opacity-50 motion-reduce:animate-[spinner-grow_1.5s_linear_infinite]`
 };
 
-export { buttonStyles, cardStyles, inputStyles, spinnerStyles, textStyles };
+const comboboxStyles = {
+  default: `relative w-full max-w-xs rounded-[12.5px] focus-within:outline-none focus-within:ring-1 focus-within:ring-[var(--accent-color)] bg-[var(--accent-color)]`,
+  selected: `relative w-full max-w-xs rounded-[12.5px] focus-within:outline-none focus-within:ring-1 focus-within:ring-[var(--selected-color)] bg-[var(--selected-color)]`,
+}
+
+export { buttonStyles, cardStyles, comboboxStyles, inputStyles, spinnerStyles, textStyles };

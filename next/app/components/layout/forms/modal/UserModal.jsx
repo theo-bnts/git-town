@@ -103,7 +103,12 @@ export default function UserModal({ isOpen, onClose, onCreate }) {
             {errors.email && <p className={textStyles.warn}>{errors.email}</p>}
           </div>
           <div>
-            <ComboBox options={options} onSelect={handleRoleChange} value={formData.role} />
+            <ComboBox 
+              placeholder="Rôle" 
+              options={options} 
+              onSelect={handleRoleChange} 
+              value={formData.role} 
+            />
             {errors.role && <p className={textStyles.warn}>{errors.role}</p>}
           </div>
           {errors.form && <p className={textStyles.warn}>{errors.form}</p>}
