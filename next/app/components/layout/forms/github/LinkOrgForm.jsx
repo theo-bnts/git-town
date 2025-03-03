@@ -1,7 +1,7 @@
 // /app/components/layout/LinkOrgForm.jsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import postInvite from '@/app/services/api/users/id/github/postInvite';
 
@@ -13,12 +13,21 @@ import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 
 export default function LinkOrgForm({ router }) {
+  const [userId, setUserId] = useState(null);
+  const [token, setToken] = useState(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [inviteSent, setInviteSent] = useState(false);
 
-  const userId = getCookie('userId');
-  const token = getCookie('token');
+  useEffect(() => {
+    async function fetchCookies() {
+      const uid = await getCookie('userId');
+      const tok = await getCookie('token');
+      setUserId(uid);
+      setToken(tok);
+    }
+    fetchCookies();
+  }, []);
 
   const handleJoinOrg = async () => {
     if (userId && token) {

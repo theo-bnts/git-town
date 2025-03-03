@@ -1,3 +1,4 @@
+// app/services/api/users/id/getUser.js
 import { userRoute } from "@/app/services/routes";
 import { handleApiError } from "@/app/services/errorHandler";
 
@@ -18,7 +19,6 @@ export default async function getUser(userId, token) {
     },
   });
 
-  //try catch res.json() si pas de json
   const data = await res.json();
 
   if (res.ok) 
