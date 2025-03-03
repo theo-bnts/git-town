@@ -5,9 +5,13 @@ import { userRoute } from "@/app/services/routes";
 export async function middleware(request) {
   const token = request.cookies.get("token")?.value;
   const userId = request.cookies.get("userId")?.value;
+  console.log("token", token);
+  console.log("userId", userId);
 
   if (token && userId) {
+    console.log("userRoute(userId)", userRoute(userId));
     try {
+      console.log("fetching user data");
       const apiResponse = await fetch(
         userRoute(userId),
         {
@@ -16,7 +20,10 @@ export async function middleware(request) {
         }
       );
 
+      console.log("apiResponse", apiResponse);
+
       if (apiResponse.ok) {
+        console.log("user data fetched");
         const userData = await apiResponse.json();
 
         if (!userData.GitHubId) {
@@ -52,6 +59,7 @@ export async function middleware(request) {
       return response;
     }
   } else if (request.nextUrl.pathname !== "/login") {
+    console.log("redirecting to login");
     const response = NextResponse.redirect(new URL("/login", request.url));
     response.cookies.delete("token", { path: "/" });
     response.cookies.delete("userId", { path: "/" });
