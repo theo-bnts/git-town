@@ -25,3 +25,6 @@ export const githubOAuthRoute = (userId) =>
 
 export const githubInviteRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}/github/invite`;
+
+export const delTokenRoute = (userId) =>
+  `${API_BASE_URL}/users/${userId}/token`;
