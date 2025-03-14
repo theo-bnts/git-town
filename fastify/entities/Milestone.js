@@ -22,7 +22,7 @@ export default class Milestone {
     this.Date = date;
   }
 
-  static async insert() {
+  async insert() {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
         INSERT INTO public.milestone (template_id, title, date)
@@ -37,7 +37,7 @@ export default class Milestone {
     this.UpdatedAt = row.updated_at;
   }
 
-  static async update() {
+  async update() {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
         UPDATE public.milestone
@@ -59,6 +59,21 @@ export default class Milestone {
         WHERE initialism = $1::text
       `,
       [id],
+    );
+
+    return row.count === 1n;
+  }
+
+  static async isTemplateTitleAndDateInserted(template, title, date) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.milestone
+        WHERE template_id = $1::uuid
+        AND title = $2::text
+        AND date = $3::date
+      `,
+      [template.Id, title, date],
     );
 
     return row.count === 1n;

@@ -5,7 +5,7 @@ import Template from '../../../../entities/Template.js';
 
 export default async function route(app) {
   app.route({
-    method: 'GET',
+    method: 'PUT',
     url: '/templates/:TemplateId/milestones',
     schema: {
       headers: {
@@ -25,21 +25,54 @@ export default async function route(app) {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
-          additionalProperties: false,
         },
+      },
+      body: {
+        type: 'object',
+        properties: {
+          Title: {
+            type: 'string',
+            maxLength: Number(process.env.MILESTONE_TITLE_MAX_LENGTH),
+            pattern: process.env.GENERIC_PATTERN,
+          },
+          Date: {
+            type: 'string',
+            format: 'date',
+          },
+        },
+        required: ['Title', 'Date'],
+        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
-      await AuthorizationMiddleware.assertSufficientUserRole(request, 'teacher');
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
       await DataQualityMiddleware.assertTemplateIdExists(request);
     },
     handler: async (request) => {
       const { TemplateId: templateId } = request.params;
+      const { Title: title, Date: dateString } = request.body;
 
       const template = await Template.fromId(templateId);
 
-      return Milestone.fromTemplate(template);
+      const date = new Date(dateString);
+
+      if (await Milestone.isTemplateTitleAndDateInserted(template, title, date)) {
+        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+      }
+
+      const milestone = new Milestone(
+        null,
+        null,
+        null,
+        template,
+        title,
+        date,
+      );
+
+      await milestone.insert();
+
+      return milestone;
     },
   });
 }

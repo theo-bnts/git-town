@@ -67,14 +67,28 @@ export default class Template {
     return row.count === 1n;
   }
 
-  static async isEnseignementUnitIdInserted(id) {
+  static async isEnseignementUnitInserted(enseignementUnit) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.template
         WHERE enseignement_unit_id = $1::uuid
       `,
-      [id],
+      [enseignementUnit.Id],
+    );
+
+    return row.count > 0;
+  }
+
+  static async isEnseignementUnitAndYearInserted(enseignementUnit, year) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.template
+        WHERE enseignement_unit_id = $1::uuid
+        AND year = $2::integer
+      `,
+      [enseignementUnit.Id, year],
     );
 
     return row.count > 0;

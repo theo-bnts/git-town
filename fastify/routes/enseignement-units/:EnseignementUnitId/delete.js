@@ -39,7 +39,7 @@ export default async function route(app) {
 
       const enseignementUnit = await EnseignementUnit.fromId(enseignementUnitId);
 
-      if (await Template.isEnseignementUnitIdInserted(enseignementUnitId)) {
+      if (await Template.isEnseignementUnitInserted(enseignementUnit)) {
         throw { statusCode: 409, error: 'HAS_TEMPLATES' };
       }
 

@@ -110,6 +110,11 @@ export default async function route(app) {
       }
 
       const user = await User.fromId(userId);
+
+      if (user.Role.Keyword !== 'student') {
+        throw { statusCode: 409, error: 'NOT_STUDENT_ROLE' };
+      }
+
       const promotion = await Promotion.fromDiplomaPromotionLevelAndYear(
         diploma,
         promotionLevel,
@@ -118,10 +123,6 @@ export default async function route(app) {
 
       if (await UserPromotion.isUserAndPromotionInserted(user, promotion)) {
         throw { statusCode: 409, error: 'ALREADY_EXISTS' };
-      }
-
-      if (user.Role.Keyword !== 'student') {
-        throw { statusCode: 409, error: 'NOT_STUDENT_ROLE' };
       }
 
       const userPromotion = new UserPromotion(
