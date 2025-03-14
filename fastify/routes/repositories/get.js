@@ -1,4 +1,4 @@
-import DataQualityMiddleware from '../../entities/tools/DataQualityMiddleware.js';
+import AuthorizationMiddleware from '../../entities/tools/AuthorizationMiddleware.js';
 import Repository from '../../entities/Repository.js';
 import Request from '../../entities/tools/Request.js';
 import UserRepository from '../../entities/UserRepository.js';
@@ -20,7 +20,7 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await DataQualityMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertAuthentication(request);
     },
     handler: async (request) => {
       const { User: user } = await Request.getUsedToken(request);

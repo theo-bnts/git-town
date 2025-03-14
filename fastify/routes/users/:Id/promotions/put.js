@@ -1,5 +1,6 @@
-import Diploma from '../../../../entities/Diploma.js';
+import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
 import DataQualityMiddleware from '../../../../entities/tools/DataQualityMiddleware.js';
+import Diploma from '../../../../entities/Diploma.js';
 import Promotion from '../../../../entities/Promotion.js';
 import PromotionLevel from '../../../../entities/PromotionLevel.js';
 import User from '../../../../entities/User.js';
@@ -73,8 +74,8 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await DataQualityMiddleware.assertAuthentication(request);
-      await DataQualityMiddleware.assertSufficientUserRole(request, 'administrator');
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
       await DataQualityMiddleware.assertUserIdExists(request);
     },
     handler: async (request) => {

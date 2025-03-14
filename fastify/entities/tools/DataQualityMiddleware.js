@@ -1,7 +1,6 @@
 import EnseignementUnit from '../EnseignementUnit.js';
 import Milestone from '../Milestone.js';
 import Promotion from '../Promotion.js';
-import Request from './Request.js';
 import Template from '../Template.js';
 import User from '../User.js';
 

@@ -1,3 +1,4 @@
+import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
 import DataQualityMiddleware from '../../../../entities/tools/DataQualityMiddleware.js';
 import Milestone from '../../../../entities/Milestone.js';
 import Template from '../../../../entities/Template.js';
@@ -29,8 +30,8 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await DataQualityMiddleware.assertAuthentication(request);
-      await DataQualityMiddleware.assertSufficientUserRole(request, 'teacher');
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'teacher');
       await DataQualityMiddleware.assertMilestoneIdExists(request);
     },
     handler: async (request) => {

@@ -1,5 +1,6 @@
-import EnseignementUnit from '../../../entities/EnseignementUnit.js';
+import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
 import DataQualityMiddleware from '../../../entities/tools/DataQualityMiddleware.js';
+import EnseignementUnit from '../../../entities/EnseignementUnit.js';
 import Template from '../../../entities/Template.js';
 
 export default async function route(app) {
@@ -29,8 +30,8 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await DataQualityMiddleware.assertAuthentication(request);
-      await DataQualityMiddleware.assertSufficientUserRole(request, 'administrator');
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
       await DataQualityMiddleware.assertEnseignementUnitIdExists(request);
     },
     handler: async (request) => {

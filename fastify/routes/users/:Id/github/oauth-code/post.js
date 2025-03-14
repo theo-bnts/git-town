@@ -1,5 +1,5 @@
+import AuthorizationMiddleware from '../../../../../entities/tools/AuthorizationMiddleware.js';
 import GitHubUser from '../../../../../entities/tools/GitHubUser.js';
-import DataQualityMiddleware from '../../../../../entities/tools/DataQualityMiddleware.js';
 import User from '../../../../../entities/User.js';
 
 export default async function route(app) {
@@ -40,8 +40,8 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await DataQualityMiddleware.assertAuthentication(request);
-      await DataQualityMiddleware.assertUserIdMatch(request);
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertUserIdMatch(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;

@@ -1,4 +1,4 @@
-import DataQualityMiddleware from '../../entities/tools/DataQualityMiddleware.js';
+import AuthorizationMiddleware from '../../entities/tools/AuthorizationMiddleware.js';
 import User from '../../entities/User.js';
 
 export default async function route(app) {
@@ -18,8 +18,8 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await DataQualityMiddleware.assertAuthentication(request);
-      await DataQualityMiddleware.assertSufficientUserRole(request, 'teacher');
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'teacher');
     },
     handler: () => User.all(),
   });
