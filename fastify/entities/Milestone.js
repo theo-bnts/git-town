@@ -1,4 +1,5 @@
 import DatabasePool from './tools/DatabasePool.js';
+import Template from './Template.js';
 
 export default class Milestone {
   Id;
@@ -49,6 +50,16 @@ export default class Milestone {
     );
 
     this.UpdatedAt = row.updated_at;
+  }
+
+  toJSON() {
+    return {
+      id: this.Id,
+      createdAt: this.CreatedAt,
+      updatedAt: this.UpdatedAt,
+      title: this.Title,
+      date: this.Date.toISOString().split('T')[0],
+    };
   }
 
   static async isIdInserted(id) {
@@ -110,22 +121,21 @@ export default class Milestone {
           id,
           created_at,
           updated_at,
-          initialism,
-          name
+          title,
+          date
         FROM public.milestone
         WHERE template_id = $1::uuid
       `,
       [template.Id],
     );
 
-    return Promise.all(
-      rows.map((row) => new this(
-        row.id,
-        row.created_at,
-        row.updated_at,
-        row.initialism,
-        row.name,
-      )),
-    );
+    return rows.map((row) => new this(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      template,
+      row.title,
+      row.date,
+    ));
   }
 }

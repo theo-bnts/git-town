@@ -1,4 +1,5 @@
 import DatabasePool from './tools/DatabasePool.js';
+import EnseignementUnit from './EnseignementUnit.js';
 
 export default class Template {
   Id;
@@ -131,12 +132,18 @@ export default class Template {
       `,
     );
 
-    return rows.map((row) => new this(
-      row.id,
-      row.created_at,
-      row.updated_at,
-      row.enseignement_unit_id,
-      row.year,
-    ));
+    return Promise.all(
+      rows.map(async (row) => {
+        const enseignementUnit = await EnseignementUnit.fromId(row.enseignement_unit_id);
+
+        return new this(
+          row.id,
+          row.created_at,
+          row.updated_at,
+          enseignementUnit,
+          row.year,
+        );
+      }),
+    );
   }
 }
