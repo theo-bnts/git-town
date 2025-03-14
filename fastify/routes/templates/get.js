@@ -1,10 +1,10 @@
 import AuthorizationMiddleware from '../../entities/tools/AuthorizationMiddleware.js';
-import Promotion from '../../entities/Promotion.js';
+import Template from '../../entities/Template.js';
 
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/promotions',
+    url: '/templates',
     schema: {
       headers: {
         type: 'object',
@@ -21,6 +21,6 @@ export default async function route(app) {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'teacher');
     },
-    handler: () => Promotion.all(),
+    handler: () => Template.all(),
   });
 }

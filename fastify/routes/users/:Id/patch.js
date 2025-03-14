@@ -1,4 +1,5 @@
-import Middleware from '../../../entities/tools/Middleware.js';
+import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
+import DataQualityMiddleware from '../../../entities/tools/DataQualityMiddleware.js';
 import User from '../../../entities/User.js';
 import Request from '../../../entities/tools/Request.js';
 import Role from '../../../entities/Role.js';
@@ -53,14 +54,14 @@ export default async function route(app) {
             required: ['Keyword'],
           },
         },
-        additionalProperties: false,
         minProperties: 1,
+        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertSufficientUserRole(request, 'administrator');
-      await Middleware.assertUserIdExists(request);
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
+      await DataQualityMiddleware.assertUserIdExists(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;
@@ -113,7 +114,9 @@ export default async function route(app) {
         requestedUser.Role = await Role.fromKeyword(roleKeyword);
       }
 
-      return requestedUser.update();
+      await requestedUser.update();
+
+      return requestedUser;
     },
   });
 }

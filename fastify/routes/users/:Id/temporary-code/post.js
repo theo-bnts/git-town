@@ -1,5 +1,5 @@
 import MailTransporter from '../../../../entities/tools/MailTransporter.js';
-import Middleware from '../../../../entities/tools/Middleware.js';
+import DataQualityMiddleware from '../../../../entities/tools/DataQualityMiddleware.js';
 import Security from '../../../../entities/tools/Security.js';
 import TemporaryCode from '../../../../entities/TemporaryCode.js';
 import User from '../../../../entities/User.js';
@@ -27,7 +27,7 @@ export default async function route(app) {
         keyGenerator: (request) => `${request.params.UserId}-${request.routeOptions.url}`,
       },
     },
-    preHandler: async (request) => Middleware.assertUserIdExists(request),
+    preHandler: async (request) => DataQualityMiddleware.assertUserIdExists(request),
     handler: async (request) => {
       const { UserId: userId } = request.params;
 

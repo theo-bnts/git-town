@@ -6,10 +6,12 @@ import rateLimit from '@fastify/rate-limit';
 import rawBody from 'fastify-raw-body';
 
 import DatabasePool from './entities/tools/DatabasePool.js';
+import GitHubApp from './entities/tools/GitHubApp.js';
 import MailTransporter from './entities/tools/MailTransporter.js';
 import Request from './entities/tools/Request.js';
 
 DatabasePool.Instance = new DatabasePool();
+GitHubApp.Instance = new GitHubApp();
 MailTransporter.Instance = new MailTransporter();
 
 /* eslint-disable-next-line no-extend-native */

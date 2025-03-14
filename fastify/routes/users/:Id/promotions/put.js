@@ -1,5 +1,6 @@
+import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
+import DataQualityMiddleware from '../../../../entities/tools/DataQualityMiddleware.js';
 import Diploma from '../../../../entities/Diploma.js';
-import Middleware from '../../../../entities/tools/Middleware.js';
 import Promotion from '../../../../entities/Promotion.js';
 import PromotionLevel from '../../../../entities/PromotionLevel.js';
 import User from '../../../../entities/User.js';
@@ -73,9 +74,9 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertSufficientUserRole(request, 'administrator');
-      await Middleware.assertUserIdExists(request);
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
+      await DataQualityMiddleware.assertUserIdExists(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;
@@ -109,6 +110,11 @@ export default async function route(app) {
       }
 
       const user = await User.fromId(userId);
+
+      if (user.Role.Keyword !== 'student') {
+        throw { statusCode: 409, error: 'NOT_STUDENT_ROLE' };
+      }
+
       const promotion = await Promotion.fromDiplomaPromotionLevelAndYear(
         diploma,
         promotionLevel,
@@ -117,10 +123,6 @@ export default async function route(app) {
 
       if (await UserPromotion.isUserAndPromotionInserted(user, promotion)) {
         throw { statusCode: 409, error: 'ALREADY_EXISTS' };
-      }
-
-      if (user.Role.Keyword !== 'student') {
-        throw { statusCode: 409, error: 'NOT_STUDENT_ROLE' };
       }
 
       const userPromotion = new UserPromotion(

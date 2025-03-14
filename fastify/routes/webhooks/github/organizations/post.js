@@ -1,4 +1,4 @@
-import Middleware from '../../../../entities/tools/Middleware.js';
+import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
 import User from '../../../../entities/User.js';
 
 export default async function route(app) {
@@ -57,7 +57,7 @@ export default async function route(app) {
       rawBody: true,
     },
     preHandler: async (request) => {
-      await Middleware.assertGitHubWebhookAuthentication(request);
+      await AuthorizationMiddleware.assertGitHubWebhookAuthentication(request);
     },
     handler: async (request) => {
       const { action, membership: { user: { id: gitHubUserId } } } = request.body;

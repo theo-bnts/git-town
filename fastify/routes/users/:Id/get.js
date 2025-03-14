@@ -1,4 +1,4 @@
-import Middleware from '../../../entities/tools/Middleware.js';
+import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
 import User from '../../../entities/User.js';
 
 export default async function route(app) {
@@ -28,8 +28,8 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertUserIdMatch(request);
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertUserIdMatch(request);
     },
     handler: (request) => {
       const { UserId: userId } = request.params;

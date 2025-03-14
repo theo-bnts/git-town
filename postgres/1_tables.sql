@@ -122,7 +122,7 @@ CREATE TABLE public.user_promotion (
   CONSTRAINT user_promotion_unique_user_promotion UNIQUE (user_id, promotion_id)
 );
 
-CREATE TABLE public.ue (
+CREATE TABLE public.enseignement_unit (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -139,12 +139,12 @@ CREATE TABLE public.template (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  ue_id uuid NOT NULL,
+  enseignement_unit_id uuid NOT NULL,
   year int2 DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::int2 NOT NULL,
   CONSTRAINT template_pk PRIMARY KEY (id),
-  CONSTRAINT template_fk_ue FOREIGN KEY (ue_id) REFERENCES public.ue(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT template_fk_enseignement_unit FOREIGN KEY (enseignement_unit_id) REFERENCES public.enseignement_unit(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT template_check_year CHECK ((year >= 2000) AND (year <= 2099)),
-  CONSTRAINT template_unique_ue_year UNIQUE (ue_id, year)
+  CONSTRAINT template_unique_enseignement_unit_year UNIQUE (enseignement_unit_id, year)
 );
 
 CREATE TABLE public.repository (

@@ -89,4 +89,35 @@ export default class Repository {
 
     return row.count > 0;
   }
+
+  static async all() {
+    const rows = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          repository.id,
+          repository.created_at,
+          repository.updated_at,
+          repository.archived_at,
+          repository.template_id,
+          repository.promotion_id,
+          repository.comment,
+          repository.github_id,
+          repository.github_team_id
+        FROM public.repository
+        ORDER BY repository.created_at DESC
+      `,
+    );
+
+    return rows.map((row) => new this(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      row.archived_at,
+      row.template_id,
+      row.promotion_id,
+      row.comment,
+      row.github_id,
+      row.github_team_id,
+    ));
+  }
 }
