@@ -1,4 +1,4 @@
-import Middleware from '../../entities/tools/Middleware.js';
+import DataQualityMiddleware from '../../entities/tools/DataQualityMiddleware.js';
 import User from '../../entities/User.js';
 import Role from '../../entities/Role.js';
 
@@ -47,8 +47,8 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertSufficientUserRole(request, 'administrator');
+      await DataQualityMiddleware.assertAuthentication(request);
+      await DataQualityMiddleware.assertSufficientUserRole(request, 'administrator');
     },
     handler: async (request) => {
       const {
@@ -81,6 +81,8 @@ export default async function route(app) {
       );
 
       await user.insert();
+
+      return user;
     },
   });
 }

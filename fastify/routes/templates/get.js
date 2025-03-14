@@ -1,10 +1,10 @@
 import DataQualityMiddleware from '../../entities/tools/DataQualityMiddleware.js';
-import Promotion from '../../entities/Promotion.js';
+import Template from '../../entities/Template.js';
 
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/promotions',
+    url: '/templates',
     schema: {
       headers: {
         type: 'object',
@@ -21,6 +21,6 @@ export default async function route(app) {
       await DataQualityMiddleware.assertAuthentication(request);
       await DataQualityMiddleware.assertSufficientUserRole(request, 'teacher');
     },
-    handler: () => Promotion.all(),
+    handler: () => Template.all(),
   });
 }

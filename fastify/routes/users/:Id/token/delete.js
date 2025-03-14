@@ -1,4 +1,4 @@
-import Middleware from '../../../../entities/tools/Middleware.js';
+import DataQualityMiddleware from '../../../../entities/tools/DataQualityMiddleware.js';
 import Request from '../../../../entities/tools/Request.js';
 
 export default async function route(app) {
@@ -28,8 +28,8 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertUserIdMatch(request);
+      await DataQualityMiddleware.assertAuthentication(request);
+      await DataQualityMiddleware.assertUserIdMatch(request);
     },
     handler: async (request) => {
       const token = await Request.getUsedToken(request);

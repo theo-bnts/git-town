@@ -1,10 +1,10 @@
-import DataQualityMiddleware from '../../entities/tools/DataQualityMiddleware.js';
-import Promotion from '../../entities/Promotion.js';
+import AuthorizationMiddleware from '../../entities/tools/AuthorizationMiddleware.js';
+import EnseignementUnit from '../../entities/EnseignementUnit.js';
 
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/promotions',
+    url: '/enseignement-units',
     schema: {
       headers: {
         type: 'object',
@@ -18,9 +18,9 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await DataQualityMiddleware.assertAuthentication(request);
-      await DataQualityMiddleware.assertSufficientUserRole(request, 'teacher');
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'teacher');
     },
-    handler: () => Promotion.all(),
+    handler: () => EnseignementUnit.all(),
   });
 }

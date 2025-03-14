@@ -1,11 +1,11 @@
+import EnseignementUnit from '../../../entities/EnseignementUnit.js';
 import DataQualityMiddleware from '../../../entities/tools/DataQualityMiddleware.js';
-import Promotion from '../../../entities/Promotion.js';
-import Repository from '../../../entities/Repository.js';
+import Template from '../../../entities/Template.js';
 
 export default async function route(app) {
   app.route({
     method: 'DELETE',
-    url: '/promotions/:PromotionId',
+    url: '/enseignement-units/:EnseignementUnitId',
     schema: {
       headers: {
         type: 'object',
@@ -20,7 +20,7 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          PromotionId: {
+          EnseignementUnitId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -31,19 +31,18 @@ export default async function route(app) {
     preHandler: async (request) => {
       await DataQualityMiddleware.assertAuthentication(request);
       await DataQualityMiddleware.assertSufficientUserRole(request, 'administrator');
-      await DataQualityMiddleware.assertPromotionIdExists(request);
+      await DataQualityMiddleware.assertEnseignementUnitIdExists(request);
     },
     handler: async (request) => {
-      const { PromotionId: promotionId } = request.params;
+      const { EnseignementUnitId: enseignementUnitId } = request.params;
 
-      const promotion = await Promotion.fromId(promotionId);
+      const enseignementUnit = await EnseignementUnit.fromId(enseignementUnitId);
 
-      // TODO: Test
-      if (await Repository.isPromotionInserted(promotion)) {
-        throw { statusCode: 409, error: 'HAS_REPOSITORIES' };
+      if (await Template.isEnseignementUnitIdInserted(enseignementUnitId)) {
+        throw { statusCode: 409, error: 'HAS_TEMPLATES' };
       }
 
-      await promotion.delete();
+      await enseignementUnit.delete();
     },
   });
 }

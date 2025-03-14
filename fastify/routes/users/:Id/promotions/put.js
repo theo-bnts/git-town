@@ -1,5 +1,5 @@
 import Diploma from '../../../../entities/Diploma.js';
-import Middleware from '../../../../entities/tools/Middleware.js';
+import DataQualityMiddleware from '../../../../entities/tools/DataQualityMiddleware.js';
 import Promotion from '../../../../entities/Promotion.js';
 import PromotionLevel from '../../../../entities/PromotionLevel.js';
 import User from '../../../../entities/User.js';
@@ -73,9 +73,9 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertSufficientUserRole(request, 'administrator');
-      await Middleware.assertUserIdExists(request);
+      await DataQualityMiddleware.assertAuthentication(request);
+      await DataQualityMiddleware.assertSufficientUserRole(request, 'administrator');
+      await DataQualityMiddleware.assertUserIdExists(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;

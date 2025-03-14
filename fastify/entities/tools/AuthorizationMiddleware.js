@@ -1,10 +1,8 @@
-import Promotion from '../Promotion.js';
 import Request from './Request.js';
 import Role from '../Role.js';
-import User from '../User.js';
 import Security from './Security.js';
 
-export default class Middleware {
+export default class AuthorizationMiddleware {
   static async assertAuthentication(request) {
     if (!await Request.isAuthenticated(request)) {
       throw { statusCode: 401, error: 'INVALID_TOKEN' };
@@ -28,22 +26,6 @@ export default class Middleware {
 
     if (authenticatedUserRole.HierarchyLevel < requiredRole.HierarchyLevel) {
       throw { statusCode: 403, error: 'INSUFFICIENT_PERMISSIONS' };
-    }
-  }
-
-  static async assertUserIdExists(request) {
-    const { UserId: userId } = request.params;
-
-    if (!(await User.isIdInserted(userId))) {
-      throw { statusCode: 404, error: 'UNKNOWN_USER_ID' };
-    }
-  }
-
-  static async assertPromotionIdExists(request) {
-    const { PromotionId: promotionId } = request.params;
-
-    if (!(await Promotion.isIdInserted(promotionId))) {
-      throw { statusCode: 404, error: 'UNKNOWN_PROMOTION_ID' };
     }
   }
 

@@ -1,11 +1,11 @@
 import DataQualityMiddleware from '../../../../entities/tools/DataQualityMiddleware.js';
-import User from '../../../../entities/User.js';
-import UserPromotion from '../../../../entities/UserPromotion.js';
+import Milestone from '../../../../entities/Milestone.js';
+import Template from '../../../../entities/Template.js';
 
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/users/:UserId/promotions',
+    url: '/templates/:TemplateId/milestones',
     schema: {
       headers: {
         type: 'object',
@@ -20,25 +20,25 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          UserId: {
+          TemplateId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
+          additionalProperties: false,
         },
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
       await DataQualityMiddleware.assertAuthentication(request);
       await DataQualityMiddleware.assertSufficientUserRole(request, 'teacher');
-      await DataQualityMiddleware.assertUserIdExists(request);
+      await DataQualityMiddleware.assertMilestoneIdExists(request);
     },
     handler: async (request) => {
-      const { UserId: userId } = request.params;
+      const { TemplateId: templateId } = request.params;
 
-      const user = await User.fromId(userId);
+      const template = await Template.fromId(templateId);
 
-      return UserPromotion.fromUser(user);
+      return Milestone.fromTemplate(template);
     },
   });
 }
