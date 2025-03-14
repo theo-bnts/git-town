@@ -35,7 +35,7 @@ export default function CheckEmailForm ({ onSuccess }) {
       setIsLoading(true);
       try {
         const data = await getEmailAddress(trimmedEmail);
-        setCookie('userId', data.Id);
+        await setCookie('userId', data.Id);
   
         if (!data.PasswordDefined) {
           await postTemporaryCode(data.Id);

@@ -1,12 +1,23 @@
 // app/services/cookies.js
-import Cookies from 'js-cookie';
 
-export const setCookie = (key, value, options = {}) => {
-  const validTime = new Date(Date.now() + 60 * 60 * 1000);
-  const defaultOptions = { expires: validTime, sameSite: 'lax', path: '/'};
-  return Cookies.set(key, value, { ...defaultOptions, ...options });
-};
+export async function setCookie(key, value) {
+  await fetch(`/api/cookies/set?key=${encodeURIComponent(key)}&value=${encodeURIComponent(value)}`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+}
 
-export const getCookie = (key) => Cookies.get(key);
+export async function getCookie(key) {
+  const res = await fetch(`/api/cookies/get?key=${encodeURIComponent(key)}`, {
+    credentials: 'include',
+  });
+  const data = await res.json();
+  return data.value;
+}
 
-export const removeCookie = (key) => Cookies.remove(key);
+export async function removeCookie(key) {
+  await fetch(`/api/cookies/remove?key=${encodeURIComponent(key)}`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+}

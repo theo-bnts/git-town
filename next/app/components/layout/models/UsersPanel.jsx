@@ -17,7 +17,7 @@ const columns = [
 ];
 
 const fetchUsers = async () => {
-  const token = getCookie('token');
+  const token = await getCookie('token');
   const users = await getUsers(token);
   const transformed = users.map((user) => ({
     name: user.FullName,

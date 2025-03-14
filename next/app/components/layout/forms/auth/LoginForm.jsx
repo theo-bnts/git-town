@@ -35,10 +35,11 @@ export default function LoginForm({ userId, email, onSuccess, onBack, onGoToDefi
       setIsLoading(true);
       try {
         const data = await postToken(userId, password);
-        setCookie('token', data.Value);
+        await setCookie('token', data.Value);
         onSuccess(data.Value);
       } catch (err) {
         setError(err.message);
+        console.error(err);
       }
       setIsLoading(false);
     }
