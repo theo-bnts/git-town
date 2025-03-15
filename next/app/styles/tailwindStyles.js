@@ -14,7 +14,9 @@ const buttonStyles = {
   warn: `bg-[var(--warn-color)] py-2 px-4 rounded-[12.5px] hover:bg-[var(--warn-color-hover)] transition-colors duration-200`,
   loading: `bg-[var(--accent-color)] py-2 px-4 rounded-[12.5px]`,
   outline: `bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)] hover:bg-[var(--primary-color-hover)] transition-colors duration-200`,
-
+  
+  outline_full: `w-full flex items-center justify-center bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)] hover:bg-[var(--primary-color-hover)] transition-colors duration-200`,
+  
   action_sq: `p-2 transition-transform duration-200 hover:scale-110 hover:text-[var(--accent-color)]`,
   default_sq: `bg-[var(--accent-color)] p-2 rounded-[12.5px] hover:bg-[var(--accent-color-hover)] transition-colors duration-200`,
   

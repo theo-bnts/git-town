@@ -8,6 +8,7 @@ import ComboBox from '@/app/components/ui/combobox/ComboBox';
 
 import { XIcon } from '@primer/octicons-react';
 import { textStyles } from '@/app/styles/tailwindStyles';
+import ListBox from '@/app/components/ui/listbox/ListBox';
 
 export default function UserModal({ isOpen, onClose, onCreate }) {
   const initialFormState = { name: '', email: '', role: '' };
@@ -20,7 +21,19 @@ export default function UserModal({ isOpen, onClose, onCreate }) {
   for (let i = 1; i <= 100; i++) {
     options.push({ id: i, value: `Role ${i}` });
   }
- 
+
+  const promotions = [];
+
+  for (let i = 1; i <= 100; i++) {
+    promotions.push({ id: i, value: `Promotion ${i}` });
+  }
+
+  const selected = [];
+
+  for (let i = 1; i <= 2; i++) {
+    selected.push(promotions[i]);
+  }
+
   useEffect(() => {
     if (!isOpen) {
       setFormData(initialFormState);
@@ -108,8 +121,14 @@ export default function UserModal({ isOpen, onClose, onCreate }) {
               options={options} 
               onSelect={handleRoleChange} 
               value={formData.role} 
+              maxVisible={6}
             />
             {errors.role && <p className={textStyles.warn}>{errors.role}</p>}
+          </div>
+          <div>
+            <ListBox
+            options={promotions}
+            selected={selected}/>
           </div>
           {errors.form && <p className={textStyles.warn}>{errors.form}</p>}
 
