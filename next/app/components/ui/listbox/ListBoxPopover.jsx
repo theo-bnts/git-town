@@ -6,7 +6,6 @@ export default function ListBoxPopover({ isOpen, options, onSelect, onClose, max
 
   useEffect(() => {
     function handleClickOutside(event) {
-      // Si le clic se produit dans le popover ou dans le bouton de bascule, on ignore
       if (
         (popoverRef.current && popoverRef.current.contains(event.target)) ||
         (toggleButtonRef?.current && toggleButtonRef.current.contains(event.target))
@@ -26,7 +25,7 @@ export default function ListBoxPopover({ isOpen, options, onSelect, onClose, max
       ref={popoverRef}
       className={`
         absolute left-0 top-full mt-2 w-full bg-gray-100 border border-gray-300 
-        rounded-lg shadow-lg z-10 overflow-visible
+        rounded-[14px] shadow-lg z-10 overflow-visible
         transition-all duration-200 transform origin-top
         ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
       `}

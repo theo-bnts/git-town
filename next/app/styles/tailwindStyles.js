@@ -16,8 +16,11 @@ const buttonStyles = {
   outline: `bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)] hover:bg-[var(--primary-color-hover)] transition-colors duration-200`,
   
   outline_full: `w-full flex items-center justify-center bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)] hover:bg-[var(--primary-color-hover)] transition-colors duration-200`,
+
+  action_sq_warn: `flex items-center justify-center transition-colors duration-200 hover:scale-110 hover:text-[var(--warn-color-hover)]`,
   
   action_sq: `p-2 transition-transform duration-200 hover:scale-110 hover:text-[var(--accent-color)]`,
+
   default_sq: `bg-[var(--accent-color)] p-2 rounded-[12.5px] hover:bg-[var(--accent-color-hover)] transition-colors duration-200`,
   
   popover_default_sq: `flex items-center p-2 bg-[var(--accent-color)] rounded-r-[12.5px]`,
@@ -27,6 +30,7 @@ const buttonStyles = {
 const cardStyles = {
   default: `bg-[var(--primary-color)] p-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)] rounded-[12.5px]`,
   info: `bg-[var(--accent-color)] p-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)] rounded-[12.5px]`,
+  empty_list: `bg-[var(--primary-color)] p-2 rounded-[12.5px] border border-[var(--primary-color)]`,
 };
 
 const inputStyles = {
@@ -43,6 +47,10 @@ const spinnerStyles = {
 const comboboxStyles = {
   default: `relative w-full max-w-xs rounded-[12.5px] focus-within:outline-none focus-within:ring-1 focus-within:ring-[var(--accent-color)] bg-[var(--accent-color)]`,
   selected: `relative w-full max-w-xs rounded-[12.5px] focus-within:outline-none focus-within:ring-1 focus-within:ring-[var(--selected-color)] bg-[var(--selected-color)]`,
-}
+};
 
-export { buttonStyles, cardStyles, comboboxStyles, inputStyles, spinnerStyles, textStyles };
+const listboxStyles = {
+  default: `border-[1px] border-[var(--accent-color)] p-4 rounded-[12.5px] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]`,
+};
+
+export { buttonStyles, cardStyles, comboboxStyles, inputStyles, listboxStyles, spinnerStyles, textStyles };

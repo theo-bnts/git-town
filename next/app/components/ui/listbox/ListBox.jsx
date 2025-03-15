@@ -3,7 +3,7 @@ import { PlusIcon, DashIcon } from '@primer/octicons-react';
 import ListBoxArea from "./ListBoxArea";
 import ListBoxPopover from "./ListBoxPopover";
 import Button from '@/app/components/ui/Button';
-import { textStyles } from '@/app/styles/tailwindStyles';
+import { inputStyles, listboxStyles, textStyles } from '@/app/styles/tailwindStyles';
 
 export default function ListBox({ options, selected, onChange }) {
     const [items, setItems] = useState(selected || []);
@@ -27,8 +27,7 @@ export default function ListBox({ options, selected, onChange }) {
     };
 
     return (
-        <div className="flex flex-col space-y-2 bg-red-100 p-4">
-            <div className="font-bold">ListBox</div>
+        <div className={`flex flex-col space-y-2 ${listboxStyles.default}`}>
             <ListBoxArea items={items} onRemove={handleRemoveItem} />
             <div className="relative">
                 <Button

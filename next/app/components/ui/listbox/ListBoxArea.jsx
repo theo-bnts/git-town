@@ -1,12 +1,14 @@
 import React from 'react';
 import ListBoxItem from "./ListBoxItem";
-import EmptyListCard from '@/app/components/ui/listbox/EmptyListCard';
+import Card from '@/app/components/ui/Card';
 
 export default function ListBoxArea({ items, onRemove }) {
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col bg-white border border-gray-200 rounded-[12.5px]">
             {items.length === 0 ? (
-                <EmptyListCard message="Aucun élément sélectionné" />
+                <Card variant="empty_list">
+                    <p className="text-center text-gray-600">Aucun élément sélectionné.</p>
+                </Card>
             ) : (
                 items.map(item => (
                     <ListBoxItem 
