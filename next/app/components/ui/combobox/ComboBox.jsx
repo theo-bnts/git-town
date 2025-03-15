@@ -10,7 +10,7 @@ import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
 import ComboBoxPopover from '@/app/components/ui/combobox/ComboBoxPopover';
 
-export default function ComboBox({ placeholder, options, onSelect, maxVisible = 6 }) {
+export default function ComboBox({ placeholder, options, onSelect, maxVisible = 6, autoOpen }) {
   const MAX_ITEMS = maxVisible;
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,10 +38,16 @@ export default function ComboBox({ placeholder, options, onSelect, maxVisible = 
     };
   }, []);
 
-  // On charge maxVisible + 1 lignes au lieu de maxVisible pour provoquer le scroll
   useEffect(() => {
     setDisplayedOptions(filteredOptions.slice(0, MAX_ITEMS + 1));
   }, [filteredOptions, MAX_ITEMS]);
+
+  useEffect(() => {
+    if (autoOpen) {
+      setIsOpen(true);
+      inputRef.current?.focus();
+    }
+  }, [autoOpen]);
 
   const ensureSelectedOptionVisible = (option) => {
     if (!option) {

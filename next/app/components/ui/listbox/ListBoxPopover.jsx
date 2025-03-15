@@ -35,6 +35,7 @@ export default function ListBoxPopover({ isOpen, options, onSelect, onClose, max
         options={options}
         onSelect={onSelect}
         maxVisible={maxVisible}
+        autoOpen={isOpen}  // Ajout de la prop autoOpen
       />
     </div>
   );

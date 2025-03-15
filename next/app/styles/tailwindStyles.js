@@ -50,7 +50,7 @@ const comboboxStyles = {
 };
 
 const listboxStyles = {
-  default: `border-[1px] border-[var(--accent-color)] p-4 rounded-[12.5px] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]`,
+  default: `border-[1px] border-[var(--accent-color)] p-2 rounded-[12.5px] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]`,
 };
 
 export { buttonStyles, cardStyles, comboboxStyles, inputStyles, listboxStyles, spinnerStyles, textStyles };
