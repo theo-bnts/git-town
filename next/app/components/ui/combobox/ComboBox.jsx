@@ -10,15 +10,18 @@ import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
 import ComboBoxPopover from '@/app/components/ui/combobox/ComboBoxPopover';
 
-const MAX_ITEMS = 8; // Nombre de lignes chargées à la fois.
-
-export default function ComboBox({ placeholder, options, onSelect }) {
+export default function ComboBox({ placeholder, options, onSelect, maxVisible = 6 }) {
+  const MAX_ITEMS = maxVisible;
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredOptions, setFilteredOptions] = useState(options);
   const [displayedOptions, setDisplayedOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+
+  useEffect(() => {
+    setFilteredOptions(options);
+  }, [options]);
 
   const comboBoxRef = useRef(null);
   const inputRef = useRef(null);
@@ -35,9 +38,10 @@ export default function ComboBox({ placeholder, options, onSelect }) {
     };
   }, []);
 
+  // On charge maxVisible + 1 lignes au lieu de maxVisible pour provoquer le scroll
   useEffect(() => {
-    setDisplayedOptions(filteredOptions.slice(0, MAX_ITEMS));
-  }, [filteredOptions]);
+    setDisplayedOptions(filteredOptions.slice(0, MAX_ITEMS + 1));
+  }, [filteredOptions, MAX_ITEMS]);
 
   const ensureSelectedOptionVisible = (option) => {
     if (!option) {
@@ -56,9 +60,7 @@ export default function ComboBox({ placeholder, options, onSelect }) {
         newDisplayed.length,
         newDisplayed.length + MAX_ITEMS
       );
-      if (nextSlice.length === 0) {
-        break;
-      }
+      if (nextSlice.length === 0) break;
       newDisplayed = [...newDisplayed, ...nextSlice];
     }
     setDisplayedOptions(newDisplayed);
@@ -91,7 +93,7 @@ export default function ComboBox({ placeholder, options, onSelect }) {
     setSelectedOption(option);
     setSearchTerm(option.value);
     setFilteredOptions(options);
-    setDisplayedOptions(options.slice(0, MAX_ITEMS));
+    setDisplayedOptions(options.slice(0, MAX_ITEMS + 1));
     setHighlightedIndex(0);
     setIsOpen(false);
     onSelect(option);
@@ -102,7 +104,7 @@ export default function ComboBox({ placeholder, options, onSelect }) {
     setSelectedOption(null);
     setSearchTerm('');
     setFilteredOptions(options);
-    setDisplayedOptions(options.slice(0, MAX_ITEMS));
+    setDisplayedOptions(options.slice(0, MAX_ITEMS + 1));
     setHighlightedIndex(-1);
     setIsOpen(true);
     onSelect?.(null);
@@ -140,7 +142,7 @@ export default function ComboBox({ placeholder, options, onSelect }) {
         ]);
       }
     },
-    [filteredOptions]
+    [filteredOptions, MAX_ITEMS]
   );
 
   return (
@@ -204,6 +206,7 @@ export default function ComboBox({ placeholder, options, onSelect }) {
         highlightedIndex={highlightedIndex}
         selectedOption={selectedOption}
         loadMore={loadMore}
+        maxVisible={maxVisible}
       />
     </div>
   );

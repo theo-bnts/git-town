@@ -11,13 +11,14 @@ export default function ComboBoxPopover({
   searchTerm, 
   highlightedIndex, 
   selectedOption, 
-  loadMore 
+  loadMore,
+  maxVisible
 }) {
   return (
     <div
       className={`
         absolute w-full mt-2 bg-white border border-gray-300 
-        rounded-lg shadow-lg z-10 overflow-hidden
+        rounded-lg shadow-lg z-10 overflow-visible
         transition-all duration-200 transform origin-top
         ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
       `}
@@ -29,6 +30,7 @@ export default function ComboBoxPopover({
         highlightedIndex={highlightedIndex}
         selectedOption={selectedOption}
         loadMore={loadMore}
+        maxVisible={maxVisible}
       />
     </div>
   );
