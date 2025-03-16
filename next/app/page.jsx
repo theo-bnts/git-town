@@ -1,6 +1,6 @@
 // app/home/page.jsx
 
-import UsersPanel from '@/app/components/layout/models/UsersPanel';
+import UsersPanel from '@/app/components/layout/panel/UsersPanel';
 
 export default function HomePage() {
   return (
