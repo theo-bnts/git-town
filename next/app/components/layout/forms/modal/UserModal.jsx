@@ -127,6 +127,7 @@ export default function UserModal({ isOpen, onClose, onCreate }) {
           </div>
           <div>
             <ListBox
+            placeholder="Promotions"
             options={promotions}
             selected={selected}/>
           </div>
