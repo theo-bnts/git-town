@@ -20,7 +20,7 @@ export async function middleware(request) {
         }
       );
 
-      console.log("apiResponse", apiResponse);
+      //console.log("apiResponse", apiResponse);
 
       if (apiResponse.ok) {
         console.log("user data fetched");
@@ -59,7 +59,7 @@ export async function middleware(request) {
       return response;
     }
   } else if (request.nextUrl.pathname !== "/login") {
-    console.log("redirecting to login");
+    //console.log("redirecting to login");
     const response = NextResponse.redirect(new URL("/login", request.url));
     response.cookies.delete("token", { path: "/" });
     response.cookies.delete("userId", { path: "/" });
