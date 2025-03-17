@@ -9,7 +9,7 @@ import ListBox from '@/app/components/ui/listbox/ListBox';
 import { XIcon } from '@primer/octicons-react';
 import { textStyles } from '@/app/styles/tailwindStyles';
 
-export default function DynamicModal({ title, fields: initialFields, isOpen, onClose, onSubmit }) {
+export default function DynamicModal({ title, fields: initialFields, isOpen, onClose, onSubmit, errors = {}, onClearError }) {
   const getInitialState = () => {
     const state = {};
     initialFields.forEach(field => {
@@ -33,7 +33,6 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
   const handleFormSubmit = (e) => {
     e.preventDefault();
     onSubmit(fields);
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -54,7 +53,7 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
             let inputComponent = null;
 
             if (options) {
-              if (typeof value === 'string' || typeof value === 'object' && !Array.isArray(value)) {
+              if (typeof value === 'string' || (typeof value === 'object' && !Array.isArray(value))) {
                 const mappedOptions = options.map((item, idx) => {
                   if (Array.isArray(item)) {
                     return {
@@ -68,13 +67,15 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
                   <ComboBox
                     placeholder={label}
                     options={mappedOptions}
-                    onSelect={(option) => handleChange(label, option)}
+                    onSelect={(option) => {
+                      handleChange(label, option);
+                      if (onClearError) onClearError(label);
+                    }}
                     value={fields[label]}
                     maxVisible={6}
                   />
                 );
-              }
-              else if (Array.isArray(value)) {
+              } else if (Array.isArray(value)) {
                 const mappedOptions = options.map((row, idx) => ({
                   id: row[0] !== undefined ? row[0] : idx,
                   value: row[1] !== undefined ? row[1] : row.join(' - ')
@@ -84,7 +85,10 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
                     placeholder={label}
                     options={mappedOptions}
                     selected={fields[label] || []}
-                    onChange={(selectedOptions) => handleChange(label, selectedOptions)}
+                    onChange={(selectedOptions) => {
+                      handleChange(label, selectedOptions);
+                      if (onClearError) onClearError(label);
+                    }}
                   />
                 );
               }
@@ -95,7 +99,10 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
                   name={label}
                   placeholder={label}
                   value={fields[label]}
-                  onChange={(e) => handleChange(label, e.target.value)}
+                  onChange={(e) => {
+                    handleChange(label, e.target.value);
+                    if (onClearError) onClearError(label);
+                  }}
                 />
               );
             }
@@ -104,6 +111,9 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
               <div key={label}>
                 <p className={`mb-1 ${textStyles.default}`}>{label}</p>
                 {inputComponent}
+                {errors[label] && (
+                  <p className={`${textStyles.warn} text-sm mt-1`}>{errors[label]}</p>
+                )}
               </div>
             );
           })}
