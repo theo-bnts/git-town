@@ -21,7 +21,7 @@ export default function TableToolbar() {
       <UserModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
-        onCreate={handleCreateUser}
+        onSubmit={handleCreateUser}
       />
     </div>
   );

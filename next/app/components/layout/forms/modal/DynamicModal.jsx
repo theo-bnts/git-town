@@ -9,17 +9,7 @@ import ListBox from '@/app/components/ui/listbox/ListBox';
 import { XIcon } from '@primer/octicons-react';
 import { textStyles } from '@/app/styles/tailwindStyles';
 
-/*
-La prop "fields" attend un tableau d'objets de la forme :
-[
-  { label: "Nom", value: "texte initial" },
-  { label: "Rôle", value: "", options: [[id, value], ...] },
-  { label: "Promotions", value: [], options: [[id, value], ...] }
-]
-La prop "title" permet de définir le titre de la modal.
-*/
 export default function DynamicModal({ title, fields: initialFields, isOpen, onClose, onSubmit }) {
-  // Initialisation de l'état pour stocker la valeur de chaque champ
   const getInitialState = () => {
     const state = {};
     initialFields.forEach(field => {
@@ -52,7 +42,7 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
     <div className="fixed inset-0 bg-[var(--popup-color)] flex items-center justify-center z-50">
       <Card variant="default" className="relative w-[400px] p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">{title || "Dynamic Modal"}</h3>
+          <h3 className="text-lg font-bold">{title || "Édition"}</h3>
           <Button variant="action_sq" onClick={onClose}>
             <XIcon size={24} />
           </Button>
@@ -64,8 +54,7 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
             let inputComponent = null;
 
             if (options) {
-              // Si le champ a une valeur de type string, on attend un ComboBox
-              if (typeof value === 'string') {
+              if (typeof value === 'string' || typeof value === 'object' && !Array.isArray(value)) {
                 const mappedOptions = options.map((item, idx) => {
                   if (Array.isArray(item)) {
                     return {
@@ -79,13 +68,12 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
                   <ComboBox
                     placeholder={label}
                     options={mappedOptions}
-                    onSelect={(option) => handleChange(label, option?.value || '')}
+                    onSelect={(option) => handleChange(label, option)}
                     value={fields[label]}
                     maxVisible={6}
                   />
                 );
               }
-              // Si le champ a une valeur de type tableau, on attend une sélection multiple (ListBox)
               else if (Array.isArray(value)) {
                 const mappedOptions = options.map((row, idx) => ({
                   id: row[0] !== undefined ? row[0] : idx,
@@ -101,7 +89,6 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
                 );
               }
             } else {
-              // Sans options, si la valeur est une chaîne : Input
               inputComponent = (
                 <Input
                   variant="default"
@@ -115,7 +102,7 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
 
             return (
               <div key={label}>
-                <p className="mb-1 font-semibold">{label}</p>
+                <p className={`mb-1 ${textStyles.default}`}>{label}</p>
                 {inputComponent}
               </div>
             );
@@ -123,7 +110,7 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
 
           <div className="flex justify-center pt-2">
             <Button variant="default" type="submit">
-              <p className={textStyles.defaultWhite}>Envoyer</p>
+              <p className={textStyles.defaultWhite}>Enregistrer</p>
             </Button>
           </div>
         </form>
