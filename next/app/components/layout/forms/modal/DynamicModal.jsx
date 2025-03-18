@@ -60,6 +60,11 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
                       id: item[0] !== undefined ? item[0] : idx,
                       value: item[1] !== undefined ? item[1] : item[0]
                     };
+                  } else if (typeof item === 'object' && item !== null) {
+                    return {
+                      id: item.id !== undefined ? item.id : idx,
+                      value: item.name ?? item.value ?? ''
+                    };
                   }
                   return { id: idx, value: item };
                 });

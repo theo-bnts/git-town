@@ -6,8 +6,9 @@ import EmptyTableCard from '@/app/components/layout/table/EmptyTableCard';
 import TableHeader from '@/app/components/layout/table/TableHeader';
 import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
+import UserModal from '@/app/components/layout/forms/modal/UserModal';
 
-export default function Table ({ columns, data }) {
+export default function Table({ columns, data, onUserUpdated }) {
   const [sortedData, setSortedData] = useState(data);
   const [visibleCount, setVisibleCount] = useState(0);
   const [sortColumn, setSortColumn] = useState(null);
@@ -48,21 +49,15 @@ export default function Table ({ columns, data }) {
   }, [sentinelRef, sortedData, visibleCount]);
 
   const handleSort = (columnKey) => {
-    const newOrder = (sortColumn === columnKey && sortOrder === 'asc') 
-      ? 'desc' 
-      : 'asc';
+    const newOrder = (sortColumn === columnKey && sortOrder === 'asc') ? 'desc' : 'asc';
     setSortColumn(columnKey);
     setSortOrder(newOrder);
 
     const sorted = [...data].sort((a, b) => {
       if (!columnKey) return 0;
       return newOrder === 'asc'
-        ? a[columnKey] > b[columnKey]
-          ? 1
-          : -1
-        : a[columnKey] < b[columnKey]
-          ? 1
-          : -1;
+        ? a[columnKey] > b[columnKey] ? 1 : -1
+        : a[columnKey] < b[columnKey] ? 1 : -1;
     });
     setSortedData(sorted);
     if (containerRef.current) {
@@ -83,8 +78,10 @@ export default function Table ({ columns, data }) {
 
   return (
     <div className="max-w-screen-xl mx-auto px-4">
-
-      <TableToolbar/>
+      <TableToolbar 
+        ModalComponent={UserModal}
+        onUserUpdated={onUserUpdated}
+      />
 
       <div
         ref={containerRef}
@@ -120,4 +117,4 @@ export default function Table ({ columns, data }) {
       </div>
     </div>
   );
-};
+}

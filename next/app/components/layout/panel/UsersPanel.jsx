@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PencilIcon, DuplicateIcon, MarkGithubIcon } from '@primer/octicons-react';
 
 import getUsers from '@/app/services/api/users/getUsers';
@@ -46,13 +46,21 @@ const fetchUsers = async () => {
 export default function UsersPanel() {
   const [users, setUsers] = useState([]);
 
-  useEffect(() => {
+  const refreshUsers = useCallback(() => {
     fetchUsers().then((data) => setUsers(data));
   }, []);
 
+  useEffect(() => {
+    refreshUsers();
+  }, [refreshUsers]);
+
   return (
     <div className="flex flex-col flex-1 p-8">
-      <Table columns={columns} data={users} />
+      <Table 
+        columns={columns} 
+        data={users} 
+        onUserUpdated={refreshUsers} 
+      />
     </div>
   );
-};
+}

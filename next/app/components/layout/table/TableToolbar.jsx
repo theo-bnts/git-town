@@ -5,23 +5,25 @@ import Button from '@/app/components/ui/Button';
 import { PlusIcon } from '@primer/octicons-react';
 import UserModal from '@/app/components/layout/forms/modal/UserModal';
 
-export default function TableToolbar() {
+export default function TableToolbar({ ModalComponent, onUserUpdated }) {
   const [isModalOpen, setModalOpen] = useState(false);
 
-  const handleCreateUser = async (userData) => {
-    console.log("Création de l'utilisateur :", userData);
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    if (typeof onUserUpdated === 'function') {
+      onUserUpdated();
+    }
   };
 
   return (
     <div className="flex items-center justify-start pb-8">
       <Button variant="default_sq" onClick={() => setModalOpen(true)}>
-        <PlusIcon size={24} className="text-white"/>
+        <PlusIcon size={24} className="text-white" />
       </Button>
 
-      <UserModal
+      <ModalComponent
         isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleCreateUser}
+        onClose={handleCloseModal}
       />
     </div>
   );

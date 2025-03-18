@@ -2,14 +2,17 @@
 
 import React, { useState } from 'react';
 import DynamicModal from './DynamicModal';
+import saveUser from '@/app/services/api/users/saveUser';
+import { getCookie } from '@/app/services/cookies';
 
-export default function UserModal({ isOpen, onClose, onSubmit, initialData = {} }) {
+export default function UserModal({ isOpen, onClose, initialData = {} }) {
   const [errors, setErrors] = useState({});
 
-  const roleOptions = [];
-  for (let i = 1; i <= 100; i++) {
-    roleOptions.push([i, `Role ${i}`]);
-  }
+  const roleOptions = [
+    { id: "administrator", name: "Administrateur" },
+    { id: "teacher", name: "Enseignant" },
+    { id: "student", name: "Étudiant" }
+  ];
 
   const promotionsOptions = [];
   for (let i = 1; i <= 100; i++) {
@@ -20,7 +23,7 @@ export default function UserModal({ isOpen, onClose, onSubmit, initialData = {} 
     { label: "Nom", value: initialData.nom || "" },
     { label: "Email", value: initialData.email || "" },
     { label: "Rôle", value: initialData.role || {}, options: roleOptions },
-    { label: "Promotions", value: initialData.promotions || [], options: promotionsOptions }
+    // { label: "Promotions", value: initialData.promotions || [], options: promotionsOptions }
   ];
 
   const validateFields = (fieldsValues) => {
@@ -39,20 +42,43 @@ export default function UserModal({ isOpen, onClose, onSubmit, initialData = {} 
     if (!fieldsValues["Rôle"] || !fieldsValues["Rôle"].id) {
       newErrors["Rôle"] = "Veuillez sélectionner un rôle.";
     }
-    if (!fieldsValues["Promotions"] || fieldsValues["Promotions"].length === 0) {
-      newErrors["Promotions"] = "Veuillez sélectionner au moins une promotion.";
-    }
+    // Désactivation temporaire de la vérification promotions
+    // if (!fieldsValues["Promotions"] || fieldsValues["Promotions"].length === 0) {
+    //   newErrors["Promotions"] = "Veuillez sélectionner au moins une promotion.";
+    // }
     return newErrors;
   };
 
-  const handleSubmit = (fieldsValues) => {
+  const handleSubmit = async (fieldsValues) => {
     const newErrors = validateFields(fieldsValues);
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
     } else {
       setErrors({});
-      onSubmit(fieldsValues);
-      onClose();
+      const roleValue = fieldsValues["Rôle"];
+      const roleKeyword = (typeof roleValue === 'object' && roleValue.id)
+        ? roleValue.id.toString().trim()
+        : roleValue.toString().trim();
+        
+      const payload = {
+        EmailAddress: fieldsValues["Email"].trim(),
+        FullName: fieldsValues["Nom"].trim(),
+        Role: {
+          Keyword: roleKeyword
+        }
+        // promotions désactivé pour l'instant
+      };
+      console.log("Payload envoyé :", payload);
+      try {
+        const token = getCookie('token');
+        await saveUser(payload, token);
+        if (typeof onUserUpdated === 'function') {
+          onUserUpdated();
+        }
+        onClose();
+      } catch (error) {
+        console.error("Erreur lors de la sauvegarde de l'utilisateur :", error);
+      }
     }
   };
 
@@ -67,7 +93,6 @@ export default function UserModal({ isOpen, onClose, onSubmit, initialData = {} 
 
   return (
     <DynamicModal 
-      title={initialData && Object.keys(initialData).length > 0 ? "Modifier l'utilisateur" : "Ajouter un utilisateur"}
       errors={errors}
       fields={fields} 
       isOpen={isOpen}
