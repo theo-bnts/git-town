@@ -1,4 +1,5 @@
 import DatabasePool from './tools/DatabasePool.js';
+import Repository from './Repository.js';
 
 export default class UserRepository {
   Id;
@@ -55,5 +56,34 @@ export default class UserRepository {
     );
 
     return row.count > 0;
+  }
+
+  static async fromUser(user) {
+    const rows = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          repository_id
+        FROM public.user_repository
+        WHERE user_id = $1::uuid
+      `,
+      [user.Id],
+    );
+
+    return Promise.all(
+      rows.map(async (row) => {
+        const repository = await Repository.fromId(row.repository_id);
+
+        return new this(
+          row.id,
+          row.created_at,
+          row.updated_at,
+          user,
+          repository,
+        );
+      }),
+    );
   }
 }

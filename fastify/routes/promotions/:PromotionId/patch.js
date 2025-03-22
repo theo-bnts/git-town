@@ -1,5 +1,6 @@
+import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
+import DataQualityMiddleware from '../../../entities/tools/DataQualityMiddleware.js';
 import Diploma from '../../../entities/Diploma.js';
-import Middleware from '../../../entities/tools/Middleware.js';
 import Promotion from '../../../entities/Promotion.js';
 import PromotionLevel from '../../../entities/PromotionLevel.js';
 
@@ -59,14 +60,14 @@ export default async function route(app) {
             maximum: Number(process.env.PROMOTION_YEAR_MAX),
           },
         },
-        additionalProperties: false,
         minProperties: 1,
+        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertSufficientUserRole(request, 'administrator');
-      await Middleware.assertPromotionIdExists(request);
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
+      await DataQualityMiddleware.assertPromotionIdExists(request);
     },
     handler: async (request) => {
       const { PromotionId: promotionId } = request.params;
@@ -115,7 +116,7 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'ALREADY_EXISTS' };
       }
 
-      promotion.update();
+      await promotion.update();
 
       return promotion;
     },

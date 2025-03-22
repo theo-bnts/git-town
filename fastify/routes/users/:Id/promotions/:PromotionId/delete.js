@@ -1,4 +1,5 @@
-import Middleware from '../../../../../entities/tools/Middleware.js';
+import AuthorizationMiddleware from '../../../../../entities/tools/AuthorizationMiddleware.js';
+import DataQualityMiddleware from '../../../../../entities/tools/DataQualityMiddleware.js';
 import Promotion from '../../../../../entities/Promotion.js';
 import User from '../../../../../entities/User.js';
 import UserPromotion from '../../../../../entities/UserPromotion.js';
@@ -34,10 +35,10 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertSufficientUserRole(request, 'administrator');
-      await Middleware.assertUserIdExists(request);
-      await Middleware.assertPromotionIdExists(request);
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
+      await DataQualityMiddleware.assertUserIdExists(request);
+      await DataQualityMiddleware.assertPromotionIdExists(request);
     },
     handler: async (request) => {
       const { UserId: userId, PromotionId: promotionId } = request.params;

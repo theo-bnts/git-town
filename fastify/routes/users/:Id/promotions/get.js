@@ -1,4 +1,5 @@
-import Middleware from '../../../../entities/tools/Middleware.js';
+import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
+import DataQualityMiddleware from '../../../../entities/tools/DataQualityMiddleware.js';
 import User from '../../../../entities/User.js';
 import UserPromotion from '../../../../entities/UserPromotion.js';
 
@@ -29,9 +30,9 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertSufficientUserRole(request, 'teacher');
-      await Middleware.assertUserIdExists(request);
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'teacher');
+      await DataQualityMiddleware.assertUserIdExists(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;

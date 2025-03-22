@@ -4,7 +4,7 @@ import React from 'react';
 import { cookies } from 'next/headers';
 
 import getUser from '@/app/services/api/users/id/getUser';
-import UsersPanel from '@/app/components/layout/models/UsersPanel';
+import UsersPanel from '@/app/components/layout/panel/UsersPanel';
 import Header from '@/app/components/layout/Header';
 import ImportUserModal from '@/app/components/layout/forms/modal/ImportUserModal';
 
