@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { userRoute } from "@/app/services/routes";
 
 export async function middleware(request) {
-  const token = request.cookies.get("token")?.value;
+  /*const token = request.cookies.get("token")?.value;
   const userId = request.cookies.get("userId")?.value;
   console.log("token", token);
   console.log("userId", userId);
@@ -66,7 +66,7 @@ export async function middleware(request) {
     return response;
   }
 
-  return NextResponse.next();
+  return NextResponse.next();*/
 }
 
 export const config = {

@@ -79,22 +79,30 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
   return (
     <div className="fixed inset-0 bg-[var(--popup-color)] flex items-center justify-center z-50">
       <Card variant="default" className="relative w-[400px] p-6">
-
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">Edition</h2>
+          <h2 className="text-lg font-bold">Import</h2>
           <Button variant="action_sq" onClick={onClose}>
             <XIcon size={24}/>
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {errors.form && <p className={textStyles.warn}>{errors.form}</p>}
+        <p className={textStyles.bold}>Ficher exemple</p>
+        <div className=" pt-2">
+          <Button variant="default" onClick={handleExportSampleFile}>
+            <p className={textStyles.defaultWhite}>Enregistrer</p>
+          </Button>
+        </div>
 
-          <div className="flex justify-center pt-2">
-            <Button variant="default" type="submit" loading={isLoading}>
-              <p className={textStyles.defaultWhite}>Enregistrer</p>
-            </Button>
-          </div>
+        <form>
+        <p className={textStyles.bold}>Fichier à importer</p>
+        <div className="pt-2">
+          <Button variant="default" onClick={handleFileChange}>
+            <p className={textStyles.defaultWhite}>Importer</p>
+          </Button>
+        </div>
+        <Button variant="default" onClick={handleValidate}>
+          <p className={textStyles.defaultWhite}>Traiter</p>
+        </Button>
         </form>
       </Card>
     </div>
