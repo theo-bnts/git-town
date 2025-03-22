@@ -25,3 +25,9 @@ export const githubOAuthRoute = (userId) =>
 
 export const githubInviteRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}/github/invite`;
+
+export const userPromotions = (userId) =>
+  `${API_BASE_URL}/users/${userId}/promotions`;
+
+export const promotionsRoute = () =>
+  `${API_BASE_URL}/promotions`;

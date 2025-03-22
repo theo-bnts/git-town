@@ -1,14 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DynamicModal from './DynamicModal';
 import saveUser from '@/app/services/api/users/saveUser';
+import getPromotions from '@/app/services/api/promotions/getPromotions';
+import saveUserPromotions from '@/app/services/api/users/saveUserPromotions';
 import { getCookie } from '@/app/services/cookies';
 import { isEmailValid } from '@/app/services/validators';
 
 export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpdated }) {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
+  const [promotionsOptions, setPromotionsOptions] = useState([]);
 
   const roleOptions = [
     { id: "administrator", name: "Administrateur" },
@@ -16,11 +19,32 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
     { id: "student", name: "Étudiant" }
   ];
 
+  useEffect(() => {
+    if (isOpen) {
+      const token = getCookie('token');
+      getPromotions(token)
+        .then(data => setPromotionsOptions(data))
+        .catch(error => console.error("Erreur de chargement des promotions:", error));
+    }
+  }, [isOpen]);
+
   const fields = [
     { label: "Nom", value: initialData.nom || "" },
     { label: "Email", value: initialData.email || "" },
     { label: "Rôle", value: initialData.role || {}, options: roleOptions },
-    // promotions désactivé pour l'instant
+    { 
+      label: "Promotions", 
+      value: initialData.promotions || [], 
+      options: promotionsOptions.map(promo => ({
+        id: promo.Id,
+        value: `${promo.Diploma.Initialism} ${promo.PromotionLevel.Initialism} - ${promo.Year}`,
+        full: {
+          Diploma: { Initialism: promo.Diploma.Initialism },
+          PromotionLevel: { Initialism: promo.PromotionLevel.Initialism },
+          Year: promo.Year
+        }
+      }))
+    }
   ];
 
   const validateFields = (fieldsValues) => {
@@ -61,13 +85,23 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
       console.log("Payload envoyé :", payload);
       try {
         const token = getCookie('token');
-        await saveUser(payload, token);
+        const userResponse = await saveUser(payload, token);
+        const userId = userResponse.Id;
+        const promotionsSelection = fieldsValues["Promotions"];
+        if (promotionsSelection && promotionsSelection.length > 0) {
+          for (const promo of promotionsSelection) {
+            const promotionsData = {
+              Promotion: promo.full
+            };
+            await saveUserPromotions(userId, promotionsData, token);
+          }
+        }
         if (typeof onUserUpdated === 'function') {
           onUserUpdated();
         }
         onClose();
       } catch (error) {
-        console.error("Erreur lors de la sauvegarde de l'utilisateur :", error);
+        console.error("Erreur lors de la sauvegarde de l'utilisateur ou des promotions :", error);
         setApiError(error.message);
       }
     }

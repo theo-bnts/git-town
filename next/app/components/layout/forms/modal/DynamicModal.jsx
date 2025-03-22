@@ -7,7 +7,7 @@ import Input from '@/app/components/ui/Input';
 import ComboBox from '@/app/components/ui/combobox/ComboBox';
 import ListBox from '@/app/components/ui/listbox/ListBox';
 import { XIcon } from '@primer/octicons-react';
-import { textStyles, buttonStyles } from '@/app/styles/tailwindStyles';
+import { textStyles } from '@/app/styles/tailwindStyles';
 
 export default function DynamicModal({ 
   title, 
@@ -93,10 +93,17 @@ export default function DynamicModal({
                     />
                   );
                 } else if (Array.isArray(value)) {
-                  const mappedOptions = options.map((row, idx) => ({
-                    id: row[0] !== undefined ? row[0] : idx,
-                    value: row[1] !== undefined ? row[1] : row.join(' - ')
-                  }));
+                  let mappedOptions;
+                  if (options.length > 0 && typeof options[0] === 'object' && !Array.isArray(options[0])) {
+                    mappedOptions = options;
+                  } else {
+                    mappedOptions = options.map((row, idx) => ({
+                      id: row[0] !== undefined ? row[0] : idx,
+                      value: row[1] !== undefined 
+                                ? row[1] 
+                                : (typeof row.join === 'function' ? row.join(' - ') : row.toString())
+                    }));
+                  }
                   inputComponent = (
                     <ListBox
                       placeholder={label}
