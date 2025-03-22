@@ -1,5 +1,3 @@
-'use client';
-
 import { handleApiError } from '@/app/services/errorHandler';
 import { userPromotions } from '@/app/services/routes';
 
