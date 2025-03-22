@@ -1,5 +1,5 @@
+import AuthorizationMiddleware from '../../entities/tools/AuthorizationMiddleware.js';
 import Diploma from '../../entities/Diploma.js';
-import Middleware from '../../entities/tools/Middleware.js';
 import Promotion from '../../entities/Promotion.js';
 import PromotionLevel from '../../entities/PromotionLevel.js';
 
@@ -54,8 +54,8 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertSufficientUserRole(request, 'teacher');
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
     },
     handler: async (request) => {
       const {

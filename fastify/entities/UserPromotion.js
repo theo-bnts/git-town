@@ -1,5 +1,6 @@
 import DatabasePool from './tools/DatabasePool.js';
 import Promotion from './Promotion.js';
+import User from './User.js';
 
 export default class UserPromotion {
   Id;
@@ -58,6 +59,19 @@ export default class UserPromotion {
     return row.count > 0;
   }
 
+  static async isPromotionInserted(promotion) {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.user_promotion
+        WHERE user_promotion.promotion_id = $1::uuid
+      `,
+      [promotion.Id],
+    );
+
+    return row.count > 0;
+  }
+
   static async isUserAndPromotionInserted(user, promotion) {
     const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
@@ -70,6 +84,65 @@ export default class UserPromotion {
     );
 
     return row.count === 1n;
+  }
+
+  static async fromUser(user) {
+    const rows = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          user_id,
+          promotion_id
+        FROM public.user_promotion
+        WHERE user_id = $1::uuid
+      `,
+      [user.Id],
+    );
+
+    return Promise.all(
+      rows.map(async (row) => {
+        const promotion = await Promotion.fromId(row.promotion_id);
+
+        return new UserPromotion(
+          row.id,
+          row.created_at,
+          row.updated_at,
+          user,
+          promotion,
+        );
+      }),
+    );
+  }
+
+  static async fromPromotion(promotion) {
+    const rows = await DatabasePool.Instance.execute(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          user_id
+        FROM public.user_promotion
+        WHERE promotion_id = $1::uuid
+      `,
+      [promotion.Id],
+    );
+
+    return Promise.all(
+      rows.map(async (row) => {
+        const user = await User.fromId(row.user_id);
+
+        return new UserPromotion(
+          row.id,
+          row.created_at,
+          row.updated_at,
+          user,
+          promotion,
+        );
+      }),
+    );
   }
 
   static async fromUserAndPromotion(user, promotion) {
@@ -95,23 +168,15 @@ export default class UserPromotion {
     );
   }
 
-  static async getPromotionsForUser(user) {
-    const rows = await DatabasePool.Instance.execute(
+  static async replicateUsers(sourcePromotion, targetPromotion) {
+    await DatabasePool.Instance.execute(
       /* sql */ `
-        SELECT
-          id,
-          created_at,
-          updated_at,
-          user_id,
-          promotion_id
+        INSERT INTO public.user_promotion (user_id, promotion_id)
+        SELECT user_id, $1::uuid
         FROM public.user_promotion
-        WHERE user_id = $1::uuid
+        WHERE promotion_id = $2::uuid
       `,
-      [user.Id],
-    );
-
-    return Promise.all(
-      rows.map((row) => Promotion.fromId(row.promotion_id)),
+      [targetPromotion.Id, sourcePromotion.Id],
     );
   }
 }

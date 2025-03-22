@@ -1,10 +1,10 @@
-import Middleware from '../../../../entities/tools/Middleware.js';
+import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
 import Request from '../../../../entities/tools/Request.js';
 
 export default async function route(app) {
   app.route({
     method: 'DELETE',
-    url: '/users/:Id/token',
+    url: '/users/:UserId/token',
     schema: {
       headers: {
         type: 'object',
@@ -19,7 +19,7 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          Id: {
+          UserId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -28,8 +28,8 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertUserIdMatch(request);
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertUserIdMatch(request);
     },
     handler: async (request) => {
       const token = await Request.getUsedToken(request);

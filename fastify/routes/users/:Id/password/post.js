@@ -1,4 +1,4 @@
-import Middleware from '../../../../entities/tools/Middleware.js';
+import DataQualityMiddleware from '../../../../entities/tools/DataQualityMiddleware.js';
 import Security from '../../../../entities/tools/Security.js';
 import TemporaryCode from '../../../../entities/TemporaryCode.js';
 import User from '../../../../entities/User.js';
@@ -6,12 +6,12 @@ import User from '../../../../entities/User.js';
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/users/:Id/password',
+    url: '/users/:UserId/password',
     schema: {
       params: {
         type: 'object',
         properties: {
-          Id: {
+          UserId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -39,15 +39,15 @@ export default async function route(app) {
       rateLimit: {
         max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
         allowList: false,
-        keyGenerator: (request) => `${request.params.Id}-${request.routeOptions.url}`,
+        keyGenerator: (request) => `${request.params.UserId}-${request.routeOptions.url}`,
       },
     },
-    preHandler: async (request) => Middleware.assertUserIdExists(request),
+    preHandler: async (request) => DataQualityMiddleware.assertUserIdExists(request),
     handler: async (request) => {
-      const { Id: id } = request.params;
+      const { UserId: userId } = request.params;
       const { Password: password, TemporaryCode: temporaryCode } = request.body;
 
-      const user = await User.fromId(id);
+      const user = await User.fromId(userId);
 
       if (!(await TemporaryCode.isValidValue(temporaryCode, user))) {
         throw { statusCode: 401, error: 'INVALID_TEMPORARY_CODE' };

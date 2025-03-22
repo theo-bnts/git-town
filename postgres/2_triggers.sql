@@ -134,7 +134,7 @@ FOR EACH ROW
 EXECUTE FUNCTION text_normalization_and_check();
 
 CREATE TRIGGER ue_text_normalization_and_check
-BEFORE INSERT OR UPDATE ON public.ue
+BEFORE INSERT OR UPDATE ON public.enseignement_unit
 FOR EACH ROW
 EXECUTE FUNCTION text_normalization_and_check();
 
@@ -201,7 +201,7 @@ FOR EACH ROW
 EXECUTE FUNCTION update_updated_at();
 
 CREATE TRIGGER ue_update_updated_at
-BEFORE UPDATE ON public.ue
+BEFORE UPDATE ON public.enseignement_unit
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at();
 

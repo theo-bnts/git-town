@@ -1,9 +1,8 @@
 import Request from './Request.js';
 import Role from '../Role.js';
-import User from '../User.js';
 import Security from './Security.js';
 
-export default class Middleware {
+export default class AuthorizationMiddleware {
   static async assertAuthentication(request) {
     if (!await Request.isAuthenticated(request)) {
       throw { statusCode: 401, error: 'INVALID_TOKEN' };
@@ -21,30 +20,22 @@ export default class Middleware {
 
   static async assertSufficientUserRole(request, requiredRoleKeyword) {
     const token = await Request.getUsedToken(request);
-    const { Role: userRole } = token.User;
+    const { Role: authenticatedUserRole } = token.User;
 
     const requiredRole = await Role.fromKeyword(requiredRoleKeyword);
 
-    if (userRole.HierarchyLevel < requiredRole.HierarchyLevel) {
+    if (authenticatedUserRole.HierarchyLevel < requiredRole.HierarchyLevel) {
       throw { statusCode: 403, error: 'INSUFFICIENT_PERMISSIONS' };
     }
   }
 
-  static async assertUserIdExists(request) {
-    const { Id: requestedUserId } = request.params;
-
-    if (!(await User.isIdInserted(requestedUserId))) {
-      throw { statusCode: 404, error: 'UNKNOWN_USER_ID' };
-    }
-  }
-
   static async assertUserIdMatch(request) {
-    const { Id: requestedUserId } = request.params;
+    const { UserId: requestedUserId } = request.params;
 
     const token = await Request.getUsedToken(request);
-    const { Id: userId } = token.User;
+    const { Id: authenticatedUserId } = token.User;
 
-    if (requestedUserId !== userId) {
+    if (requestedUserId !== authenticatedUserId) {
       throw { statusCode: 403, error: 'USER_ID_MISMATCH' };
     }
   }

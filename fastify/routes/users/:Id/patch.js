@@ -1,12 +1,13 @@
-import Middleware from '../../entities/tools/Middleware.js';
-import User from '../../entities/User.js';
-import Request from '../../entities/tools/Request.js';
-import Role from '../../entities/Role.js';
+import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
+import DataQualityMiddleware from '../../../entities/tools/DataQualityMiddleware.js';
+import User from '../../../entities/User.js';
+import Request from '../../../entities/tools/Request.js';
+import Role from '../../../entities/Role.js';
 
 export default async function route(app) {
   app.route({
     method: 'PATCH',
-    url: '/users',
+    url: '/users/:UserId',
     schema: {
       headers: {
         type: 'object',
@@ -18,13 +19,19 @@ export default async function route(app) {
         },
         required: ['authorization'],
       },
-      body: {
+      params: {
         type: 'object',
         properties: {
-          Id: {
+          UserId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
+        },
+        additionalProperties: false,
+      },
+      body: {
+        type: 'object',
+        properties: {
           EmailAddress: {
             type: 'string',
             format: 'email',
@@ -47,25 +54,20 @@ export default async function route(app) {
             required: ['Keyword'],
           },
         },
-        required: ['Id'],
+        minProperties: 1,
         additionalProperties: false,
-        minProperties: 2,
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertSufficientUserRole(request, 'administrator');
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
+      await DataQualityMiddleware.assertUserIdExists(request);
     },
     handler: async (request) => {
-      const {
-        Id: id, EmailAddress: emailAddress, FullName: fullName, Role: role,
-      } = request.body;
+      const { UserId: userId } = request.params;
+      const { EmailAddress: emailAddress, FullName: fullName, Role: role } = request.body;
 
-      if (!await User.isIdInserted(id)) {
-        throw { statusCode: 404, error: 'UNKNOWN_USER_ID' };
-      }
-
-      const requestedUser = await User.fromId(id);
+      const requestedUser = await User.fromId(userId);
 
       if (emailAddress !== undefined) {
         if (emailAddress === requestedUser.EmailAddress) {
@@ -112,7 +114,9 @@ export default async function route(app) {
         requestedUser.Role = await Role.fromKeyword(roleKeyword);
       }
 
-      return requestedUser.update();
+      await requestedUser.update();
+
+      return requestedUser;
     },
   });
 }

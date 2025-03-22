@@ -1,11 +1,11 @@
+import AuthorizationMiddleware from '../../../../../entities/tools/AuthorizationMiddleware.js';
 import GitHubApp from '../../../../../entities/tools/GitHubApp.js';
-import Middleware from '../../../../../entities/tools/Middleware.js';
 import User from '../../../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/users/:Id/github/invite',
+    url: '/users/:UserId/github/invite',
     schema: {
       headers: {
         type: 'object',
@@ -20,7 +20,7 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          Id: {
+          UserId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -36,13 +36,13 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertUserIdMatch(request);
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertUserIdMatch(request);
     },
     handler: async (request) => {
-      const { Id: id } = request.params;
+      const { UserId: userId } = request.params;
 
-      const user = await User.fromId(id);
+      const user = await User.fromId(userId);
 
       if (user.GitHubId === null) {
         throw { statusCode: 409, error: 'GITHUB_ID_NOT_DEFINED' };
@@ -52,7 +52,7 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'ALREADY_MEMBER' };
       }
 
-      await GitHubApp.fromEnvironment().inviteToOrganization(user);
+      await GitHubApp.Instance.inviteToOrganization(user);
     },
   });
 }

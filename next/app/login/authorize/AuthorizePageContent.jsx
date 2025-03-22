@@ -22,30 +22,29 @@ export default function AuthorizePageContent() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const userId = getCookie('userId');
-    const token = getCookie('token');
+    async function linkAccount() {
+      const userId = await getCookie('userId');
+      const token = await getCookie('token');
 
-    if (code && userId && token) {
-      const linkAccount = async () => {
+      if (code && userId && token) {
         try {
           await postOAuthCode(userId, code, token);
           setGithubLinked(true);
         } catch (err) {
-            router.replace('/login/link');
+          router.replace('/login/link');
         }
-      };
-
-      linkAccount();
-    } else if (!userId || !token) {
-      setError("Informations de connexion manquantes. Veuillez vous reconnecter.");
+      } else if (!userId || !token) {
+        setError("Informations de connexion manquantes. Veuillez vous reconnecter.");
+      }
     }
-  }, [code]);
+    linkAccount();
+  }, [code, router]);
 
   useEffect(() => {
     if (error) {
       router.replace("/login/link");
     }
-  }, [error]);
+  }, [error, router]);
 
   return (
     <div className="flex flex-col min-h-screen">

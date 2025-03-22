@@ -98,7 +98,7 @@ export default class User {
   }
 
   async update() {
-    await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.execute(
       /* sql */ `
         UPDATE public.user
         SET
@@ -109,7 +109,8 @@ export default class User {
           role_id = $5::uuid,
           github_id = $6::bigint,
           github_organization_member = $7::boolean
-          WHERE id = $8::uuid
+        WHERE id = $8::uuid
+        RETURNING updated_at
       `,
       [
         this.EmailAddress,
@@ -122,6 +123,8 @@ export default class User {
         this.Id,
       ],
     );
+
+    this.UpdatedAt = row.updated_at;
   }
 
   async delete() {

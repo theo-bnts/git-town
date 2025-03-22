@@ -1,11 +1,11 @@
+import AuthorizationMiddleware from '../../../../../entities/tools/AuthorizationMiddleware.js';
 import GitHubUser from '../../../../../entities/tools/GitHubUser.js';
-import Middleware from '../../../../../entities/tools/Middleware.js';
 import User from '../../../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/users/:Id/github/oauth-code',
+    url: '/users/:UserId/github/oauth-code',
     schema: {
       headers: {
         type: 'object',
@@ -20,7 +20,7 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          Id: {
+          UserId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -40,14 +40,14 @@ export default async function route(app) {
       },
     },
     preHandler: async (request) => {
-      await Middleware.assertAuthentication(request);
-      await Middleware.assertUserIdMatch(request);
+      await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertUserIdMatch(request);
     },
     handler: async (request) => {
-      const { Id: id } = request.params;
+      const { UserId: userId } = request.params;
       const { OAuthCode: oAuthCode } = request.body;
 
-      const user = await User.fromId(id);
+      const user = await User.fromId(userId);
 
       if (user.GitHubId !== null) {
         throw { statusCode: 409, error: 'GITHUB_ID_ALREADY_DEFINED' };

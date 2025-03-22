@@ -39,6 +39,28 @@ export default class Promotion {
     this.UpdatedAt = row.updated_at;
   }
 
+  async update() {
+    const [row] = await DatabasePool.Instance.execute(
+      /* sql */ `
+        UPDATE public.promotion
+        SET
+          diploma_id = $1::uuid,
+          promotion_level_id = $2::uuid,
+          year = $3::integer
+        WHERE id = $4::uuid
+        RETURNING updated_at
+      `,
+      [
+        this.Diploma.Id,
+        this.PromotionLevel.Id,
+        this.Year,
+        this.Id,
+      ],
+    );
+
+    this.UpdatedAt = row.updated_at;
+  }
+
   async delete() {
     await DatabasePool.Instance.execute(
       /* sql */ `

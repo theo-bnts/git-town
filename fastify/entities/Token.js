@@ -53,10 +53,6 @@ export default class Token {
       `,
       [this.Id],
     );
-
-    this.Id = null;
-    this.CreatedAt = null;
-    this.UpdatedAt = null;
   }
 
   static async isValidValue(value) {
