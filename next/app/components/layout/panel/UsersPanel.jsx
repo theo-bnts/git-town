@@ -17,13 +17,11 @@ const columns = [
   { key: 'actions', title: 'Action(s)', sortable: false },
 ];
 
-const fetchUsers = async () => {
-  const token = getCookie('token');
+const fetchUsers = async (token) => {
   const users = await getUsers(token);
   const transformed = await Promise.all(
     users.map(async (user) => {
-      let promotions = [];
-      promotions = await getUserPromotions(user.Id, token);
+      let promotions = await getUserPromotions(user.Id, token);
       const promotionsDisplay = Array.isArray(promotions)
         ? promotions
             .map((promo) => {
@@ -65,10 +63,21 @@ const fetchUsers = async () => {
 
 export default function UsersPanel() {
   const [users, setUsers] = useState([]);
+  const [authToken, setAuthToken] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      const token = await getCookie('token');
+      setAuthToken(token);
+    })();
+  }, []);
 
   const refreshUsers = useCallback(() => {
-    fetchUsers().then((data) => setUsers(data));
-  }, []);
+    if (authToken) {
+      fetchUsers(authToken)
+        .then((data) => setUsers(data))
+    }
+  }, [authToken]);
 
   useEffect(() => {
     refreshUsers();

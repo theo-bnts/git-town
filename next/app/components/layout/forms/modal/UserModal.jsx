@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-
 import { isEmailValid } from '@/app/services/validators';
 import { getCookie } from '@/app/services/cookies';
 
@@ -15,6 +14,7 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const [promotionsOptions, setPromotionsOptions] = useState([]);
+  const [authToken, setAuthToken] = useState('');
 
   const roleOptions = [
     { id: "administrator", name: "Administrateur" },
@@ -42,12 +42,17 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
   ];
 
   useEffect(() => {
-    if (isOpen) {
-      const token = getCookie('token');
-      getPromotions(token)
-        .then(data => setPromotionsOptions(data))
+    (async () => {
+      const token = await getCookie('token');
+      setAuthToken(token);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && authToken) {
+      getPromotions(authToken).then(data => setPromotionsOptions(data));
     }
-  }, [isOpen]);
+  }, [isOpen, authToken]);
 
   const validateFields = (fieldsValues) => {
     const newErrors = {};
@@ -85,15 +90,14 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
         }
       };
       try {
-        const token = getCookie('token');
-        const userResponse = await saveUser(payload, token);
+        const userResponse = await saveUser(payload, authToken);
         if (userResponse && userResponse.Id) {
           const userId = userResponse.Id;
           const promotionsSelection = fieldsValues["Promotions"];
           if (promotionsSelection && promotionsSelection.length > 0) {
             for (const promo of promotionsSelection) {
               const promotionsData = { Promotion: promo.full };
-              await saveUserPromotions(userId, promotionsData, token);
+              await saveUserPromotions(userId, promotionsData, authToken);
             }
           }
         }
