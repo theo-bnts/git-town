@@ -42,7 +42,7 @@ export default function DynamicModal({ title, fields: initialFields, isOpen, onC
       <Card variant="default" className="relative w-[400px] p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold">{title || "Édition"}</h3>
-          <Button variant="action_sq" onClick={onClose}>
+          <Button variant="cancel_sq" onClick={onClose}>
             <XIcon size={24} />
           </Button>
         </div>
