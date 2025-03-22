@@ -8,6 +8,7 @@ import { isEmailValid } from '@/app/services/validators';
 
 export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpdated }) {
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
 
   const roleOptions = [
     { id: "administrator", name: "Administrateur" },
@@ -15,13 +16,11 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
     { id: "student", name: "Étudiant" }
   ];
 
-  // Autres options (ex. promotions) éventuelles
-
   const fields = [
     { label: "Nom", value: initialData.nom || "" },
     { label: "Email", value: initialData.email || "" },
     { label: "Rôle", value: initialData.role || {}, options: roleOptions },
-    // { label: "Promotions", value: initialData.promotions || [], options: promotionsOptions }
+    // promotions désactivé pour l'instant
   ];
 
   const validateFields = (fieldsValues) => {
@@ -37,10 +36,6 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
     if (!fieldsValues["Rôle"] || !fieldsValues["Rôle"].id) {
       newErrors["Rôle"] = "Veuillez sélectionner un rôle.";
     }
-    // Vérification des promotions désactivée pour l'instant
-    // if (!fieldsValues["Promotions"] || fieldsValues["Promotions"].length === 0) {
-    //   newErrors["Promotions"] = "Veuillez sélectionner au moins une promotion.";
-    // }
     return newErrors;
   };
 
@@ -50,18 +45,18 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
       setErrors(newErrors);
     } else {
       setErrors({});
+      setApiError('');
       const roleValue = fieldsValues["Rôle"];
       const roleKeyword = (typeof roleValue === 'object' && roleValue.id)
         ? roleValue.id.toString().trim()
         : roleValue.toString().trim();
-        
+
       const payload = {
         EmailAddress: fieldsValues["Email"].trim(),
         FullName: fieldsValues["Nom"].trim(),
         Role: {
           Keyword: roleKeyword
         }
-        // promotions désactivé pour l'instant
       };
       console.log("Payload envoyé :", payload);
       try {
@@ -73,22 +68,33 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
         onClose();
       } catch (error) {
         console.error("Erreur lors de la sauvegarde de l'utilisateur :", error);
+        setApiError(error.message);
       }
     }
   };
 
   const handleClose = () => {
     setErrors({});
+    setApiError('');
     onClose();
+  };
+
+  const clearApiError = () => {
+    setApiError('');
   };
 
   const clearError = (label) => {
     setErrors(prev => ({ ...prev, [label]: "" }));
+    if (apiError) {
+      setApiError('');
+    }
   };
 
   return (
     <DynamicModal 
       errors={errors}
+      apiError={apiError}
+      clearApiError={clearApiError}
       fields={fields} 
       isOpen={isOpen}
       onClose={handleClose} 

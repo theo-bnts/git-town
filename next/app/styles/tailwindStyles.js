@@ -20,7 +20,6 @@ const buttonStyles = {
   action_sq_warn: `flex items-center justify-center transition-colors duration-200 hover:scale-110 hover:text-[var(--warn-color-hover)]`,
   
   action_sq: `p-2 transition-transform duration-200 hover:scale-110 hover:text-[var(--accent-color)]`,
-  cancel_sq: `p-2 transition-transform duration-200 hover:scale-110 hover:text-[var(--warn-color-hover)]`,
   default_sq: `bg-[var(--accent-color)] p-2 rounded-[12.5px] hover:bg-[var(--accent-color-hover)] transition-colors duration-200`,
     
   popover_default_sq: `flex items-center p-2 bg-[var(--accent-color)] rounded-r-[12.5px]`,
@@ -30,6 +29,7 @@ const buttonStyles = {
 const cardStyles = {
   default: `bg-[var(--primary-color)] p-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)] rounded-[12.5px]`,
   info: `bg-[var(--accent-color)] p-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)] rounded-[12.5px]`,
+  warn: `bg-[var(--warn-color)] p-4 rounded-[12.5px] shadow-lg text-[var(--primary-color)]`,
   empty_list: `bg-[var(--primary-color)] p-2 rounded-[12.5px] border border-[var(--primary-color)]`,
 };
 
