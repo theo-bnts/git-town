@@ -1,5 +1,7 @@
-import { usersRoute, userRoute } from "@/app/services/routes";
+'use client';
+
 import { handleApiError } from "@/app/services/errorHandler";
+import { usersRoute, userRoute } from "@/app/services/routes";
 
 /**
  * Enregistrement d'un utilisateur

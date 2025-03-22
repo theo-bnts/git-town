@@ -1,5 +1,7 @@
-import { userRoute } from "@/app/services/routes";
-import { handleApiError } from "@/app/services/errorHandler";
+'use client';
+
+import { handleApiError } from '@/app/services/errorHandler';
+import { userRoute } from '@/app/services/routes';
 
 /**
  * Vérication des informations de l’utilisateur.
@@ -18,10 +20,10 @@ export default async function getUser(userId, token) {
     },
   });
 
-  //try catch res.json() si pas de json
   const data = await res.json();
 
   if (res.ok) 
     return data;
+
   handleApiError(res, data);
 }

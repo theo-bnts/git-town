@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Card from '@/app/components/ui/Card';
-import Button from '@/app/components/ui/Button';
-import Input from '@/app/components/ui/Input';
-import ComboBox from '@/app/components/ui/combobox/ComboBox';
-import ListBox from '@/app/components/ui/listbox/ListBox';
-import { XIcon } from '@primer/octicons-react';
+
 import { textStyles } from '@/app/styles/tailwindStyles';
+import { XIcon } from '@primer/octicons-react';
+
+import Button from '@/app/components/ui/Button';
+import Card from '@/app/components/ui/Card';
+import ComboBox from '@/app/components/ui/combobox/ComboBox';
+import Input from '@/app/components/ui/Input';
+import ListBox from '@/app/components/ui/listbox/ListBox';
 
 export default function DynamicModal({ 
   title, 

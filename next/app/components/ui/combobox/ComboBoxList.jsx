@@ -13,13 +13,15 @@ export default function ComboBoxList({
   loadMore,
   maxVisible = 6
 }) {
-  const optionHeight = 40; // Hauteur approximative par option en pixels
+  const optionHeight = 40;
   const maxHeight = maxVisible * optionHeight;
 
   return (
     <div 
       style={{ maxHeight: `${maxHeight}px` }}
-      className="overflow-auto scroll-smooth shadow-inner transition-all duration-200 hover:shadow-md"
+      className="
+      overflow-auto scroll-smooth 
+      shadow-inner transition-all duration-200 hover:shadow-md"
       onScroll={loadMore}
     >
       {options.length > 0 ? (
@@ -34,7 +36,9 @@ export default function ComboBoxList({
           />
         ))
       ) : (
-        <div className="p-2 text-gray-500">Aucun résultat.</div>
+        <div className="p-2 text-gray-500">
+          Aucun résultat.
+        </div>
       )}
     </div>
   );

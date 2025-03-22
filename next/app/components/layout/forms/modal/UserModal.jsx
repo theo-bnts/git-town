@@ -1,12 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import DynamicModal from './DynamicModal';
-import saveUser from '@/app/services/api/users/saveUser';
-import getPromotions from '@/app/services/api/promotions/getPromotions';
-import saveUserPromotions from '@/app/services/api/users/saveUserPromotions';
-import { getCookie } from '@/app/services/cookies';
+
 import { isEmailValid } from '@/app/services/validators';
+import { getCookie } from '@/app/services/cookies';
+
+import getPromotions from '@/app/services/api/promotions/getPromotions';
+import saveUser from '@/app/services/api/users/saveUser';
+import saveUserPromotions from '@/app/services/api/users/saveUserPromotions';
+
+import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
 
 export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpdated }) {
   const [errors, setErrors] = useState({});
@@ -18,15 +21,6 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
     { id: "teacher", name: "Enseignant" },
     { id: "student", name: "Étudiant" }
   ];
-
-  useEffect(() => {
-    if (isOpen) {
-      const token = getCookie('token');
-      getPromotions(token)
-        .then(data => setPromotionsOptions(data))
-        .catch(error => console.error("Erreur de chargement des promotions:", error));
-    }
-  }, [isOpen]);
 
   const fields = [
     { label: "Nom", value: initialData.nom || "" },
@@ -46,6 +40,14 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
       }))
     }
   ];
+
+  useEffect(() => {
+    if (isOpen) {
+      const token = getCookie('token');
+      getPromotions(token)
+        .then(data => setPromotionsOptions(data))
+    }
+  }, [isOpen]);
 
   const validateFields = (fieldsValues) => {
     const newErrors = {};
@@ -82,7 +84,6 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
           Keyword: roleKeyword
         }
       };
-      console.log("Payload envoyé :", payload);
       try {
         const token = getCookie('token');
         const userResponse = await saveUser(payload, token);

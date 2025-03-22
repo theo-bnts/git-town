@@ -23,14 +23,7 @@ const fetchUsers = async () => {
   const transformed = await Promise.all(
     users.map(async (user) => {
       let promotions = [];
-      try {
-        promotions = await getUserPromotions(user.Id, token);
-      } catch (error) {
-        console.error(
-          `Erreur lors de la récupération des promotions pour l'utilisateur ${user.Id} :`,
-          error
-        );
-      }
+      promotions = await getUserPromotions(user.Id, token);
       const promotionsDisplay = Array.isArray(promotions)
         ? promotions
             .map((promo) => {

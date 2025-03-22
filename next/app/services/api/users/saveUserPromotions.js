@@ -1,7 +1,7 @@
 'use client';
 
-import { userPromotions } from '@/app/services/routes';
 import { handleApiError } from '@/app/services/errorHandler';
+import { userPromotions } from '@/app/services/routes';
 
 /**
  * Sauvegarde des promotions de l'utilisateur
