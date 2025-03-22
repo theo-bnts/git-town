@@ -86,14 +86,14 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
       try {
         const token = getCookie('token');
         const userResponse = await saveUser(payload, token);
-        const userId = userResponse.Id;
-        const promotionsSelection = fieldsValues["Promotions"];
-        if (promotionsSelection && promotionsSelection.length > 0) {
-          for (const promo of promotionsSelection) {
-            const promotionsData = {
-              Promotion: promo.full
-            };
-            await saveUserPromotions(userId, promotionsData, token);
+        if (userResponse && userResponse.Id) {
+          const userId = userResponse.Id;
+          const promotionsSelection = fieldsValues["Promotions"];
+          if (promotionsSelection && promotionsSelection.length > 0) {
+            for (const promo of promotionsSelection) {
+              const promotionsData = { Promotion: promo.full };
+              await saveUserPromotions(userId, promotionsData, token);
+            }
           }
         }
         if (typeof onUserUpdated === 'function') {
@@ -101,7 +101,6 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
         }
         onClose();
       } catch (error) {
-        console.error("Erreur lors de la sauvegarde de l'utilisateur ou des promotions :", error);
         setApiError(error.message);
       }
     }

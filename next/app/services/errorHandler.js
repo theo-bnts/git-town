@@ -1,6 +1,13 @@
-// /app/services/errorHandler.jsx
+// /app/services/errorHandler.js
 import { API_ERRORS } from "@/app/services/errorCodes";
 
+/**
+ * Gestion des erreurs API
+ * 
+ * @param {Response} res - La réponse de l'API
+ * @param {object} data - Les données de la réponse
+ * @returns {object} - L'erreur
+ */
 export function handleApiError(res, data) {
   const status = res.status;
 

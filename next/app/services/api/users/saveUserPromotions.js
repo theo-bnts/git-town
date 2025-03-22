@@ -1,6 +1,7 @@
 'use client';
 
 import { userPromotions } from '@/app/services/routes';
+import { handleApiError } from '@/app/services/errorHandler';
 
 /**
  * Sauvegarde des promotions de l'utilisateur
@@ -10,7 +11,6 @@ import { userPromotions } from '@/app/services/routes';
  * @param {object} promotionsData - Les promotions de l'utilisateur
  * @param {string} token - Le token d'authentification
  * @returns {Promise<object>} - Les promotions de l'utilisateur
- * @throws {Error} - En cas d'erreur de la requête
  */
 export default async function saveUserPromotions(userId, promotionsData, token) {
   const url = userPromotions(userId);
@@ -23,10 +23,12 @@ export default async function saveUserPromotions(userId, promotionsData, token) 
     body: JSON.stringify(promotionsData)
   });
 
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : {};
+
   if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(errorText);
+    return Promise.reject(handleApiError(res, data));
   }
 
-  return res.json();
+  return data;
 }
