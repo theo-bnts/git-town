@@ -1,5 +1,7 @@
-import { usersRoute } from "@/app/services/routes";
+'use client';
+
 import { handleApiError } from "@/app/services/errorHandler";
+import { usersRoute } from "@/app/services/routes";
 
 /**
  * Récupération de la liste des utilisateurs.

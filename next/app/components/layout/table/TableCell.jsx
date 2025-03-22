@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { textStyles } from '@/app/styles/tailwindStyles';
-import { buttonStyles } from '@/app/styles/tailwindStyles';
 
 import Button from '@/app/components/ui/Button';
 
@@ -45,7 +44,7 @@ export default function TableCell({ value, columnKey }) {
                 <Button
                   key={index}
                   onClick={action.onClick}
-                  className={buttonStyles.action}
+                  variant="action_sq"
                 >
                   {action.icon}
                 </Button>
