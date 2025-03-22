@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import DynamicModal from './DynamicModal';
 import saveUser from '@/app/services/api/users/saveUser';
 import { getCookie } from '@/app/services/cookies';
+import { isEmailValid } from '@/app/services/validators';
 
-export default function UserModal({ isOpen, onClose, initialData = {} }) {
+export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpdated }) {
   const [errors, setErrors] = useState({});
 
   const roleOptions = [
@@ -14,10 +15,7 @@ export default function UserModal({ isOpen, onClose, initialData = {} }) {
     { id: "student", name: "Étudiant" }
   ];
 
-  const promotionsOptions = [];
-  for (let i = 1; i <= 100; i++) {
-    promotionsOptions.push([`Promo ${i}A`, `Promo ${i}B`]);
-  }
+  // Autres options (ex. promotions) éventuelles
 
   const fields = [
     { label: "Nom", value: initialData.nom || "" },
@@ -33,16 +31,13 @@ export default function UserModal({ isOpen, onClose, initialData = {} }) {
     }
     if (!fieldsValues["Email"] || fieldsValues["Email"].trim() === "") {
       newErrors["Email"] = "L'email est obligatoire.";
-    } else {
-      const emailPattern = new RegExp(process.env.NEXT_PUBLIC_USER_EMAIL_ADDRESS_PATTERN, 'u');
-      if (!emailPattern.test(fieldsValues["Email"])) {
-        newErrors["Email"] = "L'email n'est pas valide.";
-      }
+    } else if (!isEmailValid(fieldsValues["Email"])) {
+      newErrors["Email"] = "L'email n'est pas valide.";
     }
     if (!fieldsValues["Rôle"] || !fieldsValues["Rôle"].id) {
       newErrors["Rôle"] = "Veuillez sélectionner un rôle.";
     }
-    // Désactivation temporaire de la vérification promotions
+    // Vérification des promotions désactivée pour l'instant
     // if (!fieldsValues["Promotions"] || fieldsValues["Promotions"].length === 0) {
     //   newErrors["Promotions"] = "Veuillez sélectionner au moins une promotion.";
     // }
