@@ -11,7 +11,7 @@ import TableToolbar from '@/app/components/layout/table/TableToolbar';
 export default function Table({ 
   columns, 
   data, 
-  toolbarContent,
+  toolbarContents,
 }) {
   const [sortedData, setSortedData] = useState(data);
   const [visibleCount, setVisibleCount] = useState(0);
@@ -87,7 +87,7 @@ export default function Table({
   return (
     <div className="max-w-screen-xl mx-auto px-4">
       <TableToolbar>
-        {toolbarContent}
+        {toolbarContents}
       </TableToolbar>
 
       <div

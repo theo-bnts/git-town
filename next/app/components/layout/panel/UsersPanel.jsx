@@ -91,7 +91,7 @@ export default function UsersPanel() {
     refreshUsers();
   }, [refreshUsers]);
 
-  const toolbarItems = (
+  const toolbarContents = (
     <>
       <Button
         variant="default_sq"
@@ -113,7 +113,7 @@ export default function UsersPanel() {
       <Table 
         columns={columns} 
         data={users} 
-        toolbarContent={toolbarItems}
+        toolbarContents={toolbarContents}
       />
 
       {isUserModalOpen && (
