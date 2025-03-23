@@ -8,7 +8,7 @@ import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
 import UserModal from '@/app/components/layout/forms/modal/UserModal';
 
-export default function Table({ columns, data, onUserUpdated }) {
+export default function Table({ columns, data, onUserUpdated, ModalComponent }) {
   const [sortedData, setSortedData] = useState(data);
   const [visibleCount, setVisibleCount] = useState(0);
   const [sortColumn, setSortColumn] = useState(null);
@@ -77,9 +77,9 @@ export default function Table({ columns, data, onUserUpdated }) {
   }, [data]);
 
   return (
-    <div className="w-full px-4">
+    <div className="w-full max-w-7xl px-4 mx-auto">
       <TableToolbar 
-        ModalComponent={UserModal}
+        ModalComponent={ModalComponent}
         onUserUpdated={onUserUpdated}
       />
 
