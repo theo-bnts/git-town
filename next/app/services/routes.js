@@ -34,3 +34,6 @@ export const promotionsRoute = () =>
 
 export const delTokenRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}/token`;
+
+export const deleteUserPromotion = (userId, userPromotionId) =>
+  `${API_BASE_URL}/users/${userId}/promotions/${userPromotionId}`;
