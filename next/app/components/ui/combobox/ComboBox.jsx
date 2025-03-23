@@ -10,7 +10,7 @@ import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
 import ComboBoxPopover from '@/app/components/ui/combobox/ComboBoxPopover';
 
-export default function ComboBox({ placeholder, options, onSelect, maxVisible = 6, autoOpen }) {
+export default function ComboBox({ placeholder, options, onSelect, maxVisible = 6, autoOpen, value }) {
   const MAX_ITEMS = maxVisible;
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,12 +19,25 @@ export default function ComboBox({ placeholder, options, onSelect, maxVisible = 
   const [selectedOption, setSelectedOption] = useState(null);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
+  const comboBoxRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // MàJ des options dès que la prop options change
   useEffect(() => {
     setFilteredOptions(options);
   }, [options]);
 
-  const comboBoxRef = useRef(null);
-  const inputRef = useRef(null);
+  // IMPORTANT : Si une valeur initiale est passée via la prop "value", on la définit dans l'état.
+  useEffect(() => {
+    if (value && !selectedOption) {
+      setSelectedOption(value);
+      setSearchTerm(value.value);
+    }
+  }, [value, selectedOption]);
+
+  useEffect(() => {
+    setDisplayedOptions(filteredOptions.slice(0, MAX_ITEMS + 1));
+  }, [filteredOptions, MAX_ITEMS]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -37,10 +50,6 @@ export default function ComboBox({ placeholder, options, onSelect, maxVisible = 
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
-  useEffect(() => {
-    setDisplayedOptions(filteredOptions.slice(0, MAX_ITEMS + 1));
-  }, [filteredOptions, MAX_ITEMS]);
 
   useEffect(() => {
     if (autoOpen) {
