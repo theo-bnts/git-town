@@ -14,6 +14,7 @@ const buttonStyles = {
   warn: `bg-[var(--warn-color)] py-2 px-4 rounded-[12.5px] hover:bg-[var(--warn-color-hover)] transition-colors duration-200`,
   loading: `bg-[var(--accent-color)] py-2 px-4 rounded-[12.5px]`,
   outline: `bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)] hover:bg-[var(--primary-color-hover)] transition-colors duration-200`,
+  disabled: `bg-[var(--hint-color)] cursor-not-allowed py-2 px-4 rounded-[12.5px]`,
   
   outline_full: `w-full flex items-center justify-center bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)] hover:bg-[var(--primary-color-hover)] transition-colors duration-200`,
 
