@@ -1,3 +1,5 @@
+// /app/components/layout/table/Table.jsx
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -6,16 +8,19 @@ import EmptyTableCard from '@/app/components/layout/table/EmptyTableCard';
 import TableHeader from '@/app/components/layout/table/TableHeader';
 import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
-import UserModal from '@/app/components/layout/forms/modal/UserModal';
 
-export default function Table({ columns, data, onUserUpdated }) {
+export default function Table({ 
+  columns, 
+  data, 
+  toolbarContent,
+}) {
   const [sortedData, setSortedData] = useState(data);
   const [visibleCount, setVisibleCount] = useState(0);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortOrder, setSortOrder] = useState('asc');
+
   const containerRef = useRef(null);
   const sentinelRef = useRef(null);
-
   const rowHeight = 50;
 
   const loadMoreRows = () => {
@@ -56,8 +61,12 @@ export default function Table({ columns, data, onUserUpdated }) {
     const sorted = [...data].sort((a, b) => {
       if (!columnKey) return 0;
       return newOrder === 'asc'
-        ? a[columnKey] > b[columnKey] ? 1 : -1
-        : a[columnKey] < b[columnKey] ? 1 : -1;
+        ? a[columnKey] > b[columnKey] 
+          ? 1 
+          : -1
+        : a[columnKey] < b[columnKey] 
+          ? 1 
+          : -1;
     });
     setSortedData(sorted);
     if (containerRef.current) {
@@ -78,10 +87,9 @@ export default function Table({ columns, data, onUserUpdated }) {
 
   return (
     <div className="max-w-screen-xl mx-auto px-4">
-      <TableToolbar 
-        ModalComponent={UserModal}
-        onUserUpdated={onUserUpdated}
-      />
+      <TableToolbar>
+        {toolbarContent}
+      </TableToolbar>
 
       <div
         ref={containerRef}

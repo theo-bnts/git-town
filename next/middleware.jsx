@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { userRoute } from "@/app/services/routes";
 
 export async function middleware(request) {
-  /*const token = request.cookies.get("token")?.value;
+  const token = request.cookies.get("token")?.value;
   const userId = request.cookies.get("userId")?.value;
   console.log("token", token);
   console.log("userId", userId);
@@ -20,7 +20,7 @@ export async function middleware(request) {
         }
       );
 
-      //console.log("apiResponse", apiResponse);
+      console.log("apiResponse", apiResponse);
 
       if (apiResponse.ok) {
         console.log("user data fetched");
@@ -59,14 +59,14 @@ export async function middleware(request) {
       return response;
     }
   } else if (request.nextUrl.pathname !== "/login") {
-    //console.log("redirecting to login");
+    console.log("redirecting to login");
     const response = NextResponse.redirect(new URL("/login", request.url));
     response.cookies.delete("token", { path: "/" });
     response.cookies.delete("userId", { path: "/" });
     return response;
   }
 
-  return NextResponse.next();*/
+  return NextResponse.next();
 }
 
 export const config = {

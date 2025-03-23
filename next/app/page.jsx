@@ -31,7 +31,7 @@ export default async function HomePage() {
     <div className="flex flex-col min-h-screen">
       <Header fullName={fullName} />
       <UsersPanel />
-      <ImportUserModal />
+      {/*<ImportUserModal />*/}
     </div>
   );
 }
