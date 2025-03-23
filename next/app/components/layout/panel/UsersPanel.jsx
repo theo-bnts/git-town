@@ -1,5 +1,4 @@
 // /app/components/layout/panel/UsersPanel.jsx
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';

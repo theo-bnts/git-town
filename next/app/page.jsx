@@ -6,7 +6,6 @@ import { cookies } from 'next/headers';
 import getUser from '@/app/services/api/users/id/getUser';
 import UsersPanel from '@/app/components/layout/panel/UsersPanel';
 import Header from '@/app/components/layout/Header';
-import ImportUserModal from '@/app/components/layout/forms/modal/ImportUserModal';
 
 async function getCookieValue(key) {
   const cookieStore = await cookies();
@@ -31,7 +30,6 @@ export default async function HomePage() {
     <div className="flex flex-col min-h-screen">
       <Header fullName={fullName} />
       <UsersPanel />
-      {/*<ImportUserModal />*/}
     </div>
   );
 }

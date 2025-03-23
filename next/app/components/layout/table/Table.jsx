@@ -1,5 +1,4 @@
 // /app/components/layout/table/Table.jsx
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';

@@ -1,5 +1,4 @@
 // /app/components/layout/table/TableToolbar.jsx
-
 'use client';
 
 import React from 'react';
