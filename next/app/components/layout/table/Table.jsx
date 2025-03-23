@@ -77,7 +77,7 @@ export default function Table({ columns, data, onUserUpdated }) {
   }, [data]);
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4">
+    <div className="w-full px-4">
       <TableToolbar 
         ModalComponent={UserModal}
         onUserUpdated={onUserUpdated}
@@ -85,10 +85,10 @@ export default function Table({ columns, data, onUserUpdated }) {
 
       <div
         ref={containerRef}
-        className="overflow-auto"
+        className="w-full overflow-x-auto overflow-y-auto"
         style={{ maxHeight: "calc(100vh - 50px)" }}
       >
-        <table className="border-collapse w-full table-auto">
+        <table className="min-w-[800px] border-collapse table-auto">
           <TableHeader
             columns={columns}
             onSort={handleSort}
