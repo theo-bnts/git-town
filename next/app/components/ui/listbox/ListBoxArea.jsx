@@ -19,7 +19,7 @@ export default function ListBoxArea({ items, onRemove }) {
         ) : (
           sortedItems.map((item, index) => (
             <ListBoxItem 
-              key={item.id || index} // utilisation de l'id ou de l'index en fallback
+              key={item.id || index}
               option={item} 
               onRemove={() => onRemove(item.id || index)} 
             />

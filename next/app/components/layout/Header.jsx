@@ -61,7 +61,9 @@ export default function Header({ fullName }) {
             <div className="flex items-center space-x-4">
               <p className={`${textStyles.bold} text-xl`}>{displayName}</p>
               <span 
-                className="cursor-pointer text-[var(--warn-color)] hover:text-[var(--warn-color-hover)]"
+                className="
+                  cursor-pointer text-[var(--warn-color)] 
+                  hover:text-[var(--warn-color-hover)]"
                 onClick={handleSignOut}
               >
                 <SignOutIcon size={24} />

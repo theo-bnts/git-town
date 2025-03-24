@@ -7,7 +7,12 @@ import getPromotions from '@/app/services/api/promotions/getPromotions';
 import saveUser from '@/app/services/api/users/saveUser';
 import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
 
-export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpdated }) {
+export default function UserModal({ 
+  isOpen, 
+  onClose, 
+  initialData = {}, 
+  onUserUpdated 
+}) {
   const [initialUser, setInitialUser] = useState(initialData);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
@@ -50,7 +55,9 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
   const initialPromotions = Array.isArray(initialData.promotions)
     ? initialData.promotions.map(promo => ({
         id: promo.Id,
-        value: `${promo.Promotion.Diploma.Initialism} ${promo.Promotion.PromotionLevel.Initialism} - ${promo.Promotion.Year}`,
+        value: `
+          ${promo.Promotion.Diploma.Initialism} 
+          ${promo.Promotion.PromotionLevel.Initialism} - ${promo.Promotion.Year}`,
         full: {
           Diploma: { Initialism: promo.Promotion.Diploma.Initialism },
           PromotionLevel: { Initialism: promo.Promotion.PromotionLevel.Initialism },
@@ -68,7 +75,9 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
       value: initialPromotions,
       options: promotionsOptions.map(promo => ({
         id: promo.Id,
-        value: `${promo.Diploma.Initialism} ${promo.PromotionLevel.Initialism} - ${promo.Year}`,
+        value: `
+          ${promo.Diploma.Initialism} 
+          ${promo.PromotionLevel.Initialism} - ${promo.Year}`,
         full: {
           Diploma: { Initialism: promo.Diploma.Initialism },
           PromotionLevel: { Initialism: promo.PromotionLevel.Initialism },
@@ -120,7 +129,9 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
     if ((original.role?.Keyword || "") !== (modified.Role?.Keyword || "")) {
       diff.Role = { Keyword: modified.Role.Keyword };
     }
-    if (JSON.stringify(original.promotions || []) !== JSON.stringify(modified.Promotions || [])) {
+    if (JSON.stringify(
+      original.promotions || []
+    ) !== JSON.stringify(modified.Promotions || [])) {
       diff.Promotions = modified.Promotions;
     }
     return diff;

@@ -5,38 +5,39 @@ import { userPromotions, deleteUserPromotion } from '@/app/services/routes';
 const buildKey = promo =>
   `${promo.Diploma.Initialism}_${promo.PromotionLevel.Initialism}_${promo.Year}`;
 
+/**
+ * Enregistre les promotions d'un utilisateur.
+ * (DELETE /users/:userId/promotions/:promotionId)
+ * (PUT /users/:userId/promotions)
+ * 
+ * @param {number} userId - L'identifiant de l'utilisateur.
+ * @param {object[]} newPromotions - La nouvelle liste des promotions.
+ * @param {string} token - Le token d'authentification.
+ * @returns {Promise<object>} - Les promotions supprimées et ajoutées.
+ */
 export default async function saveUserPromotions(userId, newPromotions, token) {
-  // Récupère les promotions actuelles associées à l'utilisateur
   const currentPromotions = await getUserPromotions(userId, token);
   
-  // On suppose que currentPromotions renvoie un tableau d'objets contenant :
-  // { UserPromotionId, Promotion }
   const currentMapped = currentPromotions.map(cp => ({
     key: buildKey(cp.Promotion),
-    // Utilisation de l'id de la promotion pour la suppression
-    // (L'API attend que l'id envoyé corresponde à l'id de la promotion)
     id: cp.Promotion.Id  
   }));
 
   const newMapped = newPromotions.map(p => ({
     key: buildKey(p),
-    promotion: p  // l'objet promotion complet attendu par l'API lors de l'ajout
+    promotion: p
   }));
   
-  // Promotions à supprimer : présentes dans currentMapped mais absentes dans newMapped
   const removals = currentMapped.filter(cp =>
     !newMapped.some(np => np.key === cp.key)
   );
   
-  // Promotions à ajouter : présentes dans newMapped mais absentes de currentMapped
   const additions = newMapped.filter(np =>
     !currentMapped.some(cp => cp.key === np.key)
   );
   
-  // Traitement des suppressions via DELETE /users/:UserId/promotions/:UserPromotionId
   for (const removal of removals) {
     const endpoint = deleteUserPromotion(userId, removal.id);
-    console.log("Suppression endpoint:", endpoint);
     const res = await fetch(endpoint, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
@@ -47,16 +48,13 @@ export default async function saveUserPromotions(userId, newPromotions, token) {
     }
   }
   
-  // Traitement des ajouts via PUT /users/:UserId/promotions
   for (const addition of additions) {
     const endpoint = userPromotions(userId);
-    // Préparation du payload dans le format attendu
     const promotionPayload = {
       Diploma: { Initialism: addition.promotion.Diploma.Initialism },
       PromotionLevel: { Initialism: addition.promotion.PromotionLevel.Initialism },
       Year: addition.promotion.Year
     };
-    console.log("Ajout endpoint:", endpoint, "body:", { Promotion: promotionPayload });
     const res = await fetch(endpoint, {
       method: 'PUT',
       headers: {
@@ -71,5 +69,8 @@ export default async function saveUserPromotions(userId, newPromotions, token) {
     }
   }
   
-  return { removed: removals.map(r => r.id), added: additions.map(a => a.key) };
+  return { 
+    removed: removals.map(r => r.id), 
+    added: additions.map(a => a.key) 
+  };
 }

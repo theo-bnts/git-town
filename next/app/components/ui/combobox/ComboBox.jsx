@@ -10,7 +10,14 @@ import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
 import ComboBoxPopover from '@/app/components/ui/combobox/ComboBoxPopover';
 
-export default function ComboBox({ placeholder, options, onSelect, maxVisible = 6, autoOpen, value }) {
+export default function ComboBox({ 
+  placeholder, 
+  options, 
+  onSelect, 
+  maxVisible = 6, 
+  autoOpen, 
+  value 
+}) {
   const MAX_ITEMS = maxVisible;
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,12 +29,10 @@ export default function ComboBox({ placeholder, options, onSelect, maxVisible = 
   const comboBoxRef = useRef(null);
   const inputRef = useRef(null);
 
-  // MàJ des options dès que la prop options change
   useEffect(() => {
     setFilteredOptions(options);
   }, [options]);
 
-  // IMPORTANT : Si une valeur initiale est passée via la prop "value", on la définit dans l'état.
   useEffect(() => {
     if (value && !selectedOption) {
       setSelectedOption(value);
@@ -163,7 +168,11 @@ export default function ComboBox({ placeholder, options, onSelect, maxVisible = 
   return (
     <div
       ref={comboBoxRef}
-      className={selectedOption ? comboboxStyles.selected : comboboxStyles.default}
+      className={
+        selectedOption 
+        ? comboboxStyles.selected 
+        : comboboxStyles.default
+      }
     >
       <div className="flex items-center">
         <Input
@@ -177,14 +186,22 @@ export default function ComboBox({ placeholder, options, onSelect, maxVisible = 
           leftIcon={
             <SearchIcon
               size={16}
-              className={selectedOption ? textStyles.default : textStyles.hint}
+              className={
+                selectedOption 
+                ? textStyles.default 
+                : textStyles.hint
+              }
             />
           }
         />
 
         <Button
           type="button"
-          variant={selectedOption ? 'popover_selected_sq' : 'popover_default_sq'}
+          variant={
+            selectedOption 
+            ? 'popover_selected_sq' 
+            : 'popover_default_sq'
+          }
           onClick={(e) => {
             e.preventDefault();
             if (selectedOption) {
