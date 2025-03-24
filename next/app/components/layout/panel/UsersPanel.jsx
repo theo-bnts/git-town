@@ -8,6 +8,7 @@ import getUserPromotions from '@/app/services/api/users/getUserPromotions';
 import { getCookie } from '@/app/services/cookies';
 
 import Table from '@/app/components/layout/table/Table';
+import UserModal from '@/app/components/layout/forms/modal/UserModal';
 
 const columns = [
   { key: 'name', title: 'Nom', sortable: true },
@@ -21,9 +22,9 @@ const fetchUsers = async (token) => {
   const users = await getUsers(token);
   const transformed = await Promise.all(
     users.map(async (user) => {
-      let promotions = await getUserPromotions(user.Id, token);
-      const promotionsDisplay = Array.isArray(promotions)
-        ? promotions
+      const rawPromotions = await getUserPromotions(user.Id, token);
+      const promotionsDisplay = Array.isArray(rawPromotions)
+        ? rawPromotions
             .map((promo) => {
               if (promo.Promotion) {
                 const { Diploma, PromotionLevel, Year } = promo.Promotion;
@@ -34,8 +35,9 @@ const fetchUsers = async (token) => {
             .filter((str) => str !== '')
             .join(', ')
         : '';
-
       return {
+        raw: user,
+        rawPromotions,
         name: user.FullName,
         email: user.EmailAddress,
         role: user.Role ? user.Role.Name : 'N/A',
@@ -43,7 +45,7 @@ const fetchUsers = async (token) => {
         actions: [
           {
             icon: <PencilIcon size={16} />,
-            onClick: () => console.log(`Edit ${user.FullName}`),
+            onClick: () => user.onEdit && user.onEdit(),
           },
           {
             icon: <DuplicateIcon size={16} />,
@@ -57,13 +59,14 @@ const fetchUsers = async (token) => {
       };
     })
   );
-
   return transformed;
 };
 
 export default function UsersPanel() {
   const [users, setUsers] = useState([]);
   const [authToken, setAuthToken] = useState('');
+  const [userModalOpen, setUserModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -75,7 +78,32 @@ export default function UsersPanel() {
   const refreshUsers = useCallback(() => {
     if (authToken) {
       fetchUsers(authToken)
-        .then((data) => setUsers(data))
+        .then((data) => {
+          const updated = data.map((user) => ({
+            ...user,
+            actions: user.actions.map(action => {
+              if (action.icon && action.icon.type === PencilIcon) {
+                return {
+                  ...action,
+                  onClick: () => {
+                    setSelectedUser({
+                      Id: user.raw.Id,
+                      nom: user.raw.FullName,
+                      email: user.raw.EmailAddress,
+                      role: user.raw.Role,
+                      promotions: user.rawPromotions,
+                      createdAt: user.raw.CreatedAt,
+                      updatedAt: user.raw.UpdatedAt,
+                    });
+                    setUserModalOpen(true);
+                  },
+                };
+              }
+              return action;
+            }),
+          }));
+          setUsers(updated);
+        });
     }
   }, [authToken]);
 
@@ -85,7 +113,27 @@ export default function UsersPanel() {
 
   return (
     <div className="flex flex-col flex-1 p-8">
-      <Table columns={columns} data={users} onUserUpdated={refreshUsers} />
+      <Table 
+        columns={columns} 
+        data={users} 
+        onUserUpdated={refreshUsers} 
+        ModalComponent={UserModal}
+      />
+      {userModalOpen && (
+        <UserModal
+          isOpen={userModalOpen}
+          initialData={selectedUser || {}}
+          onClose={() => {
+            setUserModalOpen(false);
+            setSelectedUser(null);
+          }}
+          onUserUpdated={() => {
+            refreshUsers();
+            setUserModalOpen(false);
+            setSelectedUser(null);
+          }}
+        />
+      )}
     </div>
   );
 }
