@@ -79,12 +79,10 @@ export default function UsersPanel() {
     if (authToken) {
       fetchUsers(authToken)
         .then((data) => {
-          // On associe à chaque utilisateur la fonction d'édition
           const updated = data.map((user) => ({
             ...user,
             actions: user.actions.map(action => {
               if (action.icon && action.icon.type === PencilIcon) {
-                // Modification de l'action Edit pour ouvrir le modal avec les données pré-remplies
                 return {
                   ...action,
                   onClick: () => {
@@ -94,6 +92,8 @@ export default function UsersPanel() {
                       email: user.raw.EmailAddress,
                       role: user.raw.Role,
                       promotions: user.rawPromotions,
+                      createdAt: user.raw.CreatedAt,
+                      updatedAt: user.raw.UpdatedAt,
                     });
                     setUserModalOpen(true);
                   },

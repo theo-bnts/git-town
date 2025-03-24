@@ -28,7 +28,7 @@ const buttonStyles = {
 
 const cardStyles = {
   default: `bg-[var(--primary-color)] p-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)] rounded-[12.5px]`,
-  info: `bg-[var(--accent-color)] p-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)] rounded-[12.5px]`,
+  info: `bg-[var(--primary-color)] text-[var(--popup-color)] p-4 rounded-[12.5px] shadow-md`,
   warn: `bg-[var(--warn-color)] p-4 rounded-[12.5px] shadow-lg text-[var(--primary-color)]`,
   empty_list: `bg-[var(--primary-color)] p-2 rounded-[12.5px] border border-[var(--primary-color)]`,
 };

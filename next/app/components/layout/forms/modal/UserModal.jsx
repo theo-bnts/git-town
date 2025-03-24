@@ -8,14 +8,12 @@ import saveUser from '@/app/services/api/users/saveUser';
 import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
 
 export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpdated }) {
-  // On stocke l'état initial pour la comparaison
   const [initialUser, setInitialUser] = useState(initialData);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const [promotionsOptions, setPromotionsOptions] = useState([]);
   const [authToken, setAuthToken] = useState('');
 
-  // Options de rôle et transformation pour le combobox
   const roleOptions = [
     { id: "administrator", name: "Administrateur" },
     { id: "teacher", name: "Enseignant" },
@@ -109,15 +107,12 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
     return newErrors;
   };
 
-  // Fonction de comparaison qui retourne uniquement les champs modifiés
   const diffUser = (original, modified) => {
     const diff = {};
-    // Normalisation du champ "nom" dans l'état initial
     const initialFullName = original.FullName || original.nom || "";
     if (initialFullName.trim() !== modified.FullName.trim()) {
       diff.FullName = modified.FullName.trim();
     }
-    // Normalisation pour l'e-mail
     const initialEmail = original.EmailAddress || original.email || "";
     if (initialEmail.trim() !== modified.EmailAddress.trim()) {
       diff.EmailAddress = modified.EmailAddress.trim();
@@ -125,7 +120,6 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
     if ((original.role?.Keyword || "") !== (modified.Role?.Keyword || "")) {
       diff.Role = { Keyword: modified.Role.Keyword };
     }
-    // Comparaison simple pour les promotions
     if (JSON.stringify(original.promotions || []) !== JSON.stringify(modified.Promotions || [])) {
       diff.Promotions = modified.Promotions;
     }
@@ -144,7 +138,6 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
         ? roleValue.id.toString().trim()
         : roleValue.toString().trim();
 
-      // Construction de l'objet modifié à partir des champs
       const modifiedUser = {
         EmailAddress: fieldsValues["Email"].trim(),
         FullName: fieldsValues["Nom"].trim(),
@@ -152,7 +145,6 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
         Promotions: (fieldsValues["Promotions"] || []).map(p => p.full)
       };
 
-      // Différence entre l'état initial et les valeurs modifiées.
       const differences = diffUser(initialUser, {
         EmailAddress: modifiedUser.EmailAddress,
         FullName: modifiedUser.FullName,
@@ -160,15 +152,12 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
         Promotions: modifiedUser.Promotions
       });
 
-      // Si aucune différence n'est détectée, on ferme la modal
       if (Object.keys(differences).length === 0) {
         onClose();
         return;
       }
 
-      // Important : on n'inclut pas l'id dans le payload mais on l’utilise pour la route PATCH
       try {
-        // Ici, saveUser prendra en premier argument l'id et en second les modifications à appliquer
         await saveUser(initialUser.Id, differences, authToken);
         if (typeof onUserUpdated === 'function') {
           onUserUpdated();
@@ -199,6 +188,10 @@ export default function UserModal({ isOpen, onClose, initialData = {}, onUserUpd
 
   return (
     <DynamicModal 
+      metadata={{ 
+        createdAt: initialData.createdAt, 
+        updatedAt: initialData.updatedAt 
+      }}
       errors={errors}
       apiError={apiError}
       clearApiError={clearApiError}
