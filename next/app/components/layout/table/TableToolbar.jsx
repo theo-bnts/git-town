@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Button from '@/app/components/ui/Button';
 import { PlusIcon } from '@primer/octicons-react';
-import UserModal from '@/app/components/layout/forms/modal/UserModal';
 
 export default function TableToolbar({ ModalComponent, onUserUpdated }) {
   const [isModalOpen, setModalOpen] = useState(false);
