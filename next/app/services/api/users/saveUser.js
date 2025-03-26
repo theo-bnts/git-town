@@ -26,7 +26,7 @@ export default async function saveUser(userId, payload, token) {
   const res = await fetch(url, {
     method,
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/json; charset=utf-8",
       Authorization: `Bearer ${token}`
     },
     body: JSON.stringify(payload)
