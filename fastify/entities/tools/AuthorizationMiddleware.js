@@ -13,7 +13,7 @@ export default class AuthorizationMiddleware {
     const { 'x-hub-signature-256': signature } = request.headers;
     const { rawBody } = request;
 
-    if (signature === undefined || signature === null || signature !== `sha256=${Security.hashGitHubWebhookSecret(rawBody)}`) {
+    if (signature !== `sha256=${Security.hashGitHubWebhookSecret(rawBody)}`) {
       throw { statusCode: 401, error: 'INVALID_SIGNATURE' };
     }
   }

@@ -20,7 +20,7 @@ export default class PromotionLevel {
   }
 
   static async isInitialismInserted(initialism) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.promotion_level
@@ -33,7 +33,7 @@ export default class PromotionLevel {
   }
 
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,
@@ -57,7 +57,7 @@ export default class PromotionLevel {
   }
 
   static async fromInitialism(initialism) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,

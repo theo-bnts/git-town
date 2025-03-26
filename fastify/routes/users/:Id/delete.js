@@ -62,7 +62,7 @@ export default async function route(app) {
         const gitHubUsername = gitHubUser.Username;
 
         if (await requestedUser.GitHubOrganizationMember) {
-          await GitHubApp.Instance.removeFromOrganization(gitHubUsername);
+          await GitHubApp.Instance.removeOrganizationMember(gitHubUsername);
         } else {
           const organizationInvitations = await GitHubApp.Instance.getOrganizationInvitations();
 

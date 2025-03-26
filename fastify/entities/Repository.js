@@ -41,8 +41,8 @@ export default class Repository {
     this.GitHubTeamId = gitHubTeamId;
   }
 
-  async insert() {
-    const [row] = await DatabasePool.Instance.execute(
+  async insert(connection) {
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         INSERT INTO public.repository (
           archived_at,
@@ -70,6 +70,7 @@ export default class Repository {
         this.GitHubId,
         this.GitHubTeamId,
       ],
+      connection,
     );
 
     this.Id = row.id;
@@ -78,7 +79,7 @@ export default class Repository {
   }
 
   static async isPromotionInserted(promotion) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.repository
@@ -91,7 +92,7 @@ export default class Repository {
   }
 
   static async all() {
-    const rows = await DatabasePool.Instance.execute(
+    const rows = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           repository.id,

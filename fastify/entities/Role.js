@@ -23,7 +23,7 @@ export default class Role {
   }
 
   static async isKeywordInserted(keyword) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM role
@@ -36,7 +36,7 @@ export default class Role {
   }
 
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           created_at,
@@ -61,7 +61,7 @@ export default class Role {
   }
 
   static async fromKeyword(keyword) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,
@@ -86,7 +86,7 @@ export default class Role {
   }
 
   static async all() {
-    const rows = await DatabasePool.Instance.execute(
+    const rows = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,

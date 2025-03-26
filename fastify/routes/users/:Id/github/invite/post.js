@@ -51,7 +51,7 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'ALREADY_MEMBER' };
       }
 
-      await GitHubApp.Instance.inviteToOrganization(user);
+      await GitHubApp.Instance.createOrganizationInvitation(user);
     },
   });
 }

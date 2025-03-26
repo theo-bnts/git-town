@@ -31,7 +31,7 @@ export default class Token {
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         INSERT INTO public.token (user_id, value)
         VALUES ($1::uuid, $2::text)
@@ -46,7 +46,7 @@ export default class Token {
   }
 
   async delete() {
-    await DatabasePool.Instance.execute(
+    await DatabasePool.Instance.query(
       /* sql */ `
         DELETE FROM public.token
         WHERE id = $1::uuid
@@ -56,7 +56,7 @@ export default class Token {
   }
 
   static async isValidValue(value) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.token
@@ -69,7 +69,7 @@ export default class Token {
   }
 
   static async fromValue(value) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,

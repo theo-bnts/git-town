@@ -26,7 +26,7 @@ const app = fastify({
 });
 
 await app.register(cors, {
-  origin: process.env.CORS_ORIGIN,
+  origin: process.env.FRONTEND_BASE_URL,
 });
 
 await app.register(rateLimit, {

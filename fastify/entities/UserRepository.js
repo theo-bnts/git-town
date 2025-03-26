@@ -21,7 +21,7 @@ export default class UserRepository {
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         INSERT INTO public.user_repository (user_id, repository_id)
         VALUES ($1::uuid, $2::uuid)
@@ -36,7 +36,7 @@ export default class UserRepository {
   }
 
   async delete() {
-    await DatabasePool.Instance.execute(
+    await DatabasePool.Instance.query(
       /* sql */ `
         DELETE FROM public.user_repository
         WHERE id = $1::uuid
@@ -46,7 +46,7 @@ export default class UserRepository {
   }
 
   static async isUserInserted(user) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.user_repository
@@ -59,7 +59,7 @@ export default class UserRepository {
   }
 
   static async fromUser(user) {
-    const rows = await DatabasePool.Instance.execute(
+    const rows = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,
