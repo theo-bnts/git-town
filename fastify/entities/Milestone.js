@@ -1,5 +1,4 @@
 import DatabasePool from './tools/DatabasePool.js';
-import Template from './Template.js';
 
 export default class Milestone {
   Id;

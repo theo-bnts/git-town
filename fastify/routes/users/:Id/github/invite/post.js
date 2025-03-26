@@ -30,9 +30,8 @@ export default async function route(app) {
     },
     config: {
       rateLimit: {
-        max: Number(process.env.RATE_LIMIT_GITHUB_ORGANIZATION_INVITATION_MAX),
+        max: Number(process.env.RATE_LIMIT_AUTHENTICATED_STUDENT_GITHUB_PRIVILEGED_MAX),
         allowList: false,
-        timeWindow: process.env.RATE_LIMIT_GITHUB_ORGANIZATION_INVITATION_TIME_WINDOW,
       },
     },
     preHandler: async (request) => {
