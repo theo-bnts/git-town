@@ -1,8 +1,8 @@
 import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
-import DataQualityMiddleware from '../../../entities/tools/DataQualityMiddleware.js';
 import GitHubApp from '../../../entities/tools/GitHubApp.js';
-import User from '../../../entities/User.js';
+import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.js';
 import Request from '../../../entities/tools/Request.js';
+import User from '../../../entities/User.js';
 import UserRepository from '../../../entities/UserRepository.js';
 import UserPromotion from '../../../entities/UserPromotion.js';
 
@@ -35,7 +35,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await DataQualityMiddleware.assertUserIdExists(request);
+      await ParametersMiddleware.assertUserIdExists(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;

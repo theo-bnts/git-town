@@ -4,7 +4,7 @@ import Promotion from '../Promotion.js';
 import Template from '../Template.js';
 import User from '../User.js';
 
-export default class DataQualityMiddleware {
+export default class ParametersMiddleware {
   static async assertEnseignementUnitIdExists(request) {
     const { EnseignementUnitId: enseignementUnitId } = request.params;
 
