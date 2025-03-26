@@ -10,7 +10,14 @@ import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
 import ComboBoxPopover from '@/app/components/ui/combobox/ComboBoxPopover';
 
-export default function ComboBox({ placeholder, options, onSelect, maxVisible = 6, autoOpen }) {
+export default function ComboBox({ 
+  placeholder, 
+  options, 
+  onSelect, 
+  maxVisible = 6, 
+  autoOpen, 
+  value 
+}) {
   const MAX_ITEMS = maxVisible;
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,12 +26,23 @@ export default function ComboBox({ placeholder, options, onSelect, maxVisible = 
   const [selectedOption, setSelectedOption] = useState(null);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
+  const comboBoxRef = useRef(null);
+  const inputRef = useRef(null);
+
   useEffect(() => {
     setFilteredOptions(options);
   }, [options]);
 
-  const comboBoxRef = useRef(null);
-  const inputRef = useRef(null);
+  useEffect(() => {
+    if (value && !selectedOption) {
+      setSelectedOption(value);
+      setSearchTerm(value.value);
+    }
+  }, [value, selectedOption]);
+
+  useEffect(() => {
+    setDisplayedOptions(filteredOptions.slice(0, MAX_ITEMS + 1));
+  }, [filteredOptions, MAX_ITEMS]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -37,10 +55,6 @@ export default function ComboBox({ placeholder, options, onSelect, maxVisible = 
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
-  useEffect(() => {
-    setDisplayedOptions(filteredOptions.slice(0, MAX_ITEMS + 1));
-  }, [filteredOptions, MAX_ITEMS]);
 
   useEffect(() => {
     if (autoOpen) {
@@ -154,7 +168,11 @@ export default function ComboBox({ placeholder, options, onSelect, maxVisible = 
   return (
     <div
       ref={comboBoxRef}
-      className={selectedOption ? comboboxStyles.selected : comboboxStyles.default}
+      className={
+        selectedOption 
+        ? comboboxStyles.selected 
+        : comboboxStyles.default
+      }
     >
       <div className="flex items-center">
         <Input
@@ -168,14 +186,22 @@ export default function ComboBox({ placeholder, options, onSelect, maxVisible = 
           leftIcon={
             <SearchIcon
               size={16}
-              className={selectedOption ? textStyles.default : textStyles.hint}
+              className={
+                selectedOption 
+                ? textStyles.default 
+                : textStyles.hint
+              }
             />
           }
         />
 
         <Button
           type="button"
-          variant={selectedOption ? 'popover_selected_sq' : 'popover_default_sq'}
+          variant={
+            selectedOption 
+            ? 'popover_selected_sq' 
+            : 'popover_default_sq'
+          }
           onClick={(e) => {
             e.preventDefault();
             if (selectedOption) {

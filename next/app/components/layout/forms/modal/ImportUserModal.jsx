@@ -107,15 +107,13 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
             style={{ display: 'none' }}
             accept=".csv,text/csv"
           />
-
-          <form onSubmit={handleValidate} className="space-y-4">
-            <div>
-              <p className={`mb-1 ${textStyles.default}`}>Fichier exemple</p>
-              <Button variant="default" onClick={handleExportSampleFile}>
-                <p className={textStyles.defaultWhite}>Télécharger</p>
-              </Button>
-            </div>
-
+          <div>
+            <p className={`mb-1 ${textStyles.default}`}>Fichier exemple</p>
+            <Button variant="default" onClick={handleExportSampleFile}>
+              <p className={textStyles.defaultWhite}>Télécharger</p>
+            </Button>
+          </div>
+          <form onSubmit={handleValidate} className="space-y-4 mt-4">
             <div>
               <p className={`mb-1 ${textStyles.default}`}>Fichier à importer</p>
               <div className={`flex flex-col space-y-2 ${listboxStyles.default}`}>
@@ -133,13 +131,11 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
                     </Card>
                   )}
                 </div>
-
                 <Button variant="default" type="button" onClick={handleImportFile}>
                   <p className={textStyles.defaultWhite}>Importer</p>
                 </Button>
               </div>
             </div>
-
             <div className="flex justify-center pt-2">
               <Button
                 variant={!importedFile ? "disabled" : "default"}

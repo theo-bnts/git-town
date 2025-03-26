@@ -8,11 +8,8 @@ import TableHeader from '@/app/components/layout/table/TableHeader';
 import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
 
-export default function Table({ 
-  columns, 
-  data, 
-  toolbarContents,
-}) {
+export default function Table({ columns, data, toolbarContents, onUserUpdated, ModalComponent }) {
+
   const [sortedData, setSortedData] = useState(data);
   const [visibleCount, setVisibleCount] = useState(0);
   const [sortColumn, setSortColumn] = useState(null);
@@ -85,17 +82,17 @@ export default function Table({
   }, [data]);
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4">
+    <div className="w-full max-w-7xl px-4 mx-auto">
       <TableToolbar>
         {toolbarContents}
       </TableToolbar>
-
+  
       <div
         ref={containerRef}
-        className="overflow-auto"
+        className="w-full overflow-x-auto overflow-y-auto"
         style={{ maxHeight: "calc(100vh - 50px)" }}
       >
-        <table className="border-collapse w-full table-auto">
+        <table className="min-w-[800px] border-collapse table-auto">
           <TableHeader
             columns={columns}
             onSort={handleSort}
@@ -124,4 +121,5 @@ export default function Table({
       </div>
     </div>
   );
+  
 }

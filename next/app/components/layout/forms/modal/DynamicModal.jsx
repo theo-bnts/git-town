@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-
 import { textStyles } from '@/app/styles/tailwindStyles';
 import { XIcon } from '@primer/octicons-react';
 
@@ -10,6 +9,14 @@ import Card from '@/app/components/ui/Card';
 import ComboBox from '@/app/components/ui/combobox/ComboBox';
 import Input from '@/app/components/ui/Input';
 import ListBox from '@/app/components/ui/listbox/ListBox';
+
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return new Intl.DateTimeFormat(
+    'fr-FR', { dateStyle: 'long', timeStyle: 'short' }
+  ).format(date);
+}
 
 export default function DynamicModal({ 
   title, 
@@ -20,7 +27,8 @@ export default function DynamicModal({
   errors = {}, 
   onClearError, 
   apiError, 
-  clearApiError 
+  clearApiError,
+  metadata = {}
 }) {
   const getInitialState = () => {
     const state = {};
@@ -52,8 +60,39 @@ export default function DynamicModal({
 
   if (!isOpen) return null;
 
+  const createdAtFormatted = metadata.createdAt 
+    ? formatDate(metadata.createdAt) 
+    : null;
+
+  const updatedAtFormatted = metadata.updatedAt 
+    ? formatDate(metadata.updatedAt) 
+    : null;
+
   return (
-    <div className="fixed inset-0 bg-[var(--popup-color)] flex items-center justify-center z-50">
+    <div className="
+      fixed inset-0 bg-[var(--popup-color)] 
+      flex items-center justify-center z-50
+    ">
+      {(createdAtFormatted || updatedAtFormatted) && (
+        <div className="absolute top-4 right-4">
+          <Card variant="info">
+            {
+              createdAtFormatted && (
+                <p className={`text-sm ${textStyles.default}`}>
+                  Créé le {createdAtFormatted}
+                </p>
+              )
+            }
+            {
+              updatedAtFormatted && (
+                <p className={`text-sm ${textStyles.default}`}>
+                  Modifié le {updatedAtFormatted}
+                </p>
+              )
+            }
+          </Card>
+        </div>
+      )}
       <div className="w-[300px]">
         <Card variant="default" className="relative p-6">
           <div className="flex items-center justify-between mb-4">
@@ -67,7 +106,10 @@ export default function DynamicModal({
               const { label, value, options } = field;
               let inputComponent = null;
               if (options) {
-                if (typeof value === 'string' || (typeof value === 'object' && !Array.isArray(value))) {
+                if (
+                  typeof value === 'string' || 
+                  (typeof value === 'object' && !Array.isArray(value))
+                ) {
                   const mappedOptions = options.map((item, idx) => {
                     if (Array.isArray(item)) {
                       return {
@@ -96,14 +138,20 @@ export default function DynamicModal({
                   );
                 } else if (Array.isArray(value)) {
                   let mappedOptions;
-                  if (options.length > 0 && typeof options[0] === 'object' && !Array.isArray(options[0])) {
+                  if (
+                    options.length > 0 && 
+                    typeof options[0] === 'object' && 
+                    !Array.isArray(options[0])
+                  ) {
                     mappedOptions = options;
                   } else {
                     mappedOptions = options.map((row, idx) => ({
                       id: row[0] !== undefined ? row[0] : idx,
                       value: row[1] !== undefined 
-                                ? row[1] 
-                                : (typeof row.join === 'function' ? row.join(' - ') : row.toString())
+                        ? row[1] 
+                        : (typeof row.join === 'function' 
+                          ? row.join(' - ') 
+                          : row.toString())
                     }));
                   }
                   inputComponent = (
@@ -137,7 +185,9 @@ export default function DynamicModal({
                   <p className={`mb-1 ${textStyles.default}`}>{label}</p>
                   {inputComponent}
                   {errors[label] && (
-                    <p className={`${textStyles.warn} text-sm mt-1`}>{errors[label]}</p>
+                    <p className={`${textStyles.warn} text-sm mt-1`}>
+                      {errors[label]}
+                    </p>
                   )}
                 </div>
               );
@@ -157,7 +207,10 @@ export default function DynamicModal({
                 <Button 
                   variant="cancel_action_sq" 
                   onClick={clearApiError}
-                  className="ml-2"
+                  className="
+                    ml-2 transition-transform 
+                    duration-200 hover:scale-110
+                  "
                 >
                   <XIcon size={20} />
                 </Button>

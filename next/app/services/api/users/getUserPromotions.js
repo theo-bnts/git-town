@@ -2,7 +2,7 @@ import { userPromotions } from '@/app/services/routes';
 
 /**
  * Récupération des promotions de l'utilisateur
- * GET /users/:userId/promotions
+ * (GET /users/:userId/promotions)
  * 
  * @param {string} userId - L'identifiant de l'utilisateur
  * @param {string} token - Le token d'authentification

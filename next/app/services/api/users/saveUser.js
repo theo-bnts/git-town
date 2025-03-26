@@ -1,21 +1,22 @@
 // /app/services/api/users/saveUser.js
 
 import { handleApiError } from "@/app/services/errorHandler";
-import { usersRoute, userRoute } from "@/app/services/routes";
+import { userRoute, usersRoute } from "@/app/services/routes";
+import saveUserPromotions from "./saveUserPromotions";
 
 /**
- * Enregistrement d'un utilisateur
- * PUT /users
- * PATCH /users/:userId
+ * Enregistrement d'un utilisateur.
+ * (PUT /users) 
+ * (PATCH /users/:userId)
  * 
- * @param {object} userData - Les données de l'utilisateur
- * @param {string} token - Le token d'authentification
- * @returns {Promise<object>} - L'utilisateur
+ * @param {object} userData - Les données de l'utilisateur.
+ * @param {string} token - Le token d'authentification.
+ * @returns {Promise<object>} - L'utilisateur.
  */
-export default async function saveUser(userData, token) {
+export default async function saveUser(userId, payload, token) {
   let url, method;
-  if (userData.Id) {
-    url = userRoute(userData.Id);
+  if (userId) {
+    url = userRoute(userId);
     method = "PATCH";
   } else {
     url = usersRoute();
@@ -28,7 +29,7 @@ export default async function saveUser(userData, token) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`
     },
-    body: JSON.stringify(userData)
+    body: JSON.stringify(payload)
   });
 
   const text = await res.text();
@@ -38,5 +39,13 @@ export default async function saveUser(userData, token) {
     return Promise.reject(handleApiError(res, data));
   }
 
+  if (userId && payload.Promotions) {
+    try {
+      const promoResult = await saveUserPromotions(userId, payload.Promotions, token);
+      data.promotionsSync = promoResult;
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
   return data;
 }
