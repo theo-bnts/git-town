@@ -28,9 +28,20 @@ export default class GitHubApp {
     });
   }
 
-  async getUser(applicationUser) {
+  async getOrganization() {
+    const { data: organization } = await this.Octokit.rest.orgs.get({
+      org: process.env.GITHUB_ORGANIZATION_ID,
+    });
+
+    return {
+      Id: organization.id,
+      Name: organization.login,
+    };
+  }
+
+  async getUser(userId) {
     const { data: user } = await this.Octokit.rest.users.getById({
-      account_id: Number(applicationUser.GitHubId),
+      account_id: Number(userId),
     });
 
     return {
@@ -39,36 +50,85 @@ export default class GitHubApp {
     };
   }
 
-  async getOrganizationInvitations() {
+  async getUserInvitations(userId) {
     const invitations = await this.Octokit.paginate(this.Octokit.rest.orgs.listPendingInvitations, {
       org: Number(process.env.GITHUB_ORGANIZATION_ID),
     });
 
-    return invitations.map((invitation) => ({
-      Id: invitation.id,
-      User: {
-        Username: invitation.login,
-      },
-    }));
+    const { Username: username } = await this.getUser(userId);
+
+    return invitations
+      .filter((invitation) => invitation.login === username)
+      .map((invitation) => ({
+        Id: invitation.id,
+        User: {
+          Username: invitation.login,
+        },
+      }));
   }
 
-  async cancelOrganizationInvitation(invitationId) {
+  async createInvitation(userId) {
+    await this.Octokit.rest.orgs.createInvitation({
+      org: Number(process.env.GITHUB_ORGANIZATION_ID),
+      invitee_id: Number(userId),
+    });
+  }
+
+  async cancelInvitation(invitationId) {
     await this.Octokit.rest.orgs.cancelInvitation({
       org: Number(process.env.GITHUB_ORGANIZATION_ID),
       invitation_id: invitationId,
     });
   }
 
-  async inviteToOrganization(applicationUser) {
-    await this.Octokit.rest.orgs.createInvitation({
+  async removeMember(userId) {
+    const { Username: username } = await this.getUser(userId);
+
+    await this.Octokit.rest.orgs.removeMembershipForUser({
       org: Number(process.env.GITHUB_ORGANIZATION_ID),
-      invitee_id: Number(applicationUser.GitHubId),
+      username,
     });
   }
 
-  async removeFromOrganization(username) {
-    await this.Octokit.rest.orgs.removeMembershipForUser({
+  async createRepository(name) {
+    await this.Octokit.rest.repos.createInOrg({
       org: Number(process.env.GITHUB_ORGANIZATION_ID),
+      name,
+      homepage:
+        `${process.env.FRONTEND_BASE_URL}${process.env.FRONTEND_REPOSITORIES_ENDPOINT}/${name}`,
+      private: true,
+    });
+  }
+
+  async createMilestone(repositoryName, title, date) {
+    const { Name: organizationName } = await this.getOrganization();
+
+    await this.Octokit.rest.issues.createMilestone({
+      owner: organizationName,
+      repo: repositoryName,
+      title,
+      due_on: date,
+    });
+  }
+
+  async addCollaborator(repositoryName, userId) {
+    const { Name: organizationName } = await this.getOrganization();
+    const { Username: username } = await this.getUser(userId);
+
+    await this.Octokit.rest.repos.addCollaborator({
+      owner: organizationName,
+      repo: repositoryName,
+      username,
+    });
+  }
+
+  async removeCollaborator(repositoryName, userId) {
+    const { Name: organizationName } = await this.getOrganization();
+    const { Username: username } = await this.getUser(userId);
+
+    await this.Octokit.rest.repos.removeCollaborator({
+      owner: organizationName,
+      repo: repositoryName,
       username,
     });
   }

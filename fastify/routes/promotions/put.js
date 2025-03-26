@@ -30,7 +30,6 @@ export default async function route(app) {
               },
             },
             required: ['Initialism'],
-            additionalProperties: false,
           },
           PromotionLevel: {
             type: 'object',
@@ -41,7 +40,6 @@ export default async function route(app) {
               },
             },
             required: ['Initialism'],
-            additionalProperties: false,
           },
           Year: {
             type: 'integer',
@@ -50,7 +48,6 @@ export default async function route(app) {
           },
         },
         required: ['Diploma', 'PromotionLevel', 'Year'],
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {

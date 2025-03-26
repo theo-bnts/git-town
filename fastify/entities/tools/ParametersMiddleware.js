@@ -1,6 +1,7 @@
 import EnseignementUnit from '../EnseignementUnit.js';
 import Milestone from '../Milestone.js';
 import Promotion from '../Promotion.js';
+import Repository from '../Repository.js';
 import Template from '../Template.js';
 import User from '../User.js';
 
@@ -26,6 +27,14 @@ export default class ParametersMiddleware {
 
     if (!(await Promotion.isIdInserted(promotionId))) {
       throw { statusCode: 404, error: 'UNKNOWN_PROMOTION_ID' };
+    }
+  }
+
+  static async assertRepositoryIdExists(request) {
+    const { RepositoryId: repositoryId } = request.params;
+
+    if (!(await Repository.isIdInserted(repositoryId))) {
+      throw { statusCode: 404, error: 'UNKNOWN_REPOSITORY_ID' };
     }
   }
 

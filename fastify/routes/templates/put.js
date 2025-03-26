@@ -29,7 +29,6 @@ export default async function route(app) {
               },
             },
             required: ['Initialism'],
-            additionalProperties: false,
           },
           Year: {
             type: 'integer',
@@ -38,7 +37,6 @@ export default async function route(app) {
           },
         },
         required: ['EnseignementUnit', 'Year'],
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
@@ -52,7 +50,7 @@ export default async function route(app) {
       } = request.body;
 
       if (!await EnseignementUnit.isInitialismInserted(enseignementUnitInitialism)) {
-        throw { statusCode: 404, error: 'UNKNOWN_ENSEIGNEMENT_UNIT' };
+        throw { statusCode: 404, error: 'UNKNOWN_ENSEIGNEMENT_UNIT_INITIALISM' };
       }
 
       const enseignementUnit = await EnseignementUnit.fromInitialism(enseignementUnitInitialism);

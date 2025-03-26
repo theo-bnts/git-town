@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@fastify/autoload": "6",
-    "@fastify/cors": "10",
+    "@fastify/cors": "11",
     "@fastify/rate-limit": "10",
     "@octokit/auth-app": "7",
     "@octokit/auth-oauth-app": "8",

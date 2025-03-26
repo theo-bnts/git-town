@@ -74,6 +74,13 @@ export default async function route(app) {
         await user.update();
       }
 
+      if (user.GitHubOrganizationMember) {
+        // TODO: Add user as collaborator to all of their repositories
+      } else {
+        // TODO: If the user leaves the organization,
+        // TODO: is it possible to remove them as a collaborator from all of their repositories?
+      }
+
       return user;
     },
   });

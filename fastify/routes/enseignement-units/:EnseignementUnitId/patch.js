@@ -25,7 +25,6 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
       body: {
         type: 'object',
@@ -41,7 +40,6 @@ export default async function route(app) {
           },
         },
         minProperties: 1,
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {

@@ -41,7 +41,6 @@ export default async function route(app) {
           },
         },
         required: ['Title', 'Date'],
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {

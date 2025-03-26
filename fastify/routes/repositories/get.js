@@ -28,6 +28,8 @@ export default async function route(app) {
       if (user.Role.Keyword === 'student') {
         const userRepositories = await UserRepository.fromUser(user);
         return userRepositories.map((userRepository) => userRepository.Repository);
+
+        // TODO: Hide comment in all endpoints
       }
 
       return Repository.all();

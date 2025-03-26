@@ -29,7 +29,6 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
@@ -58,21 +57,16 @@ export default async function route(app) {
       }
 
       if (await requestedUser.GitHubId !== null) {
-        const gitHubUser = await GitHubApp.Instance.getUser(requestedUser);
-        const gitHubUsername = gitHubUser.Username;
-
         if (await requestedUser.GitHubOrganizationMember) {
-          await GitHubApp.Instance.removeOrganizationMember(gitHubUsername);
+          await GitHubApp.Instance.removeMember(requestedUser.GitHubId);
         } else {
-          const organizationInvitations = await GitHubApp.Instance.getOrganizationInvitations();
-
-          const userOrganizationInvitations = organizationInvitations.filter(
-            (invitation) => invitation.User.Username === gitHubUsername,
+          const userInvitations = await GitHubApp.Instance.getUserInvitations(
+            requestedUser.GitHubId,
           );
 
           await Promise.all(
-            userOrganizationInvitations.map(
-              (invitation) => GitHubApp.Instance.cancelOrganizationInvitation(invitation.Id),
+            userInvitations.map(
+              async (invitation) => GitHubApp.Instance.cancelInvitation(invitation.Id),
             ),
           );
         }

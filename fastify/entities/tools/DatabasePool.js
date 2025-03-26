@@ -22,31 +22,33 @@ export default class DatabasePool {
     return this.Pool.connect();
   }
 
-  async begin(connection) {
-    await connection.query('BEGIN');
-  }
+  async query(query, values, existingConnection) {
+    let connection;
 
-  async query(query, values, connection) {
-    const connectionExists = connection !== undefined;
-
-    if (!connectionExists) {
+    if (existingConnection === undefined) {
       connection = await this.createConnection();
+    } else {
+      connection = existingConnection;
     }
-    
+
     const result = await connection.query(query, values);
 
-    if (!connectionExists) {
-      connection.release();
+    if (existingConnection === undefined) {
+      await connection.release();
     }
 
     return result.rows;
   }
 
-  async commit(connection) {
+  static async begin(connection) {
+    await connection.query('BEGIN');
+  }
+
+  static async commit(connection) {
     await connection.query('COMMIT');
   }
 
-  async release(connection) {
+  static async release(connection) {
     await connection.release();
   }
 }

@@ -25,7 +25,6 @@ export default async function route(app) {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
-          additionalProperties: false,
         },
       },
     },

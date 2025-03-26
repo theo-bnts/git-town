@@ -25,7 +25,6 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
     },
     config: {
@@ -51,7 +50,7 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'ALREADY_MEMBER' };
       }
 
-      await GitHubApp.Instance.createOrganizationInvitation(user);
+      await GitHubApp.Instance.createInvitation(user.GitHubId);
     },
   });
 }

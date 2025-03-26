@@ -26,7 +26,6 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
@@ -39,7 +38,9 @@ export default async function route(app) {
 
       const user = await User.fromId(userId);
 
-      return UserPromotion.fromUser(user);
+      const promotions = await UserPromotion.fromUser(user);
+
+      return promotions.map((promotion) => promotion.Promotion);
     },
   });
 }

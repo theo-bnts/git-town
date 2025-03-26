@@ -16,7 +16,6 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
       body: {
         type: 'object',
@@ -31,7 +30,6 @@ export default async function route(app) {
             pattern: process.env.GENERIC_PATTERN,
           },
         },
-        additionalProperties: false,
         required: ['TemporaryCode', 'Password'],
       },
     },

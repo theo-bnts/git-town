@@ -25,7 +25,6 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
       body: {
         type: 'object',
@@ -35,7 +34,6 @@ export default async function route(app) {
             pattern: process.env.GITHUB_OAUTH_APP_CODE_PATTERN,
           },
         },
-        additionalProperties: false,
         required: ['OAuthCode'],
       },
     },

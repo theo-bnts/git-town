@@ -58,6 +58,20 @@ export default class UserRepository {
     return row.count > 0;
   }
 
+  static async isUserAndRepositoryInserted(user, repository) {
+    const [row] = await DatabasePool.Instance.query(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.user_repository
+        WHERE user_repository.user_id = $1::uuid
+        AND user_repository.repository_id = $2::uuid
+      `,
+      [user.Id, repository.Id],
+    );
+
+    return row.count === 1n;
+  }
+
   static async fromUser(user) {
     const rows = await DatabasePool.Instance.query(
       /* sql */ `
@@ -84,6 +98,29 @@ export default class UserRepository {
           repository,
         );
       }),
+    );
+  }
+
+  static async fromUserAndRepository(user, repository) {
+    const [row] = await DatabasePool.Instance.query(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at
+        FROM public.user_repository
+        WHERE user_id = $1::uuid
+        AND repository_id = $2::uuid
+      `,
+      [user.Id, repository.Id],
+    );
+
+    return new this(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      user,
+      repository,
     );
   }
 }

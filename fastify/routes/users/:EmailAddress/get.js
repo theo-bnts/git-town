@@ -13,7 +13,6 @@ export default async function route(app) {
             pattern: process.env.USER_EMAIL_ADDRESS_PATTERN,
           },
         },
-        additionalProperties: false,
       },
     },
     config: {

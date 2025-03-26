@@ -27,7 +27,6 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
       body: {
         type: 'object',
@@ -41,7 +40,6 @@ export default async function route(app) {
               },
             },
             required: ['Initialism'],
-            additionalProperties: false,
           },
           PromotionLevel: {
             type: 'object',
@@ -52,7 +50,6 @@ export default async function route(app) {
               },
             },
             required: ['Initialism'],
-            additionalProperties: false,
           },
           Year: {
             type: 'integer',
@@ -61,7 +58,6 @@ export default async function route(app) {
           },
         },
         minProperties: 1,
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
