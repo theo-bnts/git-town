@@ -13,6 +13,7 @@ import gittownlogo from "../../../public/assets/pictures/gittown.svg";
 import { textStyles } from "@/app/styles/tailwindStyles";
 
 import Card from "@/app/components/ui/Card";
+import Button from "../ui/Button";
 
 const getInitials = (name) => {
   if (!name) return "";
@@ -60,14 +61,12 @@ export default function Header({ fullName }) {
             </div>
             <div className="flex items-center space-x-4">
               <p className={`${textStyles.bold} text-xl`}>{displayName}</p>
-              <span 
-                className="
-                  cursor-pointer text-[var(--warn-color)] 
-                  hover:text-[var(--warn-color-hover)]"
+              <Button
+                variant="action_sq_warn"
                 onClick={handleSignOut}
               >
                 <SignOutIcon size={24} />
-              </span>
+              </Button>
             </div>
           </div>
         </Card>

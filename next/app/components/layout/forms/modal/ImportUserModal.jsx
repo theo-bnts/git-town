@@ -6,8 +6,7 @@ import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import { DashIcon, XIcon } from '@primer/octicons-react';
 import { textStyles, listboxStyles } from '@/app/styles/tailwindStyles';
-
-import { processCsvFile } from '@/app/services/logic/importUsers'; 
+import { processCsvFile } from '@/app/services/logic/importUsers';
 import saveUser from '@/app/services/api/users/saveUser';
 import { getCookie } from '@/app/services/cookies';
 
@@ -19,28 +18,32 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
   const [progress, setProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [authToken, setAuthToken] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState('');
 
   useEffect(() => {
     (async () => {
       const token = await getCookie('token');
-      if (token) {
-        setAuthToken(token);
-      }
+      if (token) setAuthToken(token);
     })();
   }, []);
 
   useEffect(() => {
     if (!isOpen) {
-      setImportedFile(null);
-      setUsersToProcess([]);
-      setIsValidated(false);
-      setProgress(0);
-      setIsProcessing(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      clearFileSelection();
+      setAlertMessage('');
+      setAlertType('');
     }
   }, [isOpen]);
+
+  const clearFileSelection = () => {
+    setImportedFile(null);
+    setUsersToProcess([]);
+    setIsValidated(false);
+    setProgress(0);
+    setIsProcessing(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleImportFile = () => {
     fileInputRef.current?.click();
@@ -59,9 +62,7 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
   async function uploadRejectsCsvToServer(fileName, csvContent) {
     const res = await fetch('/api/csv/rejects/', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ csvContent, fileName })
     });
     if (!res.ok) {
@@ -95,7 +96,8 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
     if (!file) return;
 
     if (!file.name.endsWith('.csv')) {
-      alert('Veuillez sélectionner un fichier CSV.');
+      setAlertMessage('Veuillez sélectionner un fichier CSV.');
+      setAlertType('warn');
       return;
     }
 
@@ -116,50 +118,42 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
       } catch (err) {
         console.error(err);
       }
-
-      alert('Le fichier comporte des erreurs, rejeté dans son intégralité.');
-      handleRemoveFile();
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      setImportedFile(null);
-      setUsersToProcess([]);
-      setIsValidated(false);
+      setAlertMessage('Le fichier comporte des erreurs, rejeté dans son intégralité.');
+      setAlertType('warn');
+      clearFileSelection();
     } else {
       setImportedFile(file);
       setUsersToProcess(users);
       setIsValidated(true);
-      alert('Fichier valide ! Vous pouvez cliquer sur "Traiter".');
+      setAlertMessage('Fichier valide ! Vous pouvez cliquer sur "Traiter".');
+      setAlertType('success');
     }
   };
 
   const handleRemoveFile = () => {
-    setImportedFile(null);
-    setUsersToProcess([]);
-    setIsValidated(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    clearFileSelection();
   };
 
   const handleValidate = async (e) => {
     e.preventDefault();
     if (!importedFile) {
-      alert('Aucun fichier sélectionné.');
+      setAlertMessage('Aucun fichier sélectionné.');
+      setAlertType('warn');
       return;
     }
     if (!authToken) {
-      alert('Aucun token trouvé.');
+      setAlertMessage('Aucun token trouvé.');
+      setAlertType('warn');
       return;
     }
     if (!isValidated || usersToProcess.length === 0) {
-      alert('Le fichier n’est pas valide ou est vide.');
+      setAlertMessage('Le fichier n’est pas valide ou est vide.');
+      setAlertType('warn');
       return;
     }
 
     setIsProcessing(true);
     setProgress(0);
-
     const total = usersToProcess.length;
     const rejectedFromApi = [];
 
@@ -184,21 +178,19 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
       } catch (err) {
         console.error(err);
       }
-      alert('Traitement terminé, certains utilisateurs n’ont pas pu être créés.');
+      setAlertMessage('Traitement terminé, certains utilisateurs n’ont pas pu être créés.');
+      setAlertType('warn');
     } else {
-      alert('Tous les utilisateurs ont été créés avec succès !');
+      setAlertMessage('Tous les utilisateurs ont été créés avec succès !');
+      setAlertType('success');
     }
 
     setIsProcessing(false);
-    handleRemoveFile();
-    if (onCreate) {
-      onCreate();
-    }
+    clearFileSelection();
+    if (onCreate) onCreate();
   };
 
-  if (!isOpen) return null;
-
-  return (
+  return !isOpen ? null : (
     <div className="fixed inset-0 bg-[var(--popup-color)] flex items-center justify-center z-50">
       <div className="w-[300px]">
         <Card variant="default" className="relative p-6">
@@ -231,10 +223,8 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
                 <div className="max-h-[80px] overflow-y-auto border rounded-[12.5px]">
                   {importedFile ? (
                     <div className="flex items-center justify-between p-2">
-                      <span className={textStyles.default}>
-                        {importedFile.name}
-                      </span>
-                      <Button variant="cancel_action_sq" onClick={handleRemoveFile}>
+                      <span className={textStyles.default}>{importedFile.name}</span>
+                      <Button variant="action_sq_warn" onClick={handleRemoveFile}>
                         <DashIcon size={16} />
                       </Button>
                     </div>
@@ -257,10 +247,7 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
 
             {isProcessing && (
               <div className="w-full bg-gray-300 rounded-full h-2.5 mt-2">
-                <div
-                  className="bg-blue-600 h-2.5 rounded-full"
-                  style={{ width: `${progress}%` }}
-                />
+                <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress}%` }} />
               </div>
             )}
 
@@ -270,13 +257,28 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
                 type="submit"
                 disabled={!importedFile || isProcessing}
               >
-                <p className={textStyles.defaultWhite}>
-                  {isProcessing ? 'En cours...' : 'Traiter'}
-                </p>
+                <p className={textStyles.defaultWhite}>{isProcessing ? 'En cours...' : 'Traiter'}</p>
               </Button>
             </div>
           </form>
         </Card>
+        
+        {alertMessage && (
+            <div className="mt-4">
+              <Card variant={alertType} className="w-full">
+                <div className="flex items-center">
+                  <p className="flex-1">{alertMessage}</p>
+                  <Button
+                    variant="cancel_action_sq"
+                    onClick={() => setAlertMessage('')}
+                    className="ml-2 transition-transform duration-200 hover:scale-110"
+                  >
+                    <XIcon size={20} />
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          )}
       </div>
     </div>
   );

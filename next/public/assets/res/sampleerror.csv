@@ -1,0 +1,6 @@
+EMAIL_ADDRESS,FULL_NAME,ROLE_KEYWORD
+test1@etud.u-picardie.fr,Etudiant Fictif,student
+test2@etud.u-picardi.fr,Mail Fictif,student
+test3@u-picardie.fr,Admin Fictif,administrator
+test4@u-picardie.fr,Rôle Fictif,unknown
+test5@etud.u-picardie.fr,,student
