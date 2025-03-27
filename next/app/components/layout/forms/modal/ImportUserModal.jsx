@@ -118,6 +118,7 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
       }
 
       alert('Le fichier comporte des erreurs, rejeté dans son intégralité.');
+      handleRemoveFile();
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -189,6 +190,7 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
     }
 
     setIsProcessing(false);
+    handleRemoveFile();
     if (onCreate) {
       onCreate();
     }
