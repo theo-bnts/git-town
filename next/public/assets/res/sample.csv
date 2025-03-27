@@ -1,7 +1,3 @@
 EMAIL_ADDRESS,FULL_NAME,ROLE_KEYWORD
-@etud.u-picardie.fr,PREMIER ETUDIANT,student
-test2@etu.u-picardie.fr,Second étudiant test,STUDENT
-test3@etud.u-picardie.fr,étudiant test,STUDENT
-test3@u-picardie.fr,,teacher
-test4@u-picardie.fr,      administrateur test          ,ADMINISTRATOR
-test5@etud.u-picardie.fr, Étudiant-test tiret,STUDENT
+test1@etud.u-picardie.fr,Etudiant Fictif,student
+test2@etud.u-picardie.fr,Etudiant Fictif,student

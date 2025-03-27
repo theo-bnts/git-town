@@ -1,4 +1,4 @@
-// app/api/csv/rejects/specific/route.js
+// /app/api/csv/rejects/route.js
 
 import { NextResponse } from 'next/server';
 import fsPromises from 'fs/promises';
@@ -6,11 +6,19 @@ import fs from 'fs';
 import path from 'path';
 
 export const config = {
-  api: {
-    bodyParser: false, 
-  },
+  api: { bodyParser: false },
 };
 
+function getFormattedDate() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+}
+
+/**
+ * GET /api/csv/rejects?filename=...
+ * -> Lit le CSV dans /public/imports/rejects/ et le renvoie
+ */
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const filename = searchParams.get('filename');
@@ -27,6 +35,7 @@ export async function GET(request) {
     }
 
     let content = await fsPromises.readFile(filePath, 'utf8');
+    // BOM pour Excel
     content = '\uFEFF' + content;
 
     return new NextResponse(content, {
@@ -36,18 +45,23 @@ export async function GET(request) {
         'Content-Disposition': `attachment; filename="${filename}"`,
       },
     });
-  } catch (err) {
+  } catch (error) {
     return NextResponse.json({ error: 'Erreur lors de la lecture du fichier CSV.' }, { status: 500 });
   }
 }
 
+/**
+ * POST /api/csv/rejects
+ * Body JSON: { csvContent, fileName? }
+ */
 export async function POST(request) {
   try {
-    const { csvContent, fileName } = await request.json();
+    const { csvContent, fileName } = await request.json() || {};
     if (!csvContent) {
       return NextResponse.json({ error: 'Aucun contenu CSV fourni.' }, { status: 400 });
     }
-    const finalName = fileName || `rejects_${Date.now()}.csv`;
+
+    const finalName = fileName || `rejects_${getFormattedDate()}.csv`;
     const rejectsDir = path.join(process.cwd(), 'public', 'imports', 'rejects');
 
     fs.mkdirSync(rejectsDir, { recursive: true });

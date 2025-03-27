@@ -6,6 +6,7 @@ import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import { DashIcon, XIcon } from '@primer/octicons-react';
 import { textStyles, listboxStyles } from '@/app/styles/tailwindStyles';
+
 import { processCsvFile } from '@/app/services/logic/importUsers'; 
 import saveUser from '@/app/services/api/users/saveUser';
 import { getCookie } from '@/app/services/cookies';
@@ -50,13 +51,13 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
     rejectedUsers.forEach(({ EmailAddress, FullName, Role, reason }) => {
       const roleKeyword = Role?.Keyword || '';
       const sanitize = (str) => `"${(str || '').replace(/"/g, '""')}"`;
-      csv += `${sanitize(EmailAddress)};${sanitize(FullName)};${sanitize(roleKeyword)};${sanitize(reason)}\n`;
+      csv += `${sanitize(EmailAddress)},${sanitize(FullName)},${sanitize(roleKeyword)},${sanitize(reason)}\n`;
     });
     return csv;
   };
 
   async function uploadRejectsCsvToServer(fileName, csvContent) {
-    const res = await fetch('/api/csv/specific/rejects', {
+    const res = await fetch('/api/csv/rejects/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -70,23 +71,8 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
     return data.fileName;
   }
 
-  async function uploadRejectsCsvToServer(fileName, csvContent) {
-    const res = await fetch('/api/csv/rejects', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ csvContent, fileName })
-    });
-    if (!res.ok) {
-      throw new Error('Erreur lors de la sauvegarde du fichier CSV de rejets.');
-    }
-    const data = await res.json();
-    return data.fileName;
-  }
-  
   const downloadCsvFromServer = (fileName) => {
-    const url = `/api/csv/rejects?filename=${encodeURIComponent(fileName)}`;
+    const url = `/api/csv/rejects/?filename=${encodeURIComponent(fileName)}`;
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', fileName);
@@ -94,17 +80,27 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
     link.click();
     document.body.removeChild(link);
   };
-  
+
+  const handleExportSampleFile = () => {
+    const link = document.createElement('a');
+    link.href = '/api/csv/sample/';
+    link.download = 'sample.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+
     if (!file.name.endsWith('.csv')) {
       alert('Veuillez sélectionner un fichier CSV.');
       return;
     }
 
     const { isValid, errors, users } = await processCsvFile(file);
+
     if (!isValid) {
       const rejectedRows = errors.map(err => ({
         EmailAddress: '',
@@ -120,8 +116,11 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
       } catch (err) {
         console.error(err);
       }
+
       alert('Le fichier comporte des erreurs, rejeté dans son intégralité.');
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       setImportedFile(null);
       setUsersToProcess([]);
       setIsValidated(false);
@@ -159,17 +158,17 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
 
     setIsProcessing(true);
     setProgress(0);
+
     const total = usersToProcess.length;
     const rejectedFromApi = [];
 
     for (let i = 0; i < total; i++) {
-      const userData = usersToProcess[i];
       try {
-        await saveUser(null, userData, authToken);
+        await saveUser(null, usersToProcess[i], authToken);
       } catch (err) {
         rejectedFromApi.push({
-          ...userData,
-          reason: err.message || 'Erreur inconnue',
+          ...usersToProcess[i],
+          reason: err.message || 'Erreur inconnue'
         });
       }
       setProgress(Math.round(((i + 1) / total) * 100));
@@ -193,15 +192,6 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
     if (onCreate) {
       onCreate();
     }
-  };
-
-  const handleExportSampleFile = () => {
-    const link = document.createElement('a');
-    link.href = '/api/csv/specific/sample'; 
-    link.download = 'sample.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   if (!isOpen) return null;
@@ -248,9 +238,7 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
                     </div>
                   ) : (
                     <Card variant="empty_list">
-                      <p className="text-center text-gray-600">
-                        Aucun fichier sélectionné.
-                      </p>
+                      <p className="text-center text-gray-600">Aucun fichier sélectionné.</p>
                     </Card>
                   )}
                 </div>
