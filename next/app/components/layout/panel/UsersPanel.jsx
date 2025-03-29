@@ -6,6 +6,7 @@ import { PencilIcon, DuplicateIcon, MarkGithubIcon, TrashIcon } from '@primer/oc
 import getUsers from '@/app/services/api/users/getUsers';
 import getUserPromotions from '@/app/services/api/users/getUserPromotions';
 import { getCookie } from '@/app/services/cookies';
+import deleteUser from '@/app/services/api/users/deleteUser';
 
 import Table from '@/app/components/layout/table/Table';
 import UserModal from '@/app/components/layout/forms/modal/UserModal';
@@ -42,24 +43,6 @@ const fetchUsers = async (token) => {
         email: user.EmailAddress,
         role: user.Role ? user.Role.Name : 'N/A',
         promotions: promotionsDisplay,
-        actions: [
-          {
-            icon: <PencilIcon size={16} />,
-            onClick: () => user.onEdit && user.onEdit(),
-          },
-          {
-            icon: <DuplicateIcon size={16} />,
-            onClick: () => console.log(`Duplicate ${user.FullName}`),
-          },
-          {
-            icon: <MarkGithubIcon size={16} />,
-            onClick: () => console.log(`Github ${user.FullName}`),
-          },
-          {
-            icon: <TrashIcon size={16} />,
-            onClick: () => console.log(`Delete ${user.FullName}`),
-          },
-        ],
       };
     })
   );
@@ -71,6 +54,45 @@ export default function UsersPanel() {
   const [authToken, setAuthToken] = useState('');
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+
+  const updateActions = (user) => [
+    {
+      icon: <PencilIcon size={16} />,
+      onClick: () => {
+        setSelectedUser({
+          Id: user.raw.Id,
+          nom: user.raw.FullName,
+          email: user.raw.EmailAddress,
+          role: user.raw.Role,
+          promotions: user.rawPromotions,
+          createdAt: user.raw.CreatedAt,
+          updatedAt: user.raw.UpdatedAt,
+        });
+        setUserModalOpen(true);
+      },
+    },
+    {
+      icon: <DuplicateIcon size={16} />,
+      onClick: () => console.log(`Duplicate ${user.raw.FullName}`),
+    },
+    {
+      icon: <MarkGithubIcon size={16} />,
+      onClick: () => console.log(`Github ${user.raw.FullName}`),
+    },
+    {
+      icon: <TrashIcon size={16} />,
+      onClick: () => {
+        if (window.confirm(`Voulez-vous vraiment supprimer ${user.raw.FullName} ?`)) {
+          deleteUser(user.raw.Id, authToken)
+            .then(() => refreshUsers())
+            .catch((error) => {
+              console.error("Erreur lors de la suppression :", error);
+              alert(`Erreur lors de la suppression : ${error.message}`);
+            });
+        }
+      },
+    },
+  ];
 
   useEffect(() => {
     (async () => {
@@ -85,29 +107,11 @@ export default function UsersPanel() {
         .then((data) => {
           const updated = data.map((user) => ({
             ...user,
-            actions: user.actions.map(action => {
-              if (action.icon && action.icon.type === PencilIcon) {
-                return {
-                  ...action,
-                  onClick: () => {
-                    setSelectedUser({
-                      Id: user.raw.Id,
-                      nom: user.raw.FullName,
-                      email: user.raw.EmailAddress,
-                      role: user.raw.Role,
-                      promotions: user.rawPromotions,
-                      createdAt: user.raw.CreatedAt,
-                      updatedAt: user.raw.UpdatedAt,
-                    });
-                    setUserModalOpen(true);
-                  },
-                };
-              }
-              return action;
-            }),
+            actions: updateActions(user),
           }));
           setUsers(updated);
-        });
+        })
+        .catch((err) => console.error(err));
     }
   }, [authToken]);
 
