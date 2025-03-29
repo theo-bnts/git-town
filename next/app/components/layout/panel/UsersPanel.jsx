@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { PencilIcon, DuplicateIcon, MarkGithubIcon } from '@primer/octicons-react';
+import { PencilIcon, DuplicateIcon, MarkGithubIcon, TrashIcon } from '@primer/octicons-react';
 
 import getUsers from '@/app/services/api/users/getUsers';
 import getUserPromotions from '@/app/services/api/users/getUserPromotions';
@@ -54,6 +54,10 @@ const fetchUsers = async (token) => {
           {
             icon: <MarkGithubIcon size={16} />,
             onClick: () => console.log(`Github ${user.FullName}`),
+          },
+          {
+            icon: <TrashIcon size={16} />,
+            onClick: () => console.log(`Delete ${user.FullName}`),
           },
         ],
       };

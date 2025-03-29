@@ -6,7 +6,6 @@ import EmptyTableCard from '@/app/components/layout/table/EmptyTableCard';
 import TableHeader from '@/app/components/layout/table/TableHeader';
 import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
-import UserModal from '@/app/components/layout/forms/modal/UserModal';
 
 export default function Table({ columns, data, onUserUpdated, ModalComponent }) {
   const [sortedData, setSortedData] = useState(data);
