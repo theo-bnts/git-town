@@ -49,8 +49,6 @@ services:
       - next_cache:/app/.next:rw
     networks:
       - next_network
-    ports:
-      - 8081:80
 
 volumes:
   postgres_data_volume:
