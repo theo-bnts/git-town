@@ -1,6 +1,6 @@
 import { handleApiError } from '@/app/services/errorHandler';
 import getUserPromotions from '@/app/services/api/users/getUserPromotions';
-import { userPromotions, deleteUserPromotion } from '@/app/services/routes';
+import { userPromotionsRoute, deleteUserPromotion } from '@/app/services/routes';
 
 const buildKey = promo =>
   `${promo.Diploma.Initialism}_${promo.PromotionLevel.Initialism}_${promo.Year}`;
@@ -37,7 +37,7 @@ export default async function saveUserPromotions(userId, newPromotions, token) {
   );
   
   for (const removal of removals) {
-    const endpoint = deleteUserPromotion(userId, removal.id);
+    const endpoint = deleteUserPromotionRoute(userId, removal.id);
     const res = await fetch(endpoint, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
@@ -49,7 +49,7 @@ export default async function saveUserPromotions(userId, newPromotions, token) {
   }
   
   for (const addition of additions) {
-    const endpoint = userPromotions(userId);
+    const endpoint = userPromotionsRoute(userId);
     const promotionPayload = {
       Diploma: { Initialism: addition.promotion.Diploma.Initialism },
       PromotionLevel: { Initialism: addition.promotion.PromotionLevel.Initialism },
