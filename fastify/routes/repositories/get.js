@@ -1,7 +1,5 @@
 import AuthorizationMiddleware from '../../entities/tools/AuthorizationMiddleware.js';
 import Repository from '../../entities/Repository.js';
-import Request from '../../entities/tools/Request.js';
-import UserRepository from '../../entities/UserRepository.js';
 
 export default async function route(app) {
   app.route({
@@ -21,18 +19,8 @@ export default async function route(app) {
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRole(request, 'teacher');
     },
-    handler: async (request) => {
-      const { User: user } = await Request.getUsedToken(request);
-
-      if (user.Role.Keyword === 'student') {
-        const userRepositories = await UserRepository.fromUser(user);
-        return userRepositories.map((userRepository) => userRepository.Repository);
-
-        // TODO: Hide comment in all endpoints
-      }
-
-      return Repository.all();
-    },
+    handler: async (request) => Repository.all(),
   });
 }

@@ -1,5 +1,6 @@
 import AuthorizationMiddleware from '../../../../../entities/tools/AuthorizationMiddleware.js';
 import GitHubApp from '../../../../../entities/tools/GitHubApp.js';
+import ParametersMiddleware from '../../../../../entities/tools/ParametersMiddleware.js';
 import User from '../../../../../entities/User.js';
 
 export default async function route(app) {
@@ -35,7 +36,8 @@ export default async function route(app) {
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
-      await AuthorizationMiddleware.assertUserIdMatch(request);
+      await AuthorizationMiddleware.assertSufficientUserRoleOrUserIdMatch(request, 'administrator');
+      await ParametersMiddleware.assertUserIdExists(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;

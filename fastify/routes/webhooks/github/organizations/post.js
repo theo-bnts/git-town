@@ -1,5 +1,7 @@
 import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
+import GitHubApp from '../../../../entities/tools/GitHubApp.js';
 import User from '../../../../entities/User.js';
+import UserRepository from '../../../../entities/UserRepository.js';
 
 export default async function route(app) {
   app.route({
@@ -74,11 +76,21 @@ export default async function route(app) {
         await user.update();
       }
 
+      const userRepositories = await UserRepository.fromUser(user);
+
+      // TODO: Test
       if (user.GitHubOrganizationMember) {
-        // TODO: Add user as collaborator to all of their repositories
+        await Promise.all(
+          userRepositories.map(async (userRepository) => {
+            GitHubApp.Instance.addCollaborator(userRepository.Repository.Id, user.GitHubId);
+          })
+        );
       } else {
-        // TODO: If the user leaves the organization,
-        // TODO: is it possible to remove them as a collaborator from all of their repositories?
+        await Promise.all(
+          userRepositories.map(async (userRepository) => {
+            GitHubApp.Instance.removeCollaborator(userRepository.Repository.Id, user.GitHubId);
+          })
+        );
       }
 
       return user;

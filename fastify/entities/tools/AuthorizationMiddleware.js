@@ -29,14 +29,19 @@ export default class AuthorizationMiddleware {
     }
   }
 
-  static async assertUserIdMatch(request) {
+  static async assertSufficientUserRoleOrUserIdMatch(request, requiredRoleKeyword) {
     const { UserId: requestedUserId } = request.params;
 
     const token = await Request.getUsedToken(request);
-    const { Id: authenticatedUserId } = token.User;
+    const { Id: authenticatedUserId, Role: authenticatedUserRole } = token.User;
 
-    if (requestedUserId !== authenticatedUserId) {
-      throw { statusCode: 403, error: 'USER_ID_MISMATCH' };
+    const requiredRole = await Role.fromKeyword(requiredRoleKeyword);
+
+    if (
+      authenticatedUserRole.HierarchyLevel < requiredRole.HierarchyLevel
+      && requestedUserId !== authenticatedUserId
+    ) {
+      throw { statusCode: 403, error: 'INSUFFICIENT_PERMISSIONS_OR_USER_ID_MISMATCH' };
     }
   }
 }

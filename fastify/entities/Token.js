@@ -92,4 +92,27 @@ export default class Token {
       value,
     );
   }
+
+  static async fromUser(user) {
+    const rows = await DatabasePool.Instance.query(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          value
+        FROM public.token
+        WHERE user_id = $1::uuid
+      `,
+      [user.Id],
+    );
+
+    return rows.map((row) => new this(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      user,
+      row.value,
+    ));
+  }
 }

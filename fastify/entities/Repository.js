@@ -66,6 +66,17 @@ export default class Repository {
     this.UpdatedAt = row.updated_at;
   }
 
+  toStudentJSON() {
+    return {
+      id: this.Id,
+      createdAt: this.CreatedAt,
+      updatedAt: this.UpdatedAt,
+      archivedAt: this.ArchivedAt,
+      template: this.Template,
+      promotion: this.Promotion,
+    };
+  }
+
   static async isIdInserted(id) {
     const [row] = await DatabasePool.Instance.query(
       /* sql */ `
