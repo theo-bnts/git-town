@@ -13,7 +13,7 @@ import gittownlogo from "../../../public/assets/pictures/gittown.svg";
 import { textStyles } from "@/app/styles/tailwindStyles";
 
 import Card from "@/app/components/ui/Card";
-import Button from "../ui/Button";
+import Button from "@/app/components/ui/Button";
 
 const getInitials = (name) => {
   if (!name) return "";

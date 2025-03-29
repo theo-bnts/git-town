@@ -57,12 +57,8 @@ export default function Table({ columns, data, toolbarContents, onUserUpdated, M
     const sorted = [...data].sort((a, b) => {
       if (!columnKey) return 0;
       return newOrder === 'asc'
-        ? a[columnKey] > b[columnKey] 
-          ? 1 
-          : -1
-        : a[columnKey] < b[columnKey] 
-          ? 1 
-          : -1;
+        ? a[columnKey] > b[columnKey] ? 1 : -1
+        : a[columnKey] < b[columnKey] ? 1 : -1;
     });
     setSortedData(sorted);
     if (containerRef.current) {
