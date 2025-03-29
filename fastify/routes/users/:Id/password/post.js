@@ -47,7 +47,7 @@ export default async function route(app) {
 
       const user = await User.fromId(userId);
 
-      if (!(await TemporaryCode.isValidValue(temporaryCode, user))) {
+      if (!(await TemporaryCode.isValueInserted(temporaryCode, user))) {
         throw { statusCode: 401, error: 'INVALID_TEMPORARY_CODE' };
       }
 

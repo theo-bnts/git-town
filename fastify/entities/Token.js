@@ -64,7 +64,20 @@ export default class Token {
     };
   }
 
-  static async isValidValue(value) {
+  static async isIdInserted(id) {
+    const [row] = await DatabasePool.Instance.query(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.token
+        WHERE id = $1::uuid
+      `,
+      [id],
+    );
+
+    return row.count === 1n;
+  }
+
+  static async isValueInserted(value) {
     const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
