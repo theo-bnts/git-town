@@ -1,11 +1,12 @@
-import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
-import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.js';
-import User from '../../../entities/User.js';
+import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
+import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
+import User from '../../../../entities/User.js';
+import UserRepository from '../../../../entities/UserRepository.js';
 
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/users/:UserId',
+    url: '/users/:UserId/repositories',
     schema: {
       headers: {
         type: 'object',
@@ -32,10 +33,14 @@ export default async function route(app) {
       await AuthorizationMiddleware.assertSufficientUserRoleOrUserIdMatch(request, 'teacher');
       await ParametersMiddleware.assertUserIdExists(request);
     },
-    handler: (request) => {
+    handler: async (request) => {
       const { UserId: userId } = request.params;
 
-      return User.fromId(userId);
+      const user = await User.fromId(userId);
+
+      const repositories = await UserRepository.fromUser(user);
+
+      return repositories.map((repository) => repository.Repository);
     },
   });
 }

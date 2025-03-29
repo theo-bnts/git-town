@@ -1,5 +1,4 @@
 import DatabasePool from './tools/DatabasePool.js';
-import Template from './Template.js';
 
 export default class Milestone {
   Id;
@@ -24,7 +23,7 @@ export default class Milestone {
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         INSERT INTO public.milestone (template_id, title, date)
         VALUES ($1::uuid, $2::text, $3::date)
@@ -39,7 +38,7 @@ export default class Milestone {
   }
 
   async update() {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         UPDATE public.milestone
         SET template_id = $1::uuid, title = $2::text, date = $3::date
@@ -63,7 +62,7 @@ export default class Milestone {
   }
 
   static async isIdInserted(id) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.milestone
@@ -76,7 +75,7 @@ export default class Milestone {
   }
 
   static async isTemplateTitleAndDateInserted(template, title, date) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.milestone
@@ -91,7 +90,7 @@ export default class Milestone {
   }
 
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,
@@ -115,7 +114,7 @@ export default class Milestone {
   }
 
   static async fromTemplate(template) {
-    const rows = await DatabasePool.Instance.execute(
+    const rows = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,

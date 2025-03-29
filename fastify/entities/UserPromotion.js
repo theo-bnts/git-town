@@ -22,7 +22,7 @@ export default class UserPromotion {
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         INSERT INTO public.user_promotion (user_id, promotion_id)
         VALUES ($1::uuid, $2::uuid)
@@ -37,7 +37,7 @@ export default class UserPromotion {
   }
 
   async delete() {
-    await DatabasePool.Instance.execute(
+    await DatabasePool.Instance.query(
       /* sql */ `
         DELETE FROM public.user_promotion
         WHERE id = $1::uuid
@@ -47,7 +47,7 @@ export default class UserPromotion {
   }
 
   static async isUserInserted(user) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.user_promotion
@@ -60,7 +60,7 @@ export default class UserPromotion {
   }
 
   static async isPromotionInserted(promotion) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.user_promotion
@@ -73,7 +73,7 @@ export default class UserPromotion {
   }
 
   static async isUserAndPromotionInserted(user, promotion) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.user_promotion
@@ -87,7 +87,7 @@ export default class UserPromotion {
   }
 
   static async fromUser(user) {
-    const rows = await DatabasePool.Instance.execute(
+    const rows = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,
@@ -117,7 +117,7 @@ export default class UserPromotion {
   }
 
   static async fromPromotion(promotion) {
-    const rows = await DatabasePool.Instance.execute(
+    const rows = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,
@@ -146,7 +146,7 @@ export default class UserPromotion {
   }
 
   static async fromUserAndPromotion(user, promotion) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,
@@ -169,7 +169,7 @@ export default class UserPromotion {
   }
 
   static async replicateUsers(sourcePromotion, targetPromotion) {
-    await DatabasePool.Instance.execute(
+    await DatabasePool.Instance.query(
       /* sql */ `
         INSERT INTO public.user_promotion (user_id, promotion_id)
         SELECT user_id, $1::uuid

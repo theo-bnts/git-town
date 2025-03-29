@@ -27,7 +27,7 @@ export default class Template {
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         INSERT INTO public.template (enseignement_unit_id, year)
         VALUES ($1::uuid, $2::integer)
@@ -42,7 +42,7 @@ export default class Template {
   }
 
   async update() {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         UPDATE public.template
         SET enseignement_unit_id = $1::uuid, year = $2::integer
@@ -56,7 +56,7 @@ export default class Template {
   }
 
   static async isIdInserted(id) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.template
@@ -69,7 +69,7 @@ export default class Template {
   }
 
   static async isEnseignementUnitInserted(enseignementUnit) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.template
@@ -82,7 +82,7 @@ export default class Template {
   }
 
   static async isEnseignementUnitAndYearInserted(enseignementUnit, year) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.template
@@ -96,7 +96,7 @@ export default class Template {
   }
 
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,
@@ -120,7 +120,7 @@ export default class Template {
   }
 
   static async all() {
-    const rows = await DatabasePool.Instance.execute(
+    const rows = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           id,

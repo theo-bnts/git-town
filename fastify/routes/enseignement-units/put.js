@@ -30,7 +30,6 @@ export default async function route(app) {
           },
         },
         required: ['Initialism', 'Name'],
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {

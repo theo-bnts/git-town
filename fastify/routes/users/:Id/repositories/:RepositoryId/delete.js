@@ -1,13 +1,14 @@
 import AuthorizationMiddleware from '../../../../../entities/tools/AuthorizationMiddleware.js';
 import ParametersMiddleware from '../../../../../entities/tools/ParametersMiddleware.js';
-import Promotion from '../../../../../entities/Promotion.js';
+import Repository from '../../../../../entities/Repository.js';
 import User from '../../../../../entities/User.js';
-import UserPromotion from '../../../../../entities/UserPromotion.js';
+import UserRepository from '../../../../../entities/UserRepository.js';
+import GitHubApp from '../../../../../entities/tools/GitHubApp.js';
 
 export default async function route(app) {
   app.route({
     method: 'DELETE',
-    url: '/users/:UserId/promotions/:PromotionId',
+    url: '/users/:UserId/repositories/:RepositoryId',
     schema: {
       headers: {
         type: 'object',
@@ -26,7 +27,7 @@ export default async function route(app) {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
-          PromotionId: {
+          RepositoryId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -37,25 +38,28 @@ export default async function route(app) {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
       await ParametersMiddleware.assertUserIdExists(request);
-      await ParametersMiddleware.assertPromotionIdExists(request);
+      await ParametersMiddleware.assertRepositoryIdExists(request);
     },
     handler: async (request) => {
-      const { UserId: userId, PromotionId: promotionId } = request.params;
+      const { UserId: userId, RepositoryId: repositoryId } = request.params;
 
       const user = await User.fromId(userId);
-      const promotion = await Promotion.fromId(promotionId);
+      const repository = await Repository.fromId(repositoryId);
 
-      if (!await UserPromotion.isUserAndPromotionInserted(user, promotion)) {
-        throw { statusCode: 404, error: 'UNKNOWN_USER_PROMOTION' };
+      if (!await UserRepository.isUserAndRepositoryInserted(user, repository)) {
+        throw { statusCode: 404, error: 'UNKNOWN_USER_REPOSITORY' };
       }
 
-      if (user.Role.Keyword !== 'student') {
-        throw { statusCode: 409, error: 'NOT_STUDENT_ROLE' };
+      if (user.GitHubOrganizationMember) {
+        GitHubApp.Instance.removeOrganizationMemberFromAnOrganizationRepository(
+          repository.GitHubId,
+          user.GitHubId,
+        );
       }
 
-      const userPromotion = await UserPromotion.fromUserAndPromotion(user, promotion);
+      const userRepository = await UserRepository.fromUserAndRepository(user, repository);
 
-      await userPromotion.delete();
+      await userRepository.delete();
     },
   });
 }

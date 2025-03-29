@@ -1,13 +1,14 @@
 import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
+import GitHubApp from '../../../../entities/tools/GitHubApp.js';
 import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
-import Promotion from '../../../../entities/Promotion.js';
+import Repository from '../../../../entities/Repository.js';
 import User from '../../../../entities/User.js';
-import UserPromotion from '../../../../entities/UserPromotion.js';
+import UserRepository from '../../../../entities/UserRepository.js';
 
 export default async function route(app) {
   app.route({
     method: 'PUT',
-    url: '/users/:UserId/promotions',
+    url: '/users/:UserId/repositories',
     schema: {
       headers: {
         type: 'object',
@@ -31,7 +32,7 @@ export default async function route(app) {
       body: {
         type: 'object',
         properties: {
-          Promotion: {
+          Repository: {
             type: 'object',
             properties: {
               Id: {
@@ -42,7 +43,7 @@ export default async function route(app) {
             required: ['Id'],
           },
         },
-        required: ['Promotion'],
+        required: ['Repository'],
       },
     },
     preHandler: async (request) => {
@@ -52,35 +53,43 @@ export default async function route(app) {
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;
-      const { Promotion: { Id: promotionId } } = request.body;
+      const { Repository: { Id: repositoryId } } = request.body;
 
-      if (!await Promotion.isIdInserted(promotionId)) {
-        throw { statusCode: 404, error: 'UNKNOWN_PROMOTION_ID' };
+      if (!await Repository.isIdInserted(repositoryId)) {
+        throw { statusCode: 404, error: 'UNKNOWN_REPOSITORY_ID' };
       }
 
       const user = await User.fromId(userId);
+      const repository = await Repository.fromId(repositoryId);
 
-      if (user.Role.Keyword !== 'student') {
-        throw { statusCode: 409, error: 'NOT_STUDENT_ROLE' };
-      }
-
-      const promotion = await Promotion.fromId(promotionId);
-
-      if (await UserPromotion.isUserAndPromotionInserted(user, promotion)) {
+      if (await UserRepository.isUserAndRepositoryInserted(user, repository)) {
         throw { statusCode: 409, error: 'ALREADY_EXISTS' };
       }
 
-      const userPromotion = new UserPromotion(
+      // TODO: Test
+
+      await GitHubApp.Instance.addOrganizationEducationalTeamToAnOrganizationRepository(
+        repository.Id,
+      );
+
+      if (user.GitHubOrganizationMember) {
+        await GitHubApp.Instance.addOrganizationMemberToAnOrganizationRepository(
+          repository.Id,
+          user.GitHubId,
+        );
+      }
+
+      const userRepository = new UserRepository(
         null,
         null,
         null,
         user,
-        promotion,
+        repository,
       );
 
-      await userPromotion.insert();
+      await userRepository.insert();
 
-      return promotion;
+      return repository;
     },
   });
 }

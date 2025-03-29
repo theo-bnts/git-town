@@ -20,7 +20,7 @@ export default class TemporaryCode {
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         INSERT INTO public.temporary_code (user_id, value)
         VALUES ($1::uuid, $2::text)
@@ -43,7 +43,7 @@ export default class TemporaryCode {
   }
 
   static async isValidValue(value, user) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.temporary_code tc
@@ -64,7 +64,7 @@ export default class TemporaryCode {
   }
 
   static async deleteAll(user) {
-    await DatabasePool.Instance.execute(
+    await DatabasePool.Instance.query(
       /* sql */ `
         DELETE FROM public.temporary_code
         WHERE user_id = $1::uuid

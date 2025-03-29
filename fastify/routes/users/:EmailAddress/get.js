@@ -13,12 +13,11 @@ export default async function route(app) {
             pattern: process.env.USER_EMAIL_ADDRESS_PATTERN,
           },
         },
-        additionalProperties: false,
       },
     },
     config: {
       rateLimit: {
-        max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
+        max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_MAX),
         allowList: false,
         keyGenerator: (request) => `${request.params.UserEmailAddress}-${request.routeOptions.url}`,
       },

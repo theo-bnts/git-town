@@ -26,11 +26,11 @@ const app = fastify({
 });
 
 await app.register(cors, {
-  origin: process.env.CORS_ORIGIN,
+  origin: process.env.FRONTEND_BASE_URL,
 });
 
 await app.register(rateLimit, {
-  max: Number(process.env.RATE_LIMIT_AUTHENTICATED_MAX),
+  max: Number(process.env.RATE_LIMIT_AUTHENTICATED_STUDENT_INTERNAL_MAX),
   timeWindow: process.env.RATE_LIMIT_TIME_WINDOW,
   hook: 'preHandler',
   allowList: async (request) => (!await Request.isAuthenticated(request)),
@@ -38,7 +38,9 @@ await app.register(rateLimit, {
     if (await Request.isAuthenticated(request)) {
       const token = await Request.getUsedToken(request);
 
-      return token.User.Id;
+      if (token.User.Role.Keyword === 'student') {
+        return token.User.Id;
+      }
     }
 
     return null;

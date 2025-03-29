@@ -18,14 +18,37 @@ export default class DatabasePool {
     pg.types.setTypeParser(pg.types.builtins.INT8, BigInt);
   }
 
-  async getConnection() {
+  async createConnection() {
     return this.Pool.connect();
   }
 
-  async execute(query, values) {
-    const connection = await this.getConnection();
+  async query(query, values, existingConnection) {
+    let connection;
+
+    if (existingConnection === undefined) {
+      connection = await this.createConnection();
+    } else {
+      connection = existingConnection;
+    }
+
     const result = await connection.query(query, values);
-    connection.release();
+
+    if (existingConnection === undefined) {
+      await connection.release();
+    }
+
     return result.rows;
+  }
+
+  static async begin(connection) {
+    await connection.query('BEGIN');
+  }
+
+  static async commit(connection) {
+    await connection.query('COMMIT');
+  }
+
+  static async release(connection) {
+    await connection.release();
   }
 }

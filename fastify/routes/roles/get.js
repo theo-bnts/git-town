@@ -1,10 +1,10 @@
 import AuthorizationMiddleware from '../../entities/tools/AuthorizationMiddleware.js';
-import Repository from '../../entities/Repository.js';
+import Role from '../../entities/Role.js';
 
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/repositories',
+    url: '/roles',
     schema: {
       headers: {
         type: 'object',
@@ -21,6 +21,6 @@ export default async function route(app) {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'teacher');
     },
-    handler: async () => Repository.all(),
+    handler: () => Role.all(),
   });
 }

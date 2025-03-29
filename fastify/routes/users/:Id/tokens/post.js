@@ -1,4 +1,4 @@
-import DataQualityMiddleware from '../../../../entities/tools/DataQualityMiddleware.js';
+import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
 import Security from '../../../../entities/tools/Security.js';
 import Token from '../../../../entities/Token.js';
 import User from '../../../../entities/User.js';
@@ -6,7 +6,7 @@ import User from '../../../../entities/User.js';
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/users/:UserId/token',
+    url: '/users/:UserId/tokens',
     schema: {
       params: {
         type: 'object',
@@ -16,7 +16,6 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
       body: {
         type: 'object',
@@ -27,18 +26,17 @@ export default async function route(app) {
             pattern: process.env.GENERIC_PATTERN,
           },
         },
-        additionalProperties: false,
         required: ['Password'],
       },
     },
     config: {
       rateLimit: {
-        max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_ENDPOINT_MAX),
+        max: Number(process.env.RATE_LIMIT_NOT_AUTHENTICATED_MAX),
         allowList: false,
         keyGenerator: (request) => `${request.params.UserId}-${request.routeOptions.url}`,
       },
     },
-    preHandler: async (request) => DataQualityMiddleware.assertUserIdExists(request),
+    preHandler: async (request) => ParametersMiddleware.assertUserIdExists(request),
     handler: async (request) => {
       const { UserId: userId } = request.params;
       const { Password: password } = request.body;

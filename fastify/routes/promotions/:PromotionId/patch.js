@@ -1,6 +1,6 @@
 import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
-import DataQualityMiddleware from '../../../entities/tools/DataQualityMiddleware.js';
 import Diploma from '../../../entities/Diploma.js';
+import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.js';
 import Promotion from '../../../entities/Promotion.js';
 import PromotionLevel from '../../../entities/PromotionLevel.js';
 
@@ -27,7 +27,6 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
       body: {
         type: 'object',
@@ -41,7 +40,6 @@ export default async function route(app) {
               },
             },
             required: ['Initialism'],
-            additionalProperties: false,
           },
           PromotionLevel: {
             type: 'object',
@@ -52,7 +50,6 @@ export default async function route(app) {
               },
             },
             required: ['Initialism'],
-            additionalProperties: false,
           },
           Year: {
             type: 'integer',
@@ -61,13 +58,12 @@ export default async function route(app) {
           },
         },
         minProperties: 1,
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await DataQualityMiddleware.assertPromotionIdExists(request);
+      await ParametersMiddleware.assertPromotionIdExists(request);
     },
     handler: async (request) => {
       const { PromotionId: promotionId } = request.params;

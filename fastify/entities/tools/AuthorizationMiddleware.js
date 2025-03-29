@@ -13,7 +13,7 @@ export default class AuthorizationMiddleware {
     const { 'x-hub-signature-256': signature } = request.headers;
     const { rawBody } = request;
 
-    if (signature === undefined || signature === null || signature !== `sha256=${Security.hashGitHubWebhookSecret(rawBody)}`) {
+    if (signature !== `sha256=${Security.hashGitHubWebhookSecret(rawBody)}`) {
       throw { statusCode: 401, error: 'INVALID_SIGNATURE' };
     }
   }
@@ -29,14 +29,19 @@ export default class AuthorizationMiddleware {
     }
   }
 
-  static async assertUserIdMatch(request) {
+  static async assertSufficientUserRoleOrUserIdMatch(request, requiredRoleKeyword) {
     const { UserId: requestedUserId } = request.params;
 
     const token = await Request.getUsedToken(request);
-    const { Id: authenticatedUserId } = token.User;
+    const { Id: authenticatedUserId, Role: authenticatedUserRole } = token.User;
 
-    if (requestedUserId !== authenticatedUserId) {
-      throw { statusCode: 403, error: 'USER_ID_MISMATCH' };
+    const requiredRole = await Role.fromKeyword(requiredRoleKeyword);
+
+    if (
+      authenticatedUserRole.HierarchyLevel < requiredRole.HierarchyLevel
+      && requestedUserId !== authenticatedUserId
+    ) {
+      throw { statusCode: 403, error: 'INSUFFICIENT_PERMISSIONS_OR_USER_ID_MISMATCH' };
     }
   }
 }

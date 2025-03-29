@@ -1,10 +1,12 @@
+import Token from '../../../../entities/Token.js';
 import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
-import Request from '../../../../entities/tools/Request.js';
+import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
+import User from '../../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
-    method: 'DELETE',
-    url: '/users/:UserId/token',
+    method: 'GET',
+    url: '/users/:UserId/tokens',
     schema: {
       headers: {
         type: 'object',
@@ -24,17 +26,21 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
-      await AuthorizationMiddleware.assertUserIdMatch(request);
+      await AuthorizationMiddleware.assertSufficientUserRoleOrUserIdMatch(request, 'administrator');
+      await ParametersMiddleware.assertUserIdExists(request);
     },
     handler: async (request) => {
-      const token = await Request.getUsedToken(request);
+      const { UserId: userId } = request.params;
 
-      await token.delete();
+      const user = await User.fromId(userId);
+
+      const tokens = await Token.fromUser(user);
+
+      return tokens.map((token) => token.toSafeJSON());
     },
   });
 }
