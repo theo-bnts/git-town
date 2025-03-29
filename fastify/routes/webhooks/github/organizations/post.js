@@ -78,7 +78,6 @@ export default async function route(app) {
 
       const userRepositories = await UserRepository.fromUser(user);
 
-      // TODO: Test
       if (user.GitHubOrganizationMember) {
         if (user.Role.Keyword === 'student') {
           await Promise.all(

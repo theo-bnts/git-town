@@ -33,14 +33,22 @@ await app.register(rateLimit, {
   max: Number(process.env.RATE_LIMIT_AUTHENTICATED_STUDENT_INTERNAL_MAX),
   timeWindow: process.env.RATE_LIMIT_TIME_WINDOW,
   hook: 'preHandler',
-  allowList: async (request) => (!await Request.isAuthenticated(request)),
-  keyGenerator: async (request) => {
+  allowList: async (request) => {
     if (await Request.isAuthenticated(request)) {
       const token = await Request.getUsedToken(request);
 
       if (token.User.Role.Keyword === 'student') {
-        return token.User.Id;
+        return false;
       }
+    }
+
+    return true;
+  },
+  keyGenerator: async (request) => {
+    if (await Request.isAuthenticated(request)) {
+      const token = await Request.getUsedToken(request);
+
+      return token.User.Id;
     }
 
     return null;
