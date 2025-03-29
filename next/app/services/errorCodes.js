@@ -23,7 +23,7 @@ export const API_ERRORS = {
     default: "(404) : Ressource non trouvée.",
   },
   409: {
-    SAME_EMAIL_ADDRESS: "(409) : Adresse e-mail déjà utilisée.",
+    SAME_EMAIL_ADDRESS: "(409) : Même adresse e-mail.",
     DUPLICATE_EMAIL_ADDRESS: "(409) : Adresse e-mail en double.",
     SAME_FULL_NAME: "(409) : Nom complet déjà utilisé.",
     SAME_ROLE_KEYWORD: "(409) : Rôle déjà attribué.",

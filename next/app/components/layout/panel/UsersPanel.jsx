@@ -1,15 +1,18 @@
+// /app/components/layout/panel/UsersPanel.jsx
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { PencilIcon, DuplicateIcon, MarkGithubIcon, TrashIcon } from '@primer/octicons-react';
+import { PencilIcon, DuplicateIcon, MarkGithubIcon, TrashIcon, PlusIcon, UploadIcon } from '@primer/octicons-react';
 
+import deleteUser from '@/app/services/api/users/deleteUser';
 import getUsers from '@/app/services/api/users/getUsers';
 import getUserPromotions from '@/app/services/api/users/getUserPromotions';
 import { getCookie } from '@/app/services/cookies';
-import deleteUser from '@/app/services/api/users/deleteUser';
 
+import Button from '@/app/components/ui/Button';
 import Table from '@/app/components/layout/table/Table';
 import UserModal from '@/app/components/layout/forms/modal/UserModal';
+import ImportUserModal from '../forms/modal/ImportUserModal';
 
 const columns = [
   { key: 'name', title: 'Nom', sortable: true },
@@ -54,6 +57,7 @@ export default function UsersPanel() {
   const [authToken, setAuthToken] = useState('');
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const updateActions = (user) => [
     {
@@ -117,11 +121,29 @@ export default function UsersPanel() {
     refreshUsers();
   }, [refreshUsers]);
 
+  const toolbarContents = (
+    <>
+      <Button
+        variant="default_sq"
+        onClick={() => setUserModalOpen(true)}
+      >
+        <PlusIcon size={24} className="text-white" />
+      </Button>
+      <Button 
+        variant="default_sq"
+        onClick={() => setIsImportModalOpen(true)}
+      >
+        <UploadIcon size={24} className="text-white" />
+      </Button>
+    </>
+  );
+
   return (
     <div className="flex flex-col flex-1 p-8">
       <Table 
         columns={columns} 
         data={users} 
+        toolbarContents={toolbarContents}
         onUserUpdated={refreshUsers} 
         ModalComponent={UserModal}
       />
@@ -140,6 +162,12 @@ export default function UsersPanel() {
           }}
         />
       )}
+      {isImportModalOpen && (
+        <ImportUserModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+        />
+    )}
     </div>
   );
 }
