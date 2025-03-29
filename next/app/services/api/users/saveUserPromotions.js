@@ -1,6 +1,6 @@
 import { handleApiError } from '@/app/services/errorHandler';
 import getUserPromotions from '@/app/services/api/users/getUserPromotions';
-import { userPromotionsRoute, deleteUserPromotion } from '@/app/services/routes';
+import { userPromotionsRoute, deleteUserPromotionRoute } from '@/app/services/routes';
 
 const buildKey = promo =>
   `${promo.Diploma.Initialism}_${promo.PromotionLevel.Initialism}_${promo.Year}`;
