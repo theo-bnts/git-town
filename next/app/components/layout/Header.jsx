@@ -37,13 +37,15 @@ export default function Header({ fullName }) {
     try {
       const token = await getCookie("token");
       const userId = await getCookie("userId");
+      const tokenId = await getCookie("tokenId");
 
       if (token && userId) {
-        await delToken(userId, token);
+        await delToken(userId, token, tokenId);
       }
 
       await removeCookie("token");
       await removeCookie("userId");
+      await removeCookie("tokenId");
 
       router.replace("/login");
     } catch (error) {

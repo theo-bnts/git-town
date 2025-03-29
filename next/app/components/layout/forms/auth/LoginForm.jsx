@@ -36,6 +36,7 @@ export default function LoginForm({ userId, email, onSuccess, onBack, onGoToDefi
       try {
         const data = await postToken(userId, password);
         await setCookie('token', data.Value);
+        await setCookie('tokenId', data.Id);
         onSuccess(data.Value);
       } catch (err) {
         setError(err.message);
@@ -80,7 +81,7 @@ export default function LoginForm({ userId, email, onSuccess, onBack, onGoToDefi
                 />
                 {tooltip && (
                   <div className="absolute w-40 lg:w-80 p-1 z-50">
-                    <Card variant="info">
+                    <Card variant="success">
                       <p className={textStyles.defaultWhite}>
                         Vous pouvez changer votre mot de passe en cliquant sur l'enveloppe.
                       </p>

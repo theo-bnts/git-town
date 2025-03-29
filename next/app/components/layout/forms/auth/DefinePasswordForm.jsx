@@ -80,7 +80,7 @@ export default function DefinePasswordForm({ userId, email, onSuccess, onBack })
                 />
                 {tooltips.code && (
                   <div className="absolute w-40 lg:w-80 p-1 z-50">
-                    <Card variant="info">
+                    <Card variant="success">
                       <p className={textStyles.defaultWhite}>
                         Nous venons de vous envoyer le code par email, il est valide 5 minutes !
                       </p>
