@@ -38,7 +38,6 @@ export default async function route(app) {
 
       const promotion = await Promotion.fromId(promotionId);
 
-      // TODO: Test
       if (await Repository.isPromotionInserted(promotion)) {
         throw { statusCode: 409, error: 'HAS_REPOSITORIES' };
       }
