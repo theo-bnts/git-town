@@ -14,7 +14,7 @@ export default class Request {
 
     const auth = authHeader.parse(request.headers.authorization);
 
-    if (!await Token.isValidValue(auth.token)) {
+    if (!await Token.isValueInserted(auth.token)) {
       return false;
     }
 

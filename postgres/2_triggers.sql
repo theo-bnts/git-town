@@ -84,6 +84,11 @@ BEFORE INSERT OR UPDATE ON public.user_promotion
 FOR EACH ROW
 EXECUTE FUNCTION check_user_role('student');
 
+CREATE TRIGGER user_repository_check_user_role
+BEFORE INSERT OR UPDATE ON public.user_repository
+FOR EACH ROW
+EXECUTE FUNCTION check_user_role('student');
+
 
 
 CREATE TRIGGER repository_check_archive

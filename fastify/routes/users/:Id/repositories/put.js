@@ -60,13 +60,16 @@ export default async function route(app) {
       }
 
       const user = await User.fromId(userId);
+
+      if (user.Role.Keyword !== 'student') {
+        throw { statusCode: 409, error: 'NOT_STUDENT_ROLE' };
+      }
+
       const repository = await Repository.fromId(repositoryId);
 
       if (await UserRepository.isUserAndRepositoryInserted(user, repository)) {
         throw { statusCode: 409, error: 'ALREADY_EXISTS' };
       }
-
-      // TODO: Test
 
       await GitHubApp.Instance.addOrganizationEducationalTeamToAnOrganizationRepository(
         repository.Id,

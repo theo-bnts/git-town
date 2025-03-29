@@ -42,7 +42,7 @@ export default class TemporaryCode {
     };
   }
 
-  static async isValidValue(value, user) {
+  static async isValueInserted(value, user) {
     const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
