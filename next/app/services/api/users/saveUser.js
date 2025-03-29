@@ -4,10 +4,11 @@ import saveUserPromotions from "./saveUserPromotions";
 
 /**
  * Enregistrement d'un utilisateur.
- * (PUT /users) 
- * (PATCH /users/:userId)
+ * (PUT /users) pour la création 
+ * (PATCH /users/:userId) pour la modification
  * 
- * @param {object} userData - Les données de l'utilisateur.
+ * @param {number|string|null} userId - L'identifiant de l'utilisateur (null pour création).
+ * @param {object} payload - Les données de l'utilisateur.
  * @param {string} token - Le token d'authentification.
  * @returns {Promise<object>} - L'utilisateur.
  */
@@ -37,9 +38,11 @@ export default async function saveUser(userId, payload, token) {
     return Promise.reject(handleApiError(res, data));
   }
 
-  if (userId && payload.Promotions) {
+  const effectiveUserId = userId || data.Id;
+
+  if (effectiveUserId && payload.Promotions) {
     try {
-      const promoResult = await saveUserPromotions(userId, payload.Promotions, token);
+      const promoResult = await saveUserPromotions(effectiveUserId, payload.Promotions, token);
       data.promotionsSync = promoResult;
     } catch (error) {
       return Promise.reject(error);
