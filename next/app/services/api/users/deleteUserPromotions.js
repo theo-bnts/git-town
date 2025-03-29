@@ -1,6 +1,6 @@
-import { deleteUserPromotionRoute } from "@/app/services/routes";
-import getUserPromotions from "@/app/services/api/users/getUserPromotions";
-import { handleApiError } from "@/app/services/errorHandler";
+import { deleteUserPromotionRoute } from '@/app/services/routes';
+import getUserPromotions from '@/app/services/api/users/getUserPromotions';
+import { handleApiError } from '@/app/services/errorHandler';
 
 /**
  * Supprime tous les liens entre un utilisateur et ses promotions

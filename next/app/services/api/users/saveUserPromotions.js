@@ -58,7 +58,7 @@ export default async function saveUserPromotions(userId, newPromotions, token) {
     const res = await fetch(endpoint, {
       method: 'PUT',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({ Promotion: promotionPayload })

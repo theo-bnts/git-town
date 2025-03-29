@@ -1,6 +1,6 @@
-import { userRoute } from "@/app/services/routes";
-import { handleApiError } from "@/app/services/errorHandler";
-import deleteUserPromotions from "@/app/services/api/users/deleteUserPromotions";
+import { userRoute } from '@/app/services/routes';
+import { handleApiError } from '@/app/services/errorHandler';
+import deleteUserPromotions from '@/app/services/api/users/deleteUserPromotions';
 
 /**
  * Supprime un utilisateur
@@ -14,7 +14,7 @@ import deleteUserPromotions from "@/app/services/api/users/deleteUserPromotions"
 export default async function deleteUser(userId, token) {
   const url = userRoute(userId);
   let res = await fetch(url, {
-    method: "DELETE",
+    method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -23,16 +23,16 @@ export default async function deleteUser(userId, token) {
   let data = text ? JSON.parse(text) : {};
   
   if (!res.ok) {
-    if (data.error === "HAS_PROMOTIONS") {
+    if (data.error === 'HAS_PROMOTIONS') {
       try {
         await deleteUserPromotions(userId, token);
       } catch (err) {
         return Promise.reject(
-          new Error("Impossible de supprimer les liens de promotions: " + err.message)
+          new Error('Impossible de supprimer les liens de promotions: ' + err.message)
         );
       }
       res = await fetch(url, {
-        method: "DELETE",
+        method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
         },

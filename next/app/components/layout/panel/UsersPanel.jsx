@@ -86,7 +86,6 @@ export default function UsersPanel() {
           deleteUser(user.raw.Id, authToken)
             .then(() => refreshUsers())
             .catch((error) => {
-              console.error("Erreur lors de la suppression :", error);
               alert(`Erreur lors de la suppression : ${error.message}`);
             });
         }
@@ -111,7 +110,6 @@ export default function UsersPanel() {
           }));
           setUsers(updated);
         })
-        .catch((err) => console.error(err));
     }
   }, [authToken]);
 

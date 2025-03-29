@@ -1,6 +1,6 @@
-import { handleApiError } from "@/app/services/errorHandler";
-import { userRoute, usersRoute } from "@/app/services/routes";
-import saveUserPromotions from "./saveUserPromotions";
+import { handleApiError } from '@/app/services/errorHandler';
+import { userRoute, usersRoute } from '@/app/services/routes';
+import saveUserPromotions from '@/app/services/api/users/saveUserPromotions';
 
 /**
  * Enregistrement d'un utilisateur.
@@ -16,16 +16,16 @@ export default async function saveUser(userId, payload, token) {
   let url, method;
   if (userId) {
     url = userRoute(userId);
-    method = "PATCH";
+    method = 'PATCH';
   } else {
     url = usersRoute();
-    method = "PUT";
+    method = 'PUT';
   }
 
   const res = await fetch(url, {
     method,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`
     },
     body: JSON.stringify(payload)
