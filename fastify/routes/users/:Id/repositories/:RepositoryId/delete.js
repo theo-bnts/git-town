@@ -51,7 +51,10 @@ export default async function route(app) {
       }
 
       if (user.GitHubOrganizationMember) {
-        GitHubApp.Instance.removeCollaborator(repository.GitHubId, user.GitHubId);
+        GitHubApp.Instance.removeOrganizationMemberFromAnOrganizationRepository(
+          repository.GitHubId,
+          user.GitHubId,
+        );
       }
 
       const userRepository = await UserRepository.fromUserAndRepository(user, repository);

@@ -66,8 +66,17 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'ALREADY_EXISTS' };
       }
 
+      // TODO: Test
+
+      await GitHubApp.Instance.addOrganizationEducationalTeamToAnOrganizationRepository(
+        repository.Id,
+      );
+
       if (user.GitHubOrganizationMember) {
-        await GitHubApp.Instance.addCollaborator(repository.Id, user.GitHubId);
+        await GitHubApp.Instance.addOrganizationMemberToAnOrganizationRepository(
+          repository.Id,
+          user.GitHubId,
+        );
       }
 
       const userRepository = new UserRepository(

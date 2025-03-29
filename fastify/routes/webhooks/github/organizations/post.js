@@ -80,15 +80,25 @@ export default async function route(app) {
 
       // TODO: Test
       if (user.GitHubOrganizationMember) {
+        if (user.Role.Keyword === 'teacher' || user.Role.Keyword === 'administrator') {
+          await GitHubApp.Instance.addOrganizationEducationalTeamMember(user.UserId);
+        }
+
         await Promise.all(
           userRepositories.map(async (userRepository) => {
-            GitHubApp.Instance.addCollaborator(userRepository.Repository.Id, user.GitHubId);
+            GitHubApp.Instance.addOrganizationMemberToAnOrganizationRepository(
+              userRepository.Repository.Id,
+              user.GitHubId,
+            );
           }),
         );
       } else {
         await Promise.all(
           userRepositories.map(async (userRepository) => {
-            GitHubApp.Instance.removeCollaborator(userRepository.Repository.Id, user.GitHubId);
+            GitHubApp.Instance.removeOrganizationMemberFromAnOrganizationRepository(
+              userRepository.Repository.Id,
+              user.GitHubId,
+            );
           }),
         );
       }

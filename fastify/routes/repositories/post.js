@@ -88,13 +88,17 @@ export default async function route(app) {
 
       await repository.insert(connection);
 
-      await GitHubApp.Instance.createRepository(repository.Id);
+      await GitHubApp.Instance.addOrganizationRepository(repository.Id);
 
       const milestones = await Milestone.fromTemplate(template);
 
       await Promise.all(
         milestones.map(async (milestone) => {
-          GitHubApp.Instance.createMilestone(repository.Id, milestone.Title, milestone.Date);
+          GitHubApp.Instance.addOrganizationRepositoryMilestone(
+            repository.Id,
+            milestone.Title,
+            milestone.Date,
+          );
         }),
       );
 
