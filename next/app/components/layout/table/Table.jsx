@@ -1,3 +1,4 @@
+// /app/components/layout/table/Table.jsx
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -6,16 +7,16 @@ import EmptyTableCard from '@/app/components/layout/table/EmptyTableCard';
 import TableHeader from '@/app/components/layout/table/TableHeader';
 import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
-import UserModal from '@/app/components/layout/forms/modal/UserModal';
 
-export default function Table({ columns, data, onUserUpdated, ModalComponent }) {
+export default function Table({ columns, data, toolbarContents, onUserUpdated, ModalComponent }) {
+
   const [sortedData, setSortedData] = useState(data);
   const [visibleCount, setVisibleCount] = useState(0);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortOrder, setSortOrder] = useState('asc');
+
   const containerRef = useRef(null);
   const sentinelRef = useRef(null);
-
   const rowHeight = 50;
 
   const loadMoreRows = () => {
@@ -78,11 +79,10 @@ export default function Table({ columns, data, onUserUpdated, ModalComponent }) 
 
   return (
     <div className="w-full max-w-7xl px-4 mx-auto">
-      <TableToolbar 
-        ModalComponent={ModalComponent}
-        onUserUpdated={onUserUpdated}
-      />
-
+      <TableToolbar>
+        {toolbarContents}
+      </TableToolbar>
+  
       <div
         ref={containerRef}
         className="w-full overflow-x-auto overflow-y-auto"
@@ -117,4 +117,5 @@ export default function Table({ columns, data, onUserUpdated, ModalComponent }) 
       </div>
     </div>
   );
+  
 }

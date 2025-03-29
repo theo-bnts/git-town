@@ -48,6 +48,7 @@ services:
       - ./next/.env
     volumes:
       - ./next:/app:rw
+      - ./data/rejects:/app/data/rejects:rw
       - next_node_modules:/app/node_modules:rw
       - next_cache:/app/.next:rw
     networks:

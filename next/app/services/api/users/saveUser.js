@@ -1,3 +1,5 @@
+// /app/services/api/users/saveUser.js
+
 import { handleApiError } from "@/app/services/errorHandler";
 import { userRoute, usersRoute } from "@/app/services/routes";
 import saveUserPromotions from "./saveUserPromotions";
@@ -24,7 +26,7 @@ export default async function saveUser(userId, payload, token) {
   const res = await fetch(url, {
     method,
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/json; charset=utf-8",
       Authorization: `Bearer ${token}`
     },
     body: JSON.stringify(payload)

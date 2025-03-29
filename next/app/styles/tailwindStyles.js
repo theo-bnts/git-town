@@ -14,6 +14,7 @@ const buttonStyles = {
   warn: `bg-[var(--warn-color)] py-2 px-4 rounded-[12.5px] hover:bg-[var(--warn-color-hover)] transition-colors duration-200`,
   loading: `bg-[var(--accent-color)] py-2 px-4 rounded-[12.5px]`,
   outline: `bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)] hover:bg-[var(--primary-color-hover)] transition-colors duration-200`,
+  disabled: `bg-[var(--hint-color)] cursor-not-allowed py-2 px-4 rounded-[12.5px]`,
   
   outline_full: `w-full flex items-center justify-center bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)] hover:bg-[var(--primary-color-hover)] transition-colors duration-200`,
 
@@ -21,7 +22,7 @@ const buttonStyles = {
   
   action_sq: `p-2 transition-transform duration-200 hover:scale-110 hover:text-[var(--accent-color)]`,
   default_sq: `bg-[var(--accent-color)] p-2 rounded-[12.5px] hover:bg-[var(--accent-color-hover)] transition-colors duration-200`,
-    
+  
   popover_default_sq: `flex items-center p-2 bg-[var(--accent-color)] rounded-r-[12.5px]`,
   popover_selected_sq: `flex items-center p-2 bg-[var(--selected-color)] rounded-r-[12.5px]`,
 };
@@ -31,6 +32,7 @@ const cardStyles = {
   info: `bg-[var(--primary-color)] text-[var(--popup-color)] p-4 rounded-[12.5px] shadow-md`,
   warn: `bg-[var(--warn-color)] p-4 rounded-[12.5px] shadow-lg text-[var(--primary-color)]`,
   empty_list: `bg-[var(--primary-color)] p-2 rounded-[12.5px] border border-[var(--primary-color)]`,
+  success: `bg-[var(--accent-color)] p-4 rounded-[12.5px] shadow-lg text-[var(--primary-color)]`,
 };
 
 const inputStyles = {

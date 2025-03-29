@@ -19,11 +19,17 @@ export async function middleware(request) {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      console.log("apiResponse", apiResponse);
+      
+      const rateLimitHeaders = {
+        'x-ratelimit-limit': apiResponse.headers.get('x-ratelimit-limit'),
+        'x-ratelimit-remaining': apiResponse.headers.get('x-ratelimit-remaining'),
+        'x-ratelimit-reset': apiResponse.headers.get('x-ratelimit-reset')
+      };
+      console.log("rateLimitHeaders", rateLimitHeaders);
+      console.log("user data fetched");
 
       if (apiResponse.ok) {
-        console.log("user data fetched");
+
         const userData = await apiResponse.json();
 
         if (!userData.GitHubId) {
