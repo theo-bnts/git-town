@@ -1,0 +1,4 @@
+EMAIL_ADDRESS,FULL_NAME,ROLE_KEYWORD,REASON
+"","","","Ligne 3 : Adresse email invalide : ""test2@etud.u-picardi.fr"""
+"","","","Ligne 5 : Rôle ""unknown"" invalide. Autorisés: student, teacher, administrator"
+"","","","Ligne 6 : Le nom complet est vide ou invalide après parsing"

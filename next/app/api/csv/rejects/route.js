@@ -15,10 +15,6 @@ function getFormattedDate() {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
 }
 
-/**
- * GET /api/csv/rejects?filename=...
- * -> Lit le CSV dans /public/imports/rejects/ et le renvoie
- */
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const filename = searchParams.get('filename');
@@ -27,7 +23,7 @@ export async function GET(request) {
   }
 
   try {
-    const rejectsDir = path.join(process.cwd(), 'public', 'imports', 'rejects');
+    const rejectsDir = path.join(process.cwd(), 'data', 'rejects');
     const filePath = path.join(rejectsDir, filename);
 
     if (!fs.existsSync(filePath)) {
@@ -50,10 +46,6 @@ export async function GET(request) {
   }
 }
 
-/**
- * POST /api/csv/rejects
- * Body JSON: { csvContent, fileName? }
- */
 export async function POST(request) {
   try {
     const { csvContent, fileName } = await request.json() || {};
@@ -62,7 +54,7 @@ export async function POST(request) {
     }
 
     const finalName = fileName || `rejects_${getFormattedDate()}.csv`;
-    const rejectsDir = path.join(process.cwd(), 'public', 'imports', 'rejects');
+    const rejectsDir = path.join(process.cwd(), 'data', 'rejects');
 
     fs.mkdirSync(rejectsDir, { recursive: true });
     const filePath = path.join(rejectsDir, finalName);
