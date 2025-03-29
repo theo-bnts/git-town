@@ -4,6 +4,7 @@ import Promotion from '../../entities/Promotion.js';
 import PromotionLevel from '../../entities/PromotionLevel.js';
 
 export default async function route(app) {
+  // TODO: Replace Initialism with Id
   app.route({
     method: 'PUT',
     url: '/promotions',

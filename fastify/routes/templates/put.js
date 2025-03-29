@@ -3,6 +3,7 @@ import EnseignementUnit from '../../entities/EnseignementUnit.js';
 import Template from '../../entities/Template.js';
 
 export default async function route(app) {
+  // TODO: Replace Initialism with Id
   app.route({
     method: 'PUT',
     url: '/templates',

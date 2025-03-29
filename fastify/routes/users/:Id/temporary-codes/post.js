@@ -7,7 +7,7 @@ import User from '../../../../entities/User.js';
 export default async function route(app) {
   app.route({
     method: 'POST',
-    url: '/users/:UserId/temporary-code',
+    url: '/users/:UserId/temporary-codes',
     schema: {
       params: {
         type: 'object',

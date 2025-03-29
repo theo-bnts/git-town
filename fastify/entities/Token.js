@@ -55,6 +55,15 @@ export default class Token {
     );
   }
 
+  toSafeJSON() {
+    return {
+      Id: this.Id,
+      CreatedAt: this.CreatedAt,
+      UpdatedAt: this.UpdatedAt,
+      User: this.User,
+    };
+  }
+
   static async isValidValue(value) {
     const [row] = await DatabasePool.Instance.query(
       /* sql */ `
@@ -66,6 +75,32 @@ export default class Token {
     );
 
     return row.count === 1n;
+  }
+
+  static async fromId(id) {
+    const [row] = await DatabasePool.Instance.query(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          user_id,
+          value
+        FROM public.token
+        WHERE id = $1::uuid
+      `,
+      [id],
+    );
+
+    const user = await User.fromId(row.user_id);
+
+    return new this(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      user,
+      row.value,
+    );
   }
 
   static async fromValue(value) {

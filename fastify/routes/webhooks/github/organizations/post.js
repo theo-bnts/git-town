@@ -83,13 +83,13 @@ export default async function route(app) {
         await Promise.all(
           userRepositories.map(async (userRepository) => {
             GitHubApp.Instance.addCollaborator(userRepository.Repository.Id, user.GitHubId);
-          })
+          }),
         );
       } else {
         await Promise.all(
           userRepositories.map(async (userRepository) => {
             GitHubApp.Instance.removeCollaborator(userRepository.Repository.Id, user.GitHubId);
-          })
+          }),
         );
       }
 

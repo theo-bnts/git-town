@@ -5,8 +5,8 @@ import User from '../../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
-    method: 'DELETE',
-    url: '/users/:UserId/token',
+    method: 'GET',
+    url: '/users/:UserId/tokens',
     schema: {
       headers: {
         type: 'object',
@@ -40,7 +40,7 @@ export default async function route(app) {
 
       const tokens = await Token.fromUser(user);
 
-      await Promise.all(tokens.map((token) => token.delete()));
+      return tokens.map((token) => token.toSafeJSON());
     },
   });
 }
