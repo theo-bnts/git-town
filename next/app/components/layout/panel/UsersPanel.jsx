@@ -22,33 +22,48 @@ const columns = [
   { key: 'actions', title: 'Action(s)', sortable: false },
 ];
 
+const mapPromotion = (promo) => {
+  if (promo.Diploma && promo.PromotionLevel) {
+    const value = `${promo.Diploma.Initialism} ${promo.PromotionLevel.Initialism} - ${promo.Year}`;
+    return { 
+      id: promo.Id, value, full: { 
+        Diploma: { 
+          Initialism: promo.Diploma.Initialism 
+        }, 
+        PromotionLevel: { 
+          Initialism: promo.PromotionLevel.Initialism 
+        }, 
+        Year: promo.Year 
+      }
+    };
+  }
+  return { id: promo.Id, value: '', full: {} };
+};
+
+const mapUser = async (user, token) => {
+  const rawPromotions = await getUserPromotions(user.Id, token);
+  const promotionsDisplay = Array.isArray(rawPromotions)
+    ? rawPromotions
+        .map(promo => (promo.Diploma && promo.PromotionLevel)
+          ? `${promo.Diploma.Initialism} ${promo.PromotionLevel.Initialism} - ${promo.Year}`
+          : '')
+        .filter((str) => str !== '')
+        .sort((a, b) => a.localeCompare(b))
+        .join(', ')
+    : '';
+  return {
+    raw: user,
+    rawPromotions,
+    name: user.FullName,
+    email: user.EmailAddress,
+    role: user.Role ? user.Role.Name : 'N/A',
+    promotions: promotionsDisplay,
+  };
+};
+
 const fetchUsers = async (token) => {
   const users = await getUsers(token);
-  const transformed = await Promise.all(
-    users.map(async (user) => {
-      const rawPromotions = await getUserPromotions(user.Id, token);
-      const promotionsDisplay = Array.isArray(rawPromotions)
-        ? rawPromotions
-            .map((promo) => {
-              if (promo.Promotion) {
-                const { Diploma, PromotionLevel, Year } = promo.Promotion;
-                return `${Diploma.Initialism} ${PromotionLevel.Initialism} - ${Year}`;
-              }
-              return '';
-            })
-            .filter((str) => str !== '')
-            .join(', ')
-        : '';
-      return {
-        raw: user,
-        rawPromotions,
-        name: user.FullName,
-        email: user.EmailAddress,
-        role: user.Role ? user.Role.Name : 'N/A',
-        promotions: promotionsDisplay,
-      };
-    })
-  );
+  const transformed = await Promise.all(users.map(user => mapUser(user, token)));
   return transformed;
 };
 
@@ -68,7 +83,9 @@ export default function UsersPanel() {
           nom: user.raw.FullName,
           email: user.raw.EmailAddress,
           role: user.raw.Role,
-          promotions: user.rawPromotions,
+          promotions: Array.isArray(user.rawPromotions) 
+            ? user.rawPromotions.map(mapPromotion) 
+            : [],
           createdAt: user.raw.CreatedAt,
           updatedAt: user.raw.UpdatedAt,
         });
@@ -113,7 +130,7 @@ export default function UsersPanel() {
             actions: updateActions(user),
           }));
           setUsers(updated);
-        })
+        });
     }
   }, [authToken]);
 
@@ -123,16 +140,10 @@ export default function UsersPanel() {
 
   const toolbarContents = (
     <>
-      <Button
-        variant="default_sq"
-        onClick={() => setUserModalOpen(true)}
-      >
+      <Button variant="default_sq" onClick={() => setUserModalOpen(true)}>
         <PlusIcon size={24} className="text-white" />
       </Button>
-      <Button 
-        variant="default_sq"
-        onClick={() => setImportModalOpen(true)}
-      >
+      <Button variant="default_sq" onClick={() => setImportModalOpen(true)}>
         <UploadIcon size={24} className="text-white" />
       </Button>
     </>
@@ -143,7 +154,7 @@ export default function UsersPanel() {
       <Table 
         columns={columns} 
         data={users} 
-        toolbarContents={toolbarContents}
+        toolbarContents={toolbarContents} 
         onModelUpdated={refreshUsers} 
       />
       {userModalOpen && (
