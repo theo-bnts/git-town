@@ -26,7 +26,7 @@ export const githubOAuthRoute = (userId) =>
 export const githubInviteRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}/github/invite`;
 
-export const userPromotions = (userId) =>
+export const userPromotionsRoute = (userId) =>
   `${API_BASE_URL}/users/${userId}/promotions`;
 
 export const promotionsRoute = () =>
@@ -35,5 +35,5 @@ export const promotionsRoute = () =>
 export const delTokenRoute = (userId, tokenId) =>
   `${API_BASE_URL}/users/${userId}/tokens/${tokenId}`;
 
-export const deleteUserPromotion = (userId, userPromotionId) =>
+export const deleteUserPromotionRoute = (userId, userPromotionId) =>
   `${API_BASE_URL}/users/${userId}/promotions/${userPromotionId}`;

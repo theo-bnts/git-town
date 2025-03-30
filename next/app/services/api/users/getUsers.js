@@ -1,7 +1,6 @@
 // app/services/api/users/getUsers.js
-
-import { handleApiError } from "@/app/services/errorHandler";
-import { usersRoute } from "@/app/services/routes";
+import { handleApiError } from '@/app/services/errorHandler';
+import { usersRoute } from '@/app/services/routes';
 
 /**
  * Récupération de la liste des utilisateurs.

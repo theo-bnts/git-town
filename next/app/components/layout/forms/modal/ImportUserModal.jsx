@@ -10,7 +10,7 @@ import { processCsvFile } from '@/app/services/logic/importUsers';
 import saveUser from '@/app/services/api/users/saveUser';
 import { getCookie } from '@/app/services/cookies';
 
-export default function ImportUserModal({ isOpen, onClose, onCreate }) {
+export default function ImportUserModal({ isOpen, onClose, onImport }) {
   const fileInputRef = useRef(null);
   const [importedFile, setImportedFile] = useState(null);
   const [usersToProcess, setUsersToProcess] = useState([]);
@@ -187,7 +187,7 @@ export default function ImportUserModal({ isOpen, onClose, onCreate }) {
 
     setIsProcessing(false);
     clearFileSelection();
-    if (onCreate) onCreate();
+    if (onImport) onImport();
   };
 
   return !isOpen ? null : (

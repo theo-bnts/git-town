@@ -1,4 +1,4 @@
-import { userPromotions } from '@/app/services/routes';
+import { userPromotionsRoute } from '@/app/services/routes';
 
 /**
  * Récupération des promotions de l'utilisateur
@@ -10,7 +10,7 @@ import { userPromotions } from '@/app/services/routes';
  * @throws {Error} - En cas d'erreur de la requête
  */
 export default async function getUserPromotions(userId, token) {
-  const url = userPromotions(userId);
+  const url = userPromotionsRoute(userId);
   const res = await fetch(url, {
     method: 'GET',
     headers: {

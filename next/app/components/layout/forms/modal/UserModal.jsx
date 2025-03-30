@@ -1,17 +1,65 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
 import { isEmailValid } from '@/app/services/validators';
 import { getCookie } from '@/app/services/cookies';
 import getPromotions from '@/app/services/api/promotions/getPromotions';
 import saveUser from '@/app/services/api/users/saveUser';
+
 import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
+
+const roleOptions = [
+  { id: "administrator", name: "Administrateur" },
+  { id: "teacher", name: "Enseignant" },
+  { id: "student", name: "Étudiant" }
+];
+
+const transformedRoleOptions = roleOptions.map(r => ({
+  id: r.id,
+  value: r.name
+}));
+
+const mapRoleNameToId = {
+  administrateur: "administrator",
+  enseignant: "teacher",
+  étudiant: "student"
+};
+
+const getInitialRole = (initialData) => {
+  if (!initialData.role) return null;
+  if (typeof initialData.role === "string") return initialData.role;
+  if (initialData.role.Keyword || initialData.role.id) {
+    return initialData.role.Keyword || initialData.role.id;
+  }
+  if (initialData.role.Name) {
+    return mapRoleNameToId[initialData.role.Name.toLowerCase()] || null;
+  }
+  return null;
+};
+
+const mapPromotionOption = (promo) => ({
+  id: promo.Id,
+  value: `${promo.Diploma.Initialism} ${promo.PromotionLevel.Initialism} - ${promo.Year}`,
+  full: {
+    Diploma: { Initialism: promo.Diploma.Initialism },
+    PromotionLevel: { Initialism: promo.PromotionLevel.Initialism },
+    Year: promo.Year
+  }
+});
+
+const transformInitialPromotions = (promotions = []) =>
+  promotions.map(promo => ({
+    id: promo.id,
+    value: promo.value,
+    full: promo.full,
+  }));
 
 export default function UserModal({ 
   isOpen, 
-  onClose, 
   initialData = {}, 
-  onUserUpdated 
+  onClose, 
+  onSave, 
 }) {
   const [initialUser, setInitialUser] = useState(initialData);
   const [errors, setErrors] = useState({});
@@ -19,52 +67,11 @@ export default function UserModal({
   const [promotionsOptions, setPromotionsOptions] = useState([]);
   const [authToken, setAuthToken] = useState('');
 
-  const roleOptions = [
-    { id: "administrator", name: "Administrateur" },
-    { id: "teacher", name: "Enseignant" },
-    { id: "student", name: "Étudiant" }
-  ];
-
-  const transformedRoleOptions = roleOptions.map(r => ({
-    id: r.id,
-    value: r.name
-  }));
-
-  const mapRoleNameToId = {
-    administrateur: "administrator",
-    enseignant: "teacher",
-    étudiant: "student"
-  };
-
-  const computedRoleId = (() => {
-    if (!initialData.role) return null;
-    if (typeof initialData.role === "string") return initialData.role;
-    if (initialData.role.Keyword || initialData.role.id) {
-      return initialData.role.Keyword || initialData.role.id;
-    }
-    if (initialData.role.Name) {
-      return mapRoleNameToId[initialData.role.Name.toLowerCase()] || null;
-    }
-    return null;
-  })();
-
-  const initialRole = computedRoleId
-    ? transformedRoleOptions.find(r => r.id === computedRoleId)
+  const initialRoleId = getInitialRole(initialData);
+  const initialRole = initialRoleId
+    ? transformedRoleOptions.find(r => r.id === initialRoleId)
     : null;
-
-  const initialPromotions = Array.isArray(initialData.promotions)
-    ? initialData.promotions.map(promo => ({
-        id: promo.Id,
-        value: `
-          ${promo.Promotion.Diploma.Initialism} 
-          ${promo.Promotion.PromotionLevel.Initialism} - ${promo.Promotion.Year}`,
-        full: {
-          Diploma: { Initialism: promo.Promotion.Diploma.Initialism },
-          PromotionLevel: { Initialism: promo.Promotion.PromotionLevel.Initialism },
-          Year: promo.Promotion.Year
-        }
-      }))
-    : [];
+  const initialPromotions = transformInitialPromotions(initialData.promotions);
 
   const fields = [
     { label: "Nom", value: initialData.nom || "" },
@@ -73,17 +80,7 @@ export default function UserModal({
     { 
       label: "Promotions", 
       value: initialPromotions,
-      options: promotionsOptions.map(promo => ({
-        id: promo.Id,
-        value: `
-          ${promo.Diploma.Initialism} 
-          ${promo.PromotionLevel.Initialism} - ${promo.Year}`,
-        full: {
-          Diploma: { Initialism: promo.Diploma.Initialism },
-          PromotionLevel: { Initialism: promo.PromotionLevel.Initialism },
-          Year: promo.Year
-        }
-      }))
+      options: promotionsOptions.map(mapPromotionOption)
     }
   ];
 
@@ -126,12 +123,16 @@ export default function UserModal({
     if (initialEmail.trim() !== modified.EmailAddress.trim()) {
       diff.EmailAddress = modified.EmailAddress.trim();
     }
-    if ((original.role?.Keyword || "") !== (modified.Role?.Keyword || "")) {
+    if (
+      (original.role?.Keyword || "") !== 
+      (modified.Role?.Keyword || "")
+    ) {
       diff.Role = { Keyword: modified.Role.Keyword };
     }
-    if (JSON.stringify(
-      original.promotions || []
-    ) !== JSON.stringify(modified.Promotions || [])) {
+    if (
+      JSON.stringify(original.promotions || []) !== 
+      JSON.stringify(modified.Promotions || [])
+    ) {
       diff.Promotions = modified.Promotions;
     }
     return diff;
@@ -141,42 +142,40 @@ export default function UserModal({
     const newErrors = validateFields(fieldsValues);
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-    } else {
-      setErrors({});
-      setApiError('');
-      const roleValue = fieldsValues["Rôle"];
-      const roleKeyword = (typeof roleValue === 'object' && roleValue.id)
-        ? roleValue.id.toString().trim()
-        : roleValue.toString().trim();
+      return;
+    }
+    setErrors({});
+    setApiError('');
+    const roleValue = fieldsValues["Rôle"];
+    const roleKeyword = typeof roleValue === 'object' && roleValue.id
+      ? roleValue.id.toString().trim()
+      : roleValue.toString().trim();
 
-      const modifiedUser = {
-        EmailAddress: fieldsValues["Email"].trim(),
-        FullName: fieldsValues["Nom"].trim(),
-        Role: { Keyword: roleKeyword },
-        Promotions: (fieldsValues["Promotions"] || []).map(p => p.full)
-      };
+    const modifiedUser = {
+      EmailAddress: fieldsValues["Email"].trim(),
+      FullName: fieldsValues["Nom"].trim(),
+      Role: { Keyword: roleKeyword },
+      Promotions: (fieldsValues["Promotions"] || []).map(p => p.id)
+    };
 
-      const differences = diffUser(initialUser, {
-        EmailAddress: modifiedUser.EmailAddress,
-        FullName: modifiedUser.FullName,
-        Role: modifiedUser.Role,
-        Promotions: modifiedUser.Promotions
-      });
+    const differences = diffUser(initialUser, {
+      EmailAddress: modifiedUser.EmailAddress,
+      FullName: modifiedUser.FullName,
+      Role: modifiedUser.Role,
+      Promotions: modifiedUser.Promotions
+    });
 
-      if (Object.keys(differences).length === 0) {
-        onClose();
-        return;
-      }
+    if (Object.keys(differences).length === 0) {
+      onClose();
+      return;
+    }
 
-      try {
-        await saveUser(initialUser.Id, differences, authToken);
-        if (typeof onUserUpdated === 'function') {
-          onUserUpdated();
-        }
-        onClose();
-      } catch (error) {
-        setApiError(error.message);
-      }
+    try {
+      await saveUser(initialUser.Id, differences, authToken);
+      onSave();
+      onClose();
+    } catch (error) {
+      setApiError(error.message);
     }
   };
 
@@ -192,9 +191,7 @@ export default function UserModal({
 
   const clearError = (label) => {
     setErrors(prev => ({ ...prev, [label]: "" }));
-    if (apiError) {
-      setApiError('');
-    }
+    if (apiError) setApiError('');
   };
 
   return (
