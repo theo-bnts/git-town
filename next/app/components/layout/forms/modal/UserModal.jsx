@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
 import { isEmailValid } from '@/app/services/validators';
 import { getCookie } from '@/app/services/cookies';
 import getPromotions from '@/app/services/api/promotions/getPromotions';
 import saveUser from '@/app/services/api/users/saveUser';
+
 import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
 
 const roleOptions = [

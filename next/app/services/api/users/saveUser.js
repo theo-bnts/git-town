@@ -42,7 +42,11 @@ export default async function saveUser(userId, payload, token) {
 
   if (effectiveUserId && payload.Promotions) {
     const promotionIds = payload.Promotions.map(extractPromotionId);
-    const promoResult = await saveUserPromotions(effectiveUserId, promotionIds, token);
+    const promoResult = await saveUserPromotions(
+      effectiveUserId, 
+      promotionIds, 
+      token
+    );
     data.promotionsSync = promoResult;
   }
   return data;

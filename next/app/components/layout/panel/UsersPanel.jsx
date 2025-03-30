@@ -18,9 +18,9 @@ import { getCookie } from '@/app/services/cookies';
 
 import Button from '@/app/components/ui/Button';
 import ConfirmCard from '@/app/components/ui/ConfirmCard';
+import ImportUserModal from '../forms/modal/ImportUserModal';
 import Table from '@/app/components/layout/table/Table';
 import UserModal from '@/app/components/layout/forms/modal/UserModal';
-import ImportUserModal from '../forms/modal/ImportUserModal';
 
 const columns = [
   { key: 'name', title: 'Nom', sortable: true },

@@ -28,7 +28,10 @@ export default async function deleteUser(userId, token) {
         await deleteUserPromotions(userId, token);
       } catch (err) {
         return Promise.reject(
-          new Error('Impossible de supprimer les liens de promotions: ' + err.message)
+          new Error(
+            'Impossible de supprimer les liens de promotions: ' 
+            + err.message
+          )
         );
       }
       res = await fetch(url, {

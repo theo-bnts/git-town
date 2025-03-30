@@ -18,14 +18,12 @@ const buildKey = promo => String(promo);
  * @returns {Promise<object>} - Les promotions supprimées et ajoutées.
  */
 export default async function saveUserPromotions(userId, newPromotions, token) {
-  // Récupère les promotions existantes
   const currentPromotions = await getUserPromotions(userId, token);
   const currentMapped = currentPromotions.map(p => ({
     key: buildKey(p.Id),
     id: p.Id
   }));
 
-  // newPromotions est un tableau d'id (chaînes)
   const newMapped = newPromotions.map(id => ({
     key: buildKey(id),
     promotion: id
@@ -38,7 +36,6 @@ export default async function saveUserPromotions(userId, newPromotions, token) {
     !currentMapped.some(cp => cp.key === np.key)
   );
 
-  // Supprime les promotions à retirer
   for (const removal of removals) {
     const endpoint = deleteUserPromotionRoute(userId, removal.id);
     const res = await fetch(endpoint, {
@@ -51,7 +48,6 @@ export default async function saveUserPromotions(userId, newPromotions, token) {
     }
   }
 
-  // Ajoute les nouvelles promotions
   for (const addition of additions) {
     const endpoint = userPromotionsRoute(userId);
     const promotionPayload = { Id: String(addition.promotion) };
