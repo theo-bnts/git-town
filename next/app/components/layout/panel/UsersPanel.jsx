@@ -2,7 +2,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { PencilIcon, DuplicateIcon, MarkGithubIcon, TrashIcon, PlusIcon, UploadIcon } from '@primer/octicons-react';
+import {
+  PencilIcon,
+  DuplicateIcon,
+  MarkGithubIcon,
+  TrashIcon,
+  PlusIcon,
+  UploadIcon
+} from '@primer/octicons-react';
 
 import deleteUser from '@/app/services/api/users/deleteUser';
 import getUsers from '@/app/services/api/users/getUsers';
@@ -10,6 +17,7 @@ import getUserPromotions from '@/app/services/api/users/getUserPromotions';
 import { getCookie } from '@/app/services/cookies';
 
 import Button from '@/app/components/ui/Button';
+import ConfirmCard from '@/app/components/ui/ConfirmCard';
 import Table from '@/app/components/layout/table/Table';
 import UserModal from '@/app/components/layout/forms/modal/UserModal';
 import ImportUserModal from '../forms/modal/ImportUserModal';
@@ -25,15 +33,13 @@ const columns = [
 const mapPromotion = (promo) => {
   if (promo.Diploma && promo.PromotionLevel) {
     const value = `${promo.Diploma.Initialism} ${promo.PromotionLevel.Initialism} - ${promo.Year}`;
-    return { 
-      id: promo.Id, value, full: { 
-        Diploma: { 
-          Initialism: promo.Diploma.Initialism 
-        }, 
-        PromotionLevel: { 
-          Initialism: promo.PromotionLevel.Initialism 
-        }, 
-        Year: promo.Year 
+    return {
+      id: promo.Id,
+      value,
+      full: {
+        Diploma: { Initialism: promo.Diploma.Initialism },
+        PromotionLevel: { Initialism: promo.PromotionLevel.Initialism },
+        Year: promo.Year
       }
     };
   }
@@ -73,6 +79,8 @@ export default function UsersPanel() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
 
   const updateActions = (user) => [
     {
@@ -83,8 +91,8 @@ export default function UsersPanel() {
           nom: user.raw.FullName,
           email: user.raw.EmailAddress,
           role: user.raw.Role,
-          promotions: Array.isArray(user.rawPromotions) 
-            ? user.rawPromotions.map(mapPromotion) 
+          promotions: Array.isArray(user.rawPromotions)
+            ? user.rawPromotions.map(mapPromotion)
             : [],
           createdAt: user.raw.CreatedAt,
           updatedAt: user.raw.UpdatedAt,
@@ -103,13 +111,8 @@ export default function UsersPanel() {
     {
       icon: <TrashIcon size={16} />,
       onClick: () => {
-        if (window.confirm(`Voulez-vous vraiment supprimer ${user.raw.FullName} ?`)) {
-          deleteUser(user.raw.Id, authToken)
-            .then(() => refreshUsers())
-            .catch((error) => {
-              alert(`Erreur lors de la suppression : ${error.message}`);
-            });
-        }
+        setUserToDelete(user);
+        setConfirmOpen(true);
       },
     },
   ];
@@ -123,14 +126,13 @@ export default function UsersPanel() {
 
   const refreshUsers = useCallback(() => {
     if (authToken) {
-      fetchUsers(authToken)
-        .then((data) => {
-          const updated = data.map((user) => ({
-            ...user,
-            actions: updateActions(user),
-          }));
-          setUsers(updated);
-        });
+      fetchUsers(authToken).then((data) => {
+        const updated = data.map((user) => ({
+          ...user,
+          actions: updateActions(user),
+        }));
+        setUsers(updated);
+      });
     }
   }, [authToken]);
 
@@ -149,13 +151,31 @@ export default function UsersPanel() {
     </>
   );
 
+  const handleConfirmDelete = async () => {
+    if (userToDelete && authToken) {
+      try {
+        await deleteUser(userToDelete.raw.Id, authToken);
+        refreshUsers();
+      } catch (error) {
+        alert(`Erreur lors de la suppression : ${error.message}`);
+      }
+    }
+    setConfirmOpen(false);
+    setUserToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmOpen(false);
+    setUserToDelete(null);
+  };
+
   return (
     <div className="flex flex-col flex-1 p-8">
-      <Table 
-        columns={columns} 
-        data={users} 
-        toolbarContents={toolbarContents} 
-        onModelUpdated={refreshUsers} 
+      <Table
+        columns={columns}
+        data={users}
+        toolbarContents={toolbarContents}
+        onModelUpdated={refreshUsers}
       />
       {userModalOpen && (
         <UserModal
@@ -180,6 +200,17 @@ export default function UsersPanel() {
             refreshUsers();
             setImportModalOpen(false);
           }}
+        />
+      )}
+      {confirmOpen && (
+        <ConfirmCard
+          message={
+            <span>
+              Voulez-vous vraiment supprimer <strong>{userToDelete?.raw.FullName}</strong> ?
+            </span>
+          }
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
         />
       )}
     </div>
