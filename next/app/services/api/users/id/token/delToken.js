@@ -4,15 +4,15 @@ import { handleApiError } from "@/app/services/errorHandler";
 
 /**
  * Suppression du token de l’utilisateur.
- * (DELETE /users/:userId/token)
+ * (DELETE /users/:userId/tokens/:tokenId)
  * 
  * @param {string} userId - L’identifiant de l’utilisateur.
  * @param {string} token - Le token de l’utilisateur.
  * @returns {Promise<Object>} - L’objet contenant le message de succès.
  * @throws {Error} - En cas d’erreur de la requête.
  */
-export default async function delToken(userId, token) {
-  const url = delTokenRoute(userId);
+export default async function delToken(userId, token, tokenId) {
+  const url = delTokenRoute(userId, tokenId);
   const res = await fetch(url, {
     method: "DELETE",
     headers: { 

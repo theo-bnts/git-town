@@ -1,6 +1,6 @@
 import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
-import DataQualityMiddleware from '../../../../entities/tools/DataQualityMiddleware.js';
 import Milestone from '../../../../entities/Milestone.js';
+import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
 import Template from '../../../../entities/Template.js';
 
 export default async function route(app) {
@@ -41,13 +41,12 @@ export default async function route(app) {
           },
         },
         required: ['Title', 'Date'],
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await DataQualityMiddleware.assertTemplateIdExists(request);
+      await ParametersMiddleware.assertTemplateIdExists(request);
     },
     handler: async (request) => {
       const { TemplateId: templateId } = request.params;

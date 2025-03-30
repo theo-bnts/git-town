@@ -155,15 +155,9 @@ CREATE TABLE public.repository (
   template_id uuid NOT NULL,
   promotion_id uuid NOT NULL,
   comment text DEFAULT NULL,
-  github_id int8 DEFAULT NULL,
-  github_team_id int8 DEFAULT NULL,
   CONSTRAINT repository_pk PRIMARY KEY (id),
   CONSTRAINT repository_fk_template FOREIGN KEY (template_id) REFERENCES public.template(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT repository_fk_promotion FOREIGN KEY (promotion_id) REFERENCES public.promotion(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT repository_unique_github_id UNIQUE (github_id),
-  CONSTRAINT repository_check_github_id CHECK (github_id IS NULL OR github_id >= 100000000),
-  CONSTRAINT repository_unique_github_team_id UNIQUE (github_team_id),
-  CONSTRAINT repository_check_github_team_id CHECK (github_team_id IS NULL OR github_team_id >= 10000000)
+  CONSTRAINT repository_fk_promotion FOREIGN KEY (promotion_id) REFERENCES public.promotion(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
 CREATE TABLE public.user_repository (

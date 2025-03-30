@@ -1,6 +1,6 @@
 import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
-import DataQualityMiddleware from '../../../entities/tools/DataQualityMiddleware.js';
 import EnseignementUnit from '../../../entities/EnseignementUnit.js';
+import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.js';
 import Template from '../../../entities/Template.js';
 
 export default async function route(app) {
@@ -26,13 +26,12 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await DataQualityMiddleware.assertEnseignementUnitIdExists(request);
+      await ParametersMiddleware.assertEnseignementUnitIdExists(request);
     },
     handler: async (request) => {
       const { EnseignementUnitId: enseignementUnitId } = request.params;

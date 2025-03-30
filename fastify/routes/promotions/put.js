@@ -4,6 +4,7 @@ import Promotion from '../../entities/Promotion.js';
 import PromotionLevel from '../../entities/PromotionLevel.js';
 
 export default async function route(app) {
+  // TODO: Replace Initialism with Id
   app.route({
     method: 'PUT',
     url: '/promotions',
@@ -30,7 +31,6 @@ export default async function route(app) {
               },
             },
             required: ['Initialism'],
-            additionalProperties: false,
           },
           PromotionLevel: {
             type: 'object',
@@ -41,7 +41,6 @@ export default async function route(app) {
               },
             },
             required: ['Initialism'],
-            additionalProperties: false,
           },
           Year: {
             type: 'integer',
@@ -50,7 +49,6 @@ export default async function route(app) {
           },
         },
         required: ['Diploma', 'PromotionLevel', 'Year'],
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {

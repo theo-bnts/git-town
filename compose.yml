@@ -44,7 +44,7 @@ services:
       - ./next/.env
     volumes:
       - ./next:/app:ro
-      - ./data/rejects:/app/data/rejects:rw
+      - next_data_rejects:/app/data_rejects:rw
       - next_node_modules:/app/node_modules:rw
       - next_cache:/app/.next:rw
     networks:
@@ -59,6 +59,8 @@ volumes:
     name: git_town_next_node_modules
   next_cache:
     name: git_town_next_cache
+  next_data_rejects:
+    name: git_town_next_data_rejects
 
 networks:
   postgres_network:

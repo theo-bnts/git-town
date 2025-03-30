@@ -1,12 +1,12 @@
+import Token from '../../../../../entities/Token.js';
 import AuthorizationMiddleware from '../../../../../entities/tools/AuthorizationMiddleware.js';
-import GitHubUser from '../../../../../entities/tools/GitHubUser.js';
 import ParametersMiddleware from '../../../../../entities/tools/ParametersMiddleware.js';
 import User from '../../../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
-    method: 'POST',
-    url: '/users/:UserId/github/oauth-code',
+    method: 'DELETE',
+    url: '/users/:UserId/tokens/:TokenId',
     schema: {
       headers: {
         type: 'object',
@@ -25,48 +25,28 @@ export default async function route(app) {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
-        },
-      },
-      body: {
-        type: 'object',
-        properties: {
-          OAuthCode: {
+          TokenId: {
             type: 'string',
-            pattern: process.env.GITHUB_OAUTH_APP_CODE_PATTERN,
+            pattern: process.env.UUID_PATTERN,
           },
         },
-        required: ['OAuthCode'],
       },
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRoleOrUserIdMatch(request, 'administrator');
       await ParametersMiddleware.assertUserIdExists(request);
+      await ParametersMiddleware.assertTokenIdExists(request);
+      await ParametersMiddleware.assertUserIdAndTokenIdMatch(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;
-      const { OAuthCode: oAuthCode } = request.body;
 
       const user = await User.fromId(userId);
 
-      if (user.GitHubId !== null) {
-        throw { statusCode: 409, error: 'GITHUB_ID_ALREADY_DEFINED' };
-      }
+      const tokens = await Token.fromUser(user);
 
-      let gitHubUser;
-      try {
-        gitHubUser = await GitHubUser.fromOAuthCode(oAuthCode);
-      } catch (error) {
-        throw { statusCode: 401, error: 'INVALID_OAUTH_CODE' };
-      }
-
-      user.GitHubId = await gitHubUser.getUserId();
-
-      if (await User.isGitHubIdInserted(user.GitHubId)) {
-        throw { statusCode: 409, error: 'DUPLICATE_GITHUB_ID' };
-      }
-
-      await user.update();
+      await Promise.all(tokens.map((token) => token.delete()));
     },
   });
 }

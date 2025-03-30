@@ -1,5 +1,7 @@
 import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
+import GitHubApp from '../../../../entities/tools/GitHubApp.js';
 import User from '../../../../entities/User.js';
+import UserRepository from '../../../../entities/UserRepository.js';
 
 export default async function route(app) {
   app.route({
@@ -72,6 +74,33 @@ export default async function route(app) {
         user.GitHubOrganizationMember = !user.GitHubOrganizationMember;
 
         await user.update();
+      }
+
+      const userRepositories = await UserRepository.fromUser(user);
+
+      if (user.GitHubOrganizationMember) {
+        if (user.Role.Keyword === 'student') {
+          await Promise.all(
+            userRepositories.map(async (userRepository) => {
+              GitHubApp.Instance.addOrganizationMemberToAnOrganizationRepository(
+                userRepository.Repository.Id,
+                user.GitHubId,
+              );
+            }),
+          );
+        }
+        else {
+          await GitHubApp.Instance.addOrganizationEducationalTeamMember(user.GitHubId);
+        }
+      } else if (user.Role.Keyword === 'student') {
+        await Promise.all(
+          userRepositories.map(async (userRepository) => {
+            GitHubApp.Instance.removeOrganizationMemberFromAnOrganizationRepository(
+              userRepository.Repository.Id,
+              user.GitHubId,
+            );
+          }),
+        );
       }
 
       return user;

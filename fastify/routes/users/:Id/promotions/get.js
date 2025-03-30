@@ -1,5 +1,5 @@
 import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
-import DataQualityMiddleware from '../../../../entities/tools/DataQualityMiddleware.js';
+import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
 import User from '../../../../entities/User.js';
 import UserPromotion from '../../../../entities/UserPromotion.js';
 
@@ -26,20 +26,21 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
-      await AuthorizationMiddleware.assertSufficientUserRole(request, 'teacher');
-      await DataQualityMiddleware.assertUserIdExists(request);
+      await AuthorizationMiddleware.assertSufficientUserRoleOrUserIdMatch(request, 'teacher');
+      await ParametersMiddleware.assertUserIdExists(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;
 
       const user = await User.fromId(userId);
 
-      return UserPromotion.fromUser(user);
+      const promotions = await UserPromotion.fromUser(user);
+
+      return promotions.map((promotion) => promotion.Promotion);
     },
   });
 }

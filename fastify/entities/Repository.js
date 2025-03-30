@@ -1,4 +1,6 @@
 import DatabasePool from './tools/DatabasePool.js';
+import Promotion from './Promotion.js';
+import Template from './Template.js';
 
 export default class Repository {
   Id;
@@ -15,10 +17,6 @@ export default class Repository {
 
   Comment;
 
-  GitHubId;
-
-  GitHubTeamId;
-
   constructor(
     id,
     createdAt,
@@ -27,8 +25,6 @@ export default class Repository {
     template,
     promotion,
     comment,
-    gitHubId,
-    gitHubTeamId,
   ) {
     this.Id = id;
     this.CreatedAt = createdAt;
@@ -37,28 +33,22 @@ export default class Repository {
     this.Template = template;
     this.Promotion = promotion;
     this.Comment = comment;
-    this.GitHubId = gitHubId;
-    this.GitHubTeamId = gitHubTeamId;
   }
 
-  async insert() {
-    const [row] = await DatabasePool.Instance.execute(
+  async insert(connection) {
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         INSERT INTO public.repository (
           archived_at,
           template_id,
           promotion_id,
-          comment,
-          github_id,
-          github_team_id
+          comment
         )
         VALUES (
           $1::timestamp with time zone,
           $2::uuid,
           $3::uuid,
-          $4::text,
-          $5::bigint,
-          $6::bigint
+          $4::text
         )
         RETURNING id, created_at, updated_at
       `,
@@ -67,9 +57,8 @@ export default class Repository {
         this.Template.Id,
         this.Promotion.Id,
         this.Comment,
-        this.GitHubId,
-        this.GitHubTeamId,
       ],
+      connection,
     );
 
     this.Id = row.id;
@@ -77,8 +66,32 @@ export default class Repository {
     this.UpdatedAt = row.updated_at;
   }
 
+  toStudentJSON() {
+    return {
+      id: this.Id,
+      createdAt: this.CreatedAt,
+      updatedAt: this.UpdatedAt,
+      archivedAt: this.ArchivedAt,
+      template: this.Template,
+      promotion: this.Promotion,
+    };
+  }
+
+  static async isIdInserted(id) {
+    const [row] = await DatabasePool.Instance.query(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.repository
+        WHERE repository.id = $1::uuid
+      `,
+      [id],
+    );
+
+    return row.count > 0;
+  }
+
   static async isPromotionInserted(promotion) {
-    const [row] = await DatabasePool.Instance.execute(
+    const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.repository
@@ -90,8 +103,38 @@ export default class Repository {
     return row.count > 0;
   }
 
+  static async fromId(id) {
+    const [row] = await DatabasePool.Instance.query(
+      /* sql */ `
+        SELECT
+          repository.created_at,
+          repository.updated_at,
+          repository.archived_at,
+          repository.template_id,
+          repository.promotion_id,
+          repository.comment
+        FROM public.repository
+        WHERE repository.id = $1::uuid
+      `,
+      [id],
+    );
+
+    const template = await Template.fromId(row.template_id);
+    const promotion = await Promotion.fromId(row.promotion_id);
+
+    return new this(
+      id,
+      row.created_at,
+      row.updated_at,
+      row.archived_at,
+      template,
+      promotion,
+      row.comment,
+    );
+  }
+
   static async all() {
-    const rows = await DatabasePool.Instance.execute(
+    const rows = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT
           repository.id,
@@ -100,24 +143,27 @@ export default class Repository {
           repository.archived_at,
           repository.template_id,
           repository.promotion_id,
-          repository.comment,
-          repository.github_id,
-          repository.github_team_id
+          repository.comment
         FROM public.repository
         ORDER BY repository.created_at DESC
       `,
     );
 
-    return rows.map((row) => new this(
-      row.id,
-      row.created_at,
-      row.updated_at,
-      row.archived_at,
-      row.template_id,
-      row.promotion_id,
-      row.comment,
-      row.github_id,
-      row.github_team_id,
-    ));
+    return Promise.all(
+      rows.map(async (row) => {
+        const template = await Template.fromId(row.template_id);
+        const promotion = await Promotion.fromId(row.promotion_id);
+
+        return new this(
+          row.id,
+          row.created_at,
+          row.updated_at,
+          row.archived_at,
+          template,
+          promotion,
+          row.comment,
+        );
+      }),
+    );
   }
 }

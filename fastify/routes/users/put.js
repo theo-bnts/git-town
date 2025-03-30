@@ -3,6 +3,7 @@ import User from '../../entities/User.js';
 import Role from '../../entities/Role.js';
 
 export default async function route(app) {
+  // TODO: Replace Keyword with Id
   app.route({
     method: 'PUT',
     url: '/users',
@@ -38,11 +39,9 @@ export default async function route(app) {
                 pattern: process.env.ROLE_KEYWORD_PATTERN,
               },
             },
-            additionalProperties: false,
             required: ['Keyword'],
           },
         },
-        additionalProperties: false,
         required: ['EmailAddress', 'FullName', 'Role'],
       },
     },

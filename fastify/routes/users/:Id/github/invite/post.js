@@ -1,5 +1,6 @@
 import AuthorizationMiddleware from '../../../../../entities/tools/AuthorizationMiddleware.js';
 import GitHubApp from '../../../../../entities/tools/GitHubApp.js';
+import ParametersMiddleware from '../../../../../entities/tools/ParametersMiddleware.js';
 import User from '../../../../../entities/User.js';
 
 export default async function route(app) {
@@ -25,19 +26,18 @@ export default async function route(app) {
             pattern: process.env.UUID_PATTERN,
           },
         },
-        additionalProperties: false,
       },
     },
     config: {
       rateLimit: {
-        max: Number(process.env.RATE_LIMIT_GITHUB_ORGANIZATION_INVITATION_MAX),
+        max: Number(process.env.RATE_LIMIT_AUTHENTICATED_STUDENT_GITHUB_PRIVILEGED_MAX),
         allowList: false,
-        timeWindow: process.env.RATE_LIMIT_GITHUB_ORGANIZATION_INVITATION_TIME_WINDOW,
       },
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
-      await AuthorizationMiddleware.assertUserIdMatch(request);
+      await AuthorizationMiddleware.assertSufficientUserRoleOrUserIdMatch(request, 'administrator');
+      await ParametersMiddleware.assertUserIdExists(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;
@@ -52,7 +52,7 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'ALREADY_MEMBER' };
       }
 
-      await GitHubApp.Instance.inviteToOrganization(user);
+      await GitHubApp.Instance.addOrganizationInvitation(user.GitHubId);
     },
   });
 }

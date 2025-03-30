@@ -28,9 +28,9 @@ export default class GitHubApp {
     });
   }
 
-  async getUser(applicationUser) {
+  async getUser(userId) {
     const { data: user } = await this.Octokit.rest.users.getById({
-      account_id: Number(applicationUser.GitHubId),
+      account_id: Number(userId),
     });
 
     return {
@@ -39,36 +39,147 @@ export default class GitHubApp {
     };
   }
 
-  async getOrganizationInvitations() {
-    const invitations = await this.Octokit.paginate(this.Octokit.rest.orgs.listPendingInvitations, {
-      org: Number(process.env.GITHUB_ORGANIZATION_ID),
+  async getOrganization() {
+    const { data: organization } = await this.Octokit.rest.orgs.get({
+      org: process.env.GITHUB_ORGANIZATION_ID,
     });
 
-    return invitations.map((invitation) => ({
-      Id: invitation.id,
-      User: {
-        Username: invitation.login,
-      },
-    }));
+    return {
+      Id: organization.id,
+      Name: organization.login,
+    };
   }
 
-  async cancelOrganizationInvitation(invitationId) {
+  async getOrganizationEducationalTeam() {
+    const { Name: organizationName } = await this.getOrganization();
+
+    const { data: teams } = await this.Octokit.rest.teams.list({
+      org: organizationName,
+    });
+
+    const educationalTeam = teams.find(
+      (team) => team.id === Number(process.env.GITHUB_EDUCATIONAL_TEAM_ID),
+    );
+
+    return {
+      Id: educationalTeam.id,
+      Slug: educationalTeam.slug,
+      Name: educationalTeam.name,
+    };
+  }
+
+  async getOrganizationInvitations(userId) {
+    const { Name: organizationName } = await this.getOrganization();
+
+    const invitations = await this.Octokit.paginate(this.Octokit.rest.orgs.listPendingInvitations, {
+      org: organizationName,
+    });
+
+    const { Username: username } = await this.getUser(userId);
+
+    return invitations
+      .filter((invitation) => invitation.login === username)
+      .map((invitation) => ({
+        Id: invitation.id,
+        User: {
+          Username: invitation.login,
+        },
+      }));
+  }
+
+  async addOrganizationInvitation(userId) {
+    const { Name: organizationName } = await this.getOrganization();
+
+    await this.Octokit.rest.orgs.createInvitation({
+      org: organizationName,
+      invitee_id: Number(userId),
+    });
+  }
+
+  async deleteOrganizationInvitation(invitationId) {
+    const { Name: organizationName } = await this.getOrganization();
+
     await this.Octokit.rest.orgs.cancelInvitation({
-      org: Number(process.env.GITHUB_ORGANIZATION_ID),
+      org: organizationName,
       invitation_id: invitationId,
     });
   }
 
-  async inviteToOrganization(applicationUser) {
-    await this.Octokit.rest.orgs.createInvitation({
-      org: Number(process.env.GITHUB_ORGANIZATION_ID),
-      invitee_id: Number(applicationUser.GitHubId),
+  async deleteOrganizationMember(userId) {
+    const { Name: organizationName } = await this.getOrganization();
+    const { Username: username } = await this.getUser(userId);
+
+    await this.Octokit.rest.orgs.removeMembershipForUser({
+      org: organizationName,
+      username,
     });
   }
 
-  async removeFromOrganization(username) {
-    await this.Octokit.rest.orgs.removeMembershipForUser({
-      org: Number(process.env.GITHUB_ORGANIZATION_ID),
+  async addOrganizationEducationalTeamMember(userId) {
+    const { Name: organizationName } = await this.getOrganization();
+    const { Username: username } = await this.getUser(userId);
+    const { Slug: teamSlug } = await this.getOrganizationEducationalTeam();
+
+    await this.Octokit.rest.teams.addOrUpdateMembershipForUserInOrg({
+      org: organizationName,
+      team_slug: teamSlug,
+      username,
+    });
+  }
+
+  async addOrganizationRepository(name) {
+    const { Name: organizationName } = await this.getOrganization();
+
+    await this.Octokit.rest.repos.createInOrg({
+      org: organizationName,
+      name,
+      homepage:
+        `${process.env.FRONTEND_BASE_URL}${process.env.FRONTEND_REPOSITORIES_ENDPOINT}/${name}`,
+      private: true,
+    });
+  }
+
+  async addOrganizationRepositoryMilestone(repositoryName, title, date) {
+    const { Name: organizationName } = await this.getOrganization();
+
+    await this.Octokit.rest.issues.createMilestone({
+      owner: organizationName,
+      repo: repositoryName,
+      title,
+      due_on: date,
+    });
+  }
+
+  async addOrganizationEducationalTeamToAnOrganizationRepository(repositoryName) {
+    const { Name: organizationName } = await this.getOrganization();
+    const { Slug: teamSlug } = await this.getOrganizationEducationalTeam();
+
+    await this.Octokit.rest.teams.addOrUpdateRepoPermissionsInOrg({
+      org: organizationName,
+      team_slug: teamSlug,
+      owner: organizationName,
+      repo: repositoryName,
+    });
+  }
+
+  async addOrganizationMemberToAnOrganizationRepository(repositoryName, userId) {
+    const { Name: organizationName } = await this.getOrganization();
+    const { Username: username } = await this.getUser(userId);
+
+    await this.Octokit.rest.repos.addCollaborator({
+      owner: organizationName,
+      repo: repositoryName,
+      username,
+    });
+  }
+
+  async removeOrganizationMemberFromAnOrganizationRepository(repositoryName, userId) {
+    const { Name: organizationName } = await this.getOrganization();
+    const { Username: username } = await this.getUser(userId);
+
+    await this.Octokit.rest.repos.removeCollaborator({
+      owner: organizationName,
+      repo: repositoryName,
       username,
     });
   }
