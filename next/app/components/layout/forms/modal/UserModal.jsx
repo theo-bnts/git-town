@@ -9,9 +9,9 @@ import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
 
 export default function UserModal({ 
   isOpen, 
-  onClose, 
   initialData = {}, 
-  onUserUpdated 
+  onClose, 
+  onSave, 
 }) {
   const [initialUser, setInitialUser] = useState(initialData);
   const [errors, setErrors] = useState({});
@@ -170,9 +170,7 @@ export default function UserModal({
 
       try {
         await saveUser(initialUser.Id, differences, authToken);
-        if (typeof onUserUpdated === 'function') {
-          onUserUpdated();
-        }
+        onSave();
         onClose();
       } catch (error) {
         setApiError(error.message);

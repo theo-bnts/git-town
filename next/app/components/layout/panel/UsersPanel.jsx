@@ -53,11 +53,11 @@ const fetchUsers = async (token) => {
 };
 
 export default function UsersPanel() {
-  const [users, setUsers] = useState([]);
   const [authToken, setAuthToken] = useState('');
-  const [userModalOpen, setUserModalOpen] = useState(false);
+  const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [userModalOpen, setUserModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   const updateActions = (user) => [
     {
@@ -131,7 +131,7 @@ export default function UsersPanel() {
       </Button>
       <Button 
         variant="default_sq"
-        onClick={() => setIsImportModalOpen(true)}
+        onClick={() => setImportModalOpen(true)}
       >
         <UploadIcon size={24} className="text-white" />
       </Button>
@@ -144,8 +144,7 @@ export default function UsersPanel() {
         columns={columns} 
         data={users} 
         toolbarContents={toolbarContents}
-        onUserUpdated={refreshUsers} 
-        ModalComponent={UserModal}
+        onModelUpdated={refreshUsers} 
       />
       {userModalOpen && (
         <UserModal
@@ -155,19 +154,23 @@ export default function UsersPanel() {
             setUserModalOpen(false);
             setSelectedUser(null);
           }}
-          onUserUpdated={() => {
+          onSave={() => {
             refreshUsers();
             setUserModalOpen(false);
             setSelectedUser(null);
           }}
         />
       )}
-      {isImportModalOpen && (
+      {importModalOpen && (
         <ImportUserModal
-          isOpen={isImportModalOpen}
-          onClose={() => setIsImportModalOpen(false)}
+          isOpen={importModalOpen}
+          onClose={() => setImportModalOpen(false)}
+          onImport={() => {
+            refreshUsers();
+            setImportModalOpen(false);
+          }}
         />
-    )}
+      )}
     </div>
   );
 }

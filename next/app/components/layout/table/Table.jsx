@@ -8,7 +8,7 @@ import TableHeader from '@/app/components/layout/table/TableHeader';
 import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
 
-export default function Table({ columns, data, toolbarContents, onUserUpdated, ModalComponent }) {
+export default function Table({ columns, data, toolbarContents }) {
 
   const [sortedData, setSortedData] = useState(data);
   const [visibleCount, setVisibleCount] = useState(0);
