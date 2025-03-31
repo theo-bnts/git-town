@@ -6,9 +6,9 @@ import { ChevronDownIcon, ChevronUpIcon, SearchIcon, XIcon } from '@primer/octic
 import { textStyles, comboboxStyles } from '@/app/styles/tailwindStyles';
 import { normalizeString } from '@/app/utils/stringUtils';
 
-import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
 import ComboBoxPopover from '@/app/components/ui/combobox/ComboBoxPopover';
+import Input from '@/app/components/ui/Input';
 
 export default function ComboBox({ 
   placeholder, 

@@ -1,16 +1,14 @@
-// /app/components/layout/table/Table.jsx
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+
+import { normalizeString } from '@/app/utils/stringUtils';
 
 import ComboBox from '@/app/components/ui/combobox/ComboBox';
 import EmptyTableCard from '@/app/components/layout/table/EmptyTableCard';
 import TableHeader from '@/app/components/layout/table/TableHeader';
 import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
-
-const normalizeString = (str) =>
-  str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 export default function Table({ columns, data, toolbarContents }) {
   const [visibleCount, setVisibleCount] = useState(0);
@@ -29,7 +27,8 @@ export default function Table({ columns, data, toolbarContents }) {
         const cellValue = row[key];
         if (!cellValue) return false;
         if (typeof cellValue === "string") {
-          return normalizeString(cellValue).includes(normalizeString(filterValue));
+          return normalizeString(cellValue)
+            .includes(normalizeString(filterValue));
         }
         return cellValue === filterValue;
       });
@@ -53,7 +52,9 @@ export default function Table({ columns, data, toolbarContents }) {
     if (containerRef.current) {
       const containerHeight = containerRef.current.clientHeight;
       const rowsToAdd = Math.ceil(containerHeight / rowHeight);
-      setVisibleCount((prev) => Math.min(processedData.length, prev + rowsToAdd));
+      setVisibleCount(
+        (prev) => Math.min(processedData.length, prev + rowsToAdd)
+      );
     }
   };
 
@@ -80,7 +81,9 @@ export default function Table({ columns, data, toolbarContents }) {
   }, [sentinelRef, processedData, visibleCount]);
 
   const handleSort = (columnKey) => {
-    const newOrder = (sortColumn === columnKey && sortOrder === 'asc') ? 'desc' : 'asc';
+    const newOrder = (sortColumn === columnKey && sortOrder === 'asc')
+      ? 'desc'
+      : 'asc';
     setSortColumn(columnKey);
     setSortOrder(newOrder);
   };
@@ -120,9 +123,15 @@ export default function Table({ columns, data, toolbarContents }) {
           key={col.key}
           placeholder={`${col.title}`}
           options={comboOptions}
-          value={selectedValue ? { id: selectedValue, value: selectedValue } : null}
+          value={selectedValue
+            ? { id: selectedValue, value: selectedValue }
+            : null
+          }
           onSelect={(selectedOption) =>
-            handleFilterChange(col.key, selectedOption ? selectedOption.value : '')
+            handleFilterChange(col.key, selectedOption
+              ? selectedOption.value
+              : ''
+            )
           }
           onInputChange={(inputValue) =>
             handleFilterChange(col.key, inputValue)
