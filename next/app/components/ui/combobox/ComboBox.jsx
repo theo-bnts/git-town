@@ -6,9 +6,9 @@ import { ChevronDownIcon, ChevronUpIcon, SearchIcon, XIcon } from '@primer/octic
 import { textStyles, comboboxStyles } from '@/app/styles/tailwindStyles';
 import { normalizeString } from '@/app/utils/stringUtils';
 
-import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
 import ComboBoxPopover from '@/app/components/ui/combobox/ComboBoxPopover';
+import Input from '@/app/components/ui/Input';
 
 export default function ComboBox({ 
   placeholder, 
@@ -16,7 +16,8 @@ export default function ComboBox({
   onSelect, 
   maxVisible = 6, 
   autoOpen, 
-  value 
+  value,
+  onInputChange
 }) {
   const MAX_ITEMS = maxVisible;
   const [isOpen, setIsOpen] = useState(false);
@@ -101,8 +102,9 @@ export default function ComboBox({
     setSearchTerm(value);
     setSelectedOption(null);
     onSelect?.(null);
+    onInputChange?.(value);
     const filtered = options.filter((option) =>
-      normalizeString(option.value).startsWith(normalizeString(value))
+      normalizeString(option.value).includes(normalizeString(value))
     );
     setFilteredOptions(filtered);
     setHighlightedIndex(0);
