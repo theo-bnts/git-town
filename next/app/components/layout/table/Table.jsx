@@ -9,6 +9,9 @@ import TableHeader from '@/app/components/layout/table/TableHeader';
 import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
 
+const normalizeString = (str) =>
+  str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
 export default function Table({ columns, data, toolbarContents }) {
   const [visibleCount, setVisibleCount] = useState(0);
   const [sortColumn, setSortColumn] = useState(null);
@@ -20,13 +23,13 @@ export default function Table({ columns, data, toolbarContents }) {
   const rowHeight = 50;
 
   const processedData = useMemo(() => {
-    let filtered = data.filter(row => {
+    let filtered = data.filter((row) => {
       return Object.entries(filterValues).every(([key, filterValue]) => {
-        if (!filterValue || filterValue === '') return true;
+        if (!filterValue || filterValue === "") return true;
         const cellValue = row[key];
         if (!cellValue) return false;
-        if (typeof cellValue === 'string') {
-          return cellValue.toLowerCase().includes(filterValue.toLowerCase());
+        if (typeof cellValue === "string") {
+          return normalizeString(cellValue).includes(normalizeString(filterValue));
         }
         return cellValue === filterValue;
       });
@@ -34,9 +37,13 @@ export default function Table({ columns, data, toolbarContents }) {
     if (sortColumn) {
       filtered.sort((a, b) => {
         if (!sortColumn) return 0;
-        return sortOrder === 'asc'
-          ? a[sortColumn] > b[sortColumn] ? 1 : -1
-          : a[sortColumn] < b[sortColumn] ? 1 : -1;
+        return sortOrder === "asc"
+          ? a[sortColumn] > b[sortColumn]
+            ? 1
+            : -1
+          : a[sortColumn] < b[sortColumn]
+          ? 1
+          : -1;
       });
     }
     return filtered;
@@ -117,6 +124,9 @@ export default function Table({ columns, data, toolbarContents }) {
           onSelect={(selectedOption) =>
             handleFilterChange(col.key, selectedOption ? selectedOption.value : '')
           }
+          onInputChange={(inputValue) =>
+            handleFilterChange(col.key, inputValue)
+          }
         />
       );
     });
@@ -124,9 +134,13 @@ export default function Table({ columns, data, toolbarContents }) {
   return (
     <div className="w-full max-w-7xl px-4 mx-auto">
       <TableToolbar>
-        <div className="flex items-center gap-4">
-          {toolbarContents}
-          {filterComboboxes}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+          <div className="flex items-center gap-4">
+            {toolbarContents}
+          </div>
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {filterComboboxes}
+          </div>
         </div>
       </TableToolbar>
 

@@ -16,7 +16,8 @@ export default function ComboBox({
   onSelect, 
   maxVisible = 6, 
   autoOpen, 
-  value 
+  value,
+  onInputChange
 }) {
   const MAX_ITEMS = maxVisible;
   const [isOpen, setIsOpen] = useState(false);
@@ -101,8 +102,9 @@ export default function ComboBox({
     setSearchTerm(value);
     setSelectedOption(null);
     onSelect?.(null);
+    onInputChange?.(value);
     const filtered = options.filter((option) =>
-      normalizeString(option.value).startsWith(normalizeString(value))
+      normalizeString(option.value).includes(normalizeString(value))
     );
     setFilteredOptions(filtered);
     setHighlightedIndex(0);
