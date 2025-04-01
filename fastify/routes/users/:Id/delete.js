@@ -4,7 +4,6 @@ import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.j
 import Request from '../../../entities/tools/Request.js';
 import User from '../../../entities/User.js';
 import UserRepository from '../../../entities/UserRepository.js';
-import UserPromotion from '../../../entities/UserPromotion.js';
 
 export default async function route(app) {
   app.route({
@@ -50,10 +49,6 @@ export default async function route(app) {
 
       if (await UserRepository.isUserInserted(requestedUser)) {
         throw { statusCode: 409, error: 'HAS_REPOSITORIES' };
-      }
-
-      if (await UserPromotion.isUserInserted(requestedUser)) {
-        throw { statusCode: 409, error: 'HAS_PROMOTIONS' };
       }
 
       if (await requestedUser.GitHubId !== null) {
