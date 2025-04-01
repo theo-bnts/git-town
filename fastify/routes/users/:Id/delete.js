@@ -59,7 +59,8 @@ export default async function route(app) {
       if (await requestedUser.GitHubId !== null) {
         if (await requestedUser.GitHubOrganizationMember) {
           await GitHubApp.Instance.deleteOrganizationMember(requestedUser.GitHubId);
-        } else {
+        }
+        else {
           const userInvitations = await GitHubApp.Instance.getOrganizationInvitations(
             requestedUser.GitHubId,
           );

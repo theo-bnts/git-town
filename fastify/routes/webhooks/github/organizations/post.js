@@ -92,7 +92,8 @@ export default async function route(app) {
         else {
           await GitHubApp.Instance.addOrganizationEducationalTeamMember(user.GitHubId);
         }
-      } else if (user.Role.Keyword === 'student') {
+      }
+      else if (user.Role.Keyword === 'student') {
         await Promise.all(
           userRepositories.map(async (userRepository) => {
             GitHubApp.Instance.removeOrganizationMemberFromAnOrganizationRepository(
