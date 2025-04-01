@@ -108,30 +108,6 @@ export default class EnseignementUnit {
     );
   }
 
-  static async fromInitialism(initialism) {
-    const [row] = await DatabasePool.Instance.query(
-      /* sql */ `
-        SELECT
-          id,
-          created_at,
-          updated_at,
-          initialism,
-          name
-        FROM public.enseignement_unit
-        WHERE initialism = $1::text
-      `,
-      [initialism],
-    );
-
-    return new this(
-      row.id,
-      row.created_at,
-      row.updated_at,
-      row.initialism,
-      row.name,
-    );
-  }
-
   static async all() {
     const rows = await DatabasePool.Instance.query(
       /* sql */ `

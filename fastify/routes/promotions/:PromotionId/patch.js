@@ -63,7 +63,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await ParametersMiddleware.assertPromotionIdExists(request);
+      await ParametersMiddleware.assertPromotionIdInserted(request);
     },
     handler: async (request) => {
       const { PromotionId: promotionId } = request.params;
@@ -96,8 +96,7 @@ export default async function route(app) {
           throw { statusCode: 409, error: 'SAME_PROMOTION_LEVEL_INITIALISM' };
         }
 
-        promotion.PromotionLevel = await PromotionLevel
-          .fromInitialism(promotionLevelInitialism);
+        promotion.PromotionLevel = await PromotionLevel.fromInitialism(promotionLevelInitialism);
       }
 
       if (year !== undefined) {

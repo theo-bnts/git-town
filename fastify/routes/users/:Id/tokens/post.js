@@ -36,7 +36,7 @@ export default async function route(app) {
         keyGenerator: (request) => `${request.params.UserId}-${request.routeOptions.url}`,
       },
     },
-    preHandler: async (request) => ParametersMiddleware.assertUserIdExists(request),
+    preHandler: async (request) => ParametersMiddleware.assertUserIdInserted(request),
     handler: async (request) => {
       const { UserId: userId } = request.params;
       const { Password: password } = request.body;

@@ -110,11 +110,13 @@ export default class Template {
       [id],
     );
 
+    const enseignementUnit = await EnseignementUnit.fromId(row.enseignement_unit_id);
+
     return new this(
       row.id,
       row.created_at,
       row.updated_at,
-      row.enseignement_unit_id,
+      enseignementUnit,
       row.year,
     );
   }

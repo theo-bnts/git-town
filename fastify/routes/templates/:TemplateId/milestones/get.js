@@ -31,7 +31,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'teacher');
-      await ParametersMiddleware.assertTemplateIdExists(request);
+      await ParametersMiddleware.assertTemplateIdInserted(request);
     },
     handler: async (request) => {
       const { TemplateId: templateId } = request.params;

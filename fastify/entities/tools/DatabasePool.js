@@ -27,8 +27,7 @@ export default class DatabasePool {
 
     if (existingConnection === undefined) {
       connection = await this.createConnection();
-    }
-    else {
+    } else {
       connection = existingConnection;
     }
 

@@ -35,8 +35,8 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRoleOrUserIdMatch(request, 'administrator');
-      await ParametersMiddleware.assertUserIdExists(request);
-      await ParametersMiddleware.assertTokenIdExists(request);
+      await ParametersMiddleware.assertUserIdInserted(request);
+      await ParametersMiddleware.assertTokenIdInserted(request);
       await ParametersMiddleware.assertUserIdAndTokenIdMatch(request);
     },
     handler: async (request) => {
