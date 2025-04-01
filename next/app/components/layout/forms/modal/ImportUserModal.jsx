@@ -111,13 +111,14 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
         reason: `Ligne ${err.line} : ${err.message}`
       }));
       const csvRejected = buildRejectedCsvContent(rejectedRows);
-      const fileName = `rejects_${Date.now()}.csv`;
+      
       try {
-        const savedName = await uploadRejectsCsvToServer(fileName, csvRejected);
+        const savedName = await uploadRejectsCsvToServer(undefined, csvRejected);
         downloadCsvFromServer(savedName);
       } catch (err) {
         console.error(err);
       }
+      
       setAlertMessage('Le fichier comporte des erreurs, rejeté dans son intégralité.');
       setAlertType('warn');
       clearFileSelection();
@@ -171,13 +172,13 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
 
     if (rejectedFromApi.length > 0) {
       const csvRejected = buildRejectedCsvContent(rejectedFromApi);
-      const fileName = `rejects_${Date.now()}.csv`;
       try {
-        const savedName = await uploadRejectsCsvToServer(fileName, csvRejected);
+        const savedName = await uploadRejectsCsvToServer(undefined, csvRejected);
         downloadCsvFromServer(savedName);
       } catch (err) {
         console.error(err);
       }
+      
       setAlertMessage('Traitement terminé, certains utilisateurs n’ont pas pu être créés.');
       setAlertType('warn');
     } else {

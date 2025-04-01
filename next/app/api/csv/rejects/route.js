@@ -10,9 +10,7 @@ export const config = {
 };
 
 function getFormattedDate() {
-  const now = new Date();
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+  return new Date().toISOString().replace(/[:T]/g, '-').split('.')[0];
 }
 
 export async function GET(request) {
@@ -23,7 +21,7 @@ export async function GET(request) {
   }
 
   try {
-    const rejectsDir = path.join(process.cwd(), 'data', 'rejects');
+    const rejectsDir = process.env.REJECTS_DIR;
     const filePath = path.join(rejectsDir, filename);
 
     if (!fs.existsSync(filePath)) {
@@ -48,16 +46,20 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const { csvContent, fileName } = await request.json() || {};
+    const { csvContent } = await request.json() || {};
     if (!csvContent) {
       return NextResponse.json({ error: 'Aucun contenu CSV fourni.' }, { status: 400 });
     }
 
-    const finalName = fileName || `rejects_${getFormattedDate()}.csv`;
-    const rejectsDir = path.join(process.cwd(), 'data', 'rejects');
+    const finalName = `rejects_${getFormattedDate()}.csv`;
+    const rejectsDir = process.env.REJECTS_DIR;
+
+    console.log("Stockage des rejets dans :", rejectsDir);
 
     fs.mkdirSync(rejectsDir, { recursive: true });
     const filePath = path.join(rejectsDir, finalName);
+
+    console.log("Chemin du fichier :", filePath);
 
     await fsPromises.writeFile(filePath, csvContent, 'utf8');
     return NextResponse.json({ success: true, fileName: finalName }, { status: 200 });
