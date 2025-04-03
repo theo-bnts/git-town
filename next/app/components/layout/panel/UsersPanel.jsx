@@ -170,7 +170,7 @@ export default function UsersPanel() {
   };
 
   return (
-    <div className="flex flex-col flex-1 p-8">
+    <div className="flex flex-col flex-1">
       <Table
         columns={columns}
         data={users}

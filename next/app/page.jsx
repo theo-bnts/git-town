@@ -2,11 +2,8 @@
 
 import React from 'react';
 import { cookies } from 'next/headers';
-
 import getUser from '@/app/services/api/users/id/getUser';
-import UsersPanel from '@/app/components/layout/panel/UsersPanel';
-import Header from '@/app/components/layout/Header';
-//import Navbar from '@/app/components/layout/Navbar';
+import PannelManager from '@/app/components/layout/PannelManager';
 
 async function getCookieValue(key) {
   const cookieStore = await cookies();
@@ -20,19 +17,12 @@ export default async function HomePage() {
   let fullName = null;
   if (token && userId) {
     try {
-      const userData = await getUser(userId, token)
+      const userData = await getUser(userId, token);
       fullName = userData.FullName;
-      userType = userData.Role.Keyword;
     } catch (error) {
       console.error("Erreur lors de la récupération de l'utilisateur", error);
     }
   }
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header fullName={fullName} />
-
-      <UsersPanel />
-    </div>
-  );
+  return <PannelManager fullName={fullName} />;
 }

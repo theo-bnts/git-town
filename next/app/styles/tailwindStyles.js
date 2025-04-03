@@ -6,6 +6,7 @@ const textStyles = {
   boldWhite: `text-[var(--primary-color)] font-bold`,
   hint: `text-[var(--hint-color)]`,
   warn: `text-[var(--warn-color)]`,
+  selected: `text-[var(--accent-color)]`,
   url: `underline underline-offset-4 decoration-dotted decoration-gray-400 transition-transform duration-200 hover:scale-105 hover:text-[var(--accent-color)]`
 };
 
@@ -28,7 +29,9 @@ const buttonStyles = {
 };
 
 const cardStyles = {
-  default: `bg-[var(--primary-color)] p-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)] rounded-[12.5px]`,
+  default: `bg-[var(--primary-color)] p-4 drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)] rounded-[12.5px]`,
+  navbar: `bg-[var(--primary-color)] drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)] rounded-[12.5px]`,
+  navbar_unselected: `bg-[var(--primary-color)] rounded-[12.5px]`,
   info: `bg-[var(--primary-color)] text-[var(--popup-color)] p-4 rounded-[12.5px] shadow-md`,
   warn: `bg-[var(--warn-color)] p-4 rounded-[12.5px] shadow-lg text-[var(--primary-color)]`,
   empty_list: `bg-[var(--primary-color)] p-2 rounded-[12.5px] border border-[var(--primary-color)]`,

@@ -54,25 +54,23 @@ export default function Header({ fullName }) {
   };
 
   return (
-    <header className="p-4">
-      <div className="max-w-screen-2xl mx-auto">
-        <Card variant="default">
-          <div className="flex items-center justify-between">
-            <div>
-              <Image src={gittownlogo} alt="GitTown" className="w-48" />
-            </div>
-            <div className="flex items-center space-x-4">
-              <p className={`${textStyles.bold} text-xl`}>{displayName}</p>
-              <Button
-                variant="action_sq_warn"
-                onClick={handleSignOut}
-              >
-                <SignOutIcon size={24} />
-              </Button>
-            </div>
+    <>
+      <Card variant="default">
+        <div className="flex items-center justify-between">
+          <div>
+            <Image src={gittownlogo} alt="GitTown" className="w-40" />
           </div>
-        </Card>
-      </div>
-    </header>
+          <div className="flex items-center space-x-4">
+            <p className={`${textStyles.bold} text-xl`}>{displayName}</p>
+            <Button
+              variant="action_sq_warn"
+              onClick={handleSignOut}
+            >
+              <SignOutIcon size={24} />
+            </Button>
+          </div>
+        </div>
+      </Card>
+    </>
   );
 }

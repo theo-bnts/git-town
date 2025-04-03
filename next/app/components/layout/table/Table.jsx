@@ -78,7 +78,7 @@ export default function Table({ columns, data, toolbarContents }) {
   }, [data]);
 
   return (
-    <div className="w-full max-w-7xl px-4 mx-auto">
+    <div className="w-full max-w-7xl px-2 mx-auto">
       <TableToolbar>
         {toolbarContents}
       </TableToolbar>
