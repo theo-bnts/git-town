@@ -93,13 +93,13 @@ export default async function route(app) {
       const milestones = await Milestone.fromTemplate(template);
 
       await Promise.all(
-        milestones.map(async (milestone) => {
+        milestones.map(async (milestone) => (
           GitHubApp.Instance.addOrganizationRepositoryMilestone(
             repository.Id,
             milestone.Title,
             milestone.Date,
-          );
-        }),
+          )
+        )),
       );
 
       await DatabasePool.commit(connection);

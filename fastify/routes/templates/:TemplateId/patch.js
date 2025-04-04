@@ -1,6 +1,7 @@
 import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
 import EnseignementUnit from '../../../entities/EnseignementUnit.js';
 import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.js';
+import Repository from '../../../entities/Repository.js';
 import Template from '../../../entities/Template.js';
 
 export default async function route(app) {
@@ -67,7 +68,6 @@ export default async function route(app) {
           throw { statusCode: 404, error: 'UNKNOWN_ENSEIGNEMENT_UNIT_INITIALISM' };
         }
 
-        console.log(enseignementUnitId, template.EnseignementUnit);
         if (enseignementUnitId === template.EnseignementUnit.Id) {
           throw { statusCode: 409, error: 'SAME_ENSEIGNEMENT_UNIT' };
         }
@@ -80,14 +80,19 @@ export default async function route(app) {
           throw { statusCode: 409, error: 'SAME_YEAR' };
         }
 
+        if (await Repository.isTemplateInserted(template)) {
+          throw { statusCode: 409, error: 'YEAR_UNEDITABLE_WHILE_LINKED_TO_REPOSITORIES' };
+        }
+
         template.Year = year;
       }
 
-      if (await Template.isEnseignementUnitAndYearInserted(enseignementUnit, year)) {
-        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+      if (await Template.isEnseignementUnitAndYearInserted(
+        template.EnseignementUnit,
+        template.Year,
+      )) {
+        throw { statusCode: 409, error: 'DUPLICATE' };
       }
-
-      // TODO: Make GitHub action to update template in GitHub
 
       await template.update();
 

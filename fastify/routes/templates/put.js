@@ -53,7 +53,7 @@ export default async function route(app) {
       const enseignementUnit = await EnseignementUnit.fromId(enseignementUnitId);
 
       if (await Template.isEnseignementUnitAndYearInserted(enseignementUnit, year)) {
-        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+        throw { statusCode: 409, error: 'DUPLICATE' };
       }
 
       const template = new Template(

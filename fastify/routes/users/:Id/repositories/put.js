@@ -68,7 +68,7 @@ export default async function route(app) {
       const repository = await Repository.fromId(repositoryId);
 
       if (await UserRepository.isUserAndRepositoryInserted(user, repository)) {
-        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+        throw { statusCode: 409, error: 'DUPLICATE' };
       }
 
       await GitHubApp.Instance.addOrganizationEducationalTeamToAnOrganizationRepository(

@@ -81,24 +81,24 @@ export default async function route(app) {
       if (user.GitHubOrganizationMember) {
         if (user.Role.Keyword === 'student') {
           await Promise.all(
-            userRepositories.map(async (userRepository) => {
+            userRepositories.map(async (userRepository) => (
               GitHubApp.Instance.addOrganizationMemberToAnOrganizationRepository(
                 userRepository.Repository.Id,
                 user.GitHubId,
-              );
-            }),
+              )
+            )),
           );
         } else {
           await GitHubApp.Instance.addOrganizationEducationalTeamMember(user.GitHubId);
         }
       } else if (user.Role.Keyword === 'student') {
         await Promise.all(
-          userRepositories.map(async (userRepository) => {
+          userRepositories.map(async (userRepository) => (
             GitHubApp.Instance.removeOrganizationMemberFromAnOrganizationRepository(
               userRepository.Repository.Id,
               user.GitHubId,
-            );
-          }),
+            )
+          )),
         );
       }
 

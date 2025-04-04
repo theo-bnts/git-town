@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import DatabasePool from './tools/DatabasePool.js';
 import User from './User.js';
 
@@ -26,8 +28,8 @@ export default class Token {
     }
 
     const expirationSeconds = Number(process.env.TOKEN_EXPIRATION_SECONDS);
-    const expirationDate = new Date(this.CreatedAt.getTime() + (expirationSeconds * 1000));
-    return expirationDate > new Date();
+    const expirationDate = moment(this.CreatedAt).add(expirationSeconds, 'seconds');
+    return expirationDate.isAfter(moment());
   }
 
   async insert() {

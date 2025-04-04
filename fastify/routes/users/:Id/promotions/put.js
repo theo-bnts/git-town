@@ -67,7 +67,7 @@ export default async function route(app) {
       const promotion = await Promotion.fromId(promotionId);
 
       if (await UserPromotion.isUserAndPromotionInserted(user, promotion)) {
-        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+        throw { statusCode: 409, error: 'DUPLICATE' };
       }
 
       const userPromotion = new UserPromotion(

@@ -79,7 +79,7 @@ export default class ParametersMiddleware {
     const milestone = await Milestone.fromId(milestoneId);
 
     if (templateId !== milestone.Template.Id) {
-      throw { statusCode: 409, error: 'TEMPLATE_ID_MISMATCH' };
+      throw { statusCode: 409, error: 'TEMPLATE_AND_MILESTONE_ID_MISMATCH' };
     }
   }
 }

@@ -1,4 +1,7 @@
+import moment from 'moment';
+
 import DatabasePool from './tools/DatabasePool.js';
+import Template from './Template.js';
 
 export default class Milestone {
   Id;
@@ -53,11 +56,11 @@ export default class Milestone {
 
   toJSON() {
     return {
-      id: this.Id,
-      createdAt: this.CreatedAt,
-      updatedAt: this.UpdatedAt,
-      title: this.Title,
-      date: this.Date.toISOString().split('T')[0],
+      Id: this.Id,
+      CreatedAt: this.CreatedAt,
+      UpdatedAt: this.UpdatedAt,
+      Title: this.Title,
+      Date: moment(this.Date).format('YYYY-MM-DD'),
     };
   }
 
@@ -66,7 +69,7 @@ export default class Milestone {
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.milestone
-        WHERE initialism = $1::text
+        WHERE id = $1::uuid
       `,
       [id],
     );
@@ -74,16 +77,29 @@ export default class Milestone {
     return row.count === 1n;
   }
 
-  static async isTemplateTitleAndDateInserted(template, title, date) {
+  static async isTemplateAndTitleInserted(template, title) {
     const [row] = await DatabasePool.Instance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.milestone
         WHERE template_id = $1::uuid
         AND title = $2::text
-        AND date = $3::date
       `,
-      [template.Id, title, date],
+      [template.Id, title],
+    );
+
+    return row.count === 1n;
+  }
+
+  static async isTemplateAndDateInserted(template, date) {
+    const [row] = await DatabasePool.Instance.query(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.milestone
+        WHERE template_id = $1::uuid
+        AND date = $2::date
+      `,
+      [template.Id, date],
     );
 
     return row.count === 1n;
@@ -96,20 +112,24 @@ export default class Milestone {
           id,
           created_at,
           updated_at,
-          initialism,
-          name
+          template_id,
+          title,
+          date
         FROM public.milestone
         WHERE id = $1::uuid
       `,
       [id],
     );
 
+    const template = await Template.fromId(row.template_id);
+
     return new this(
       id,
       row.created_at,
       row.updated_at,
-      row.initialism,
-      row.name,
+      template,
+      row.title,
+      row.date,
     );
   }
 

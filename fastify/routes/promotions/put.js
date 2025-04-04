@@ -74,7 +74,7 @@ export default async function route(app) {
       const promotionLevel = await PromotionLevel.fromInitialism(promotionLevelInitialism);
 
       if (await Promotion.isDiplomaPromotionLevelAndYearInserted(diploma, promotionLevel, year)) {
-        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+        throw { statusCode: 409, error: 'DUPLICATE' };
       }
 
       const promotion = new Promotion(

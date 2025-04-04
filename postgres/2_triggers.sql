@@ -30,6 +30,25 @@ $$
 $$
 LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION check_template_promotion_same_year()
+RETURNS TRIGGER AS
+$$
+DECLARE
+  template_year SMALLINT;
+  promotion_year SMALLINT;
+BEGIN
+  SELECT year INTO template_year FROM public.template WHERE id = NEW.template_id;
+  SELECT year INTO promotion_year FROM public.promotion WHERE id = NEW.promotion_id;
+
+  IF template_year != promotion_year THEN
+    RAISE EXCEPTION 'Template and Promotion must have the same year';
+  END IF;
+
+  RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION text_normalization_and_check()
 RETURNS TRIGGER AS
 $$
@@ -95,6 +114,13 @@ CREATE TRIGGER repository_check_archive
 BEFORE UPDATE ON public.repository
 FOR EACH ROW
 EXECUTE FUNCTION check_archive();
+
+
+
+CREATE TRIGGER repository_check_template_promotion_same_year
+BEFORE INSERT OR UPDATE ON public.repository
+FOR EACH ROW
+EXECUTE FUNCTION check_template_promotion_same_year();
 
 
 
