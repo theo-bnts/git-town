@@ -58,7 +58,7 @@ export default async function route(app) {
 
       const template = await Template.fromId(templateId);
 
-      const date = moment(dateString).toDate()
+      const date = moment(dateString).toDate();
 
       if (await Milestone.isTemplateAndTitleInserted(template, title)) {
         throw { statusCode: 409, error: 'DUPLICATE_TITLE' };
