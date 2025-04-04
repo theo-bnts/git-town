@@ -3,7 +3,7 @@
 import React from 'react';
 import { cookies } from 'next/headers';
 import getUser from '@/app/services/api/users/id/getUser';
-import PannelManager from '@/app/components/layout/PannelManager';
+import PanelManager from '@/app/components/layout/PanelManager';
 
 async function getCookieValue(key) {
   const cookieStore = await cookies();
@@ -24,5 +24,5 @@ export default async function HomePage() {
     }
   }
 
-  return <PannelManager fullName={fullName} />;
+  return <PanelManager fullName={fullName} />;
 }

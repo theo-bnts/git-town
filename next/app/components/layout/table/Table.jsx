@@ -78,17 +78,13 @@ export default function Table({ columns, data, toolbarContents }) {
   }, [data]);
 
   return (
-    <div className="w-full max-w-7xl px-2 mx-auto">
+    <>
       <TableToolbar>
         {toolbarContents}
       </TableToolbar>
   
-      <div
-        ref={containerRef}
-        className="w-full overflow-x-auto overflow-y-auto"
-        style={{ maxHeight: "calc(100vh - 50px)" }}
-      >
-        <table className="min-w-[800px] border-collapse table-auto">
+      <div ref={containerRef} className="overflow-x-auto overflow-y-auto" style={{ maxHeight: "calc(70vh)" }}>
+        <table>
           <TableHeader
             columns={columns}
             onSort={handleSort}
@@ -102,12 +98,12 @@ export default function Table({ columns, data, toolbarContents }) {
                   <TableRow key={index} rowData={row} columns={columns} />
                 ))}
                 <tr ref={sentinelRef}>
-                  <td colSpan={columns.length}></td>
+                  <td colSpan={columns.length} />
                 </tr>
               </>
             ) : (
               <tr>
-                <td colSpan={columns.length} className="py-4">
+                <td colSpan={columns.length}>
                   <EmptyTableCard />
                 </td>
               </tr>
@@ -115,7 +111,7 @@ export default function Table({ columns, data, toolbarContents }) {
           </tbody>
         </table>
       </div>
-    </div>
+    </>
   );
   
 }
