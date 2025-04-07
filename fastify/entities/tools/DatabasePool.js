@@ -3,17 +3,10 @@ import pg from 'pg';
 export default class DatabasePool {
   Pool;
 
-  static Instance = null;
+  static EnvironmentInstance = null;
 
-  constructor() {
-    this.Pool = new pg.Pool({
-      host: process.env.DATABASE_HOST,
-      port: Number(process.env.DATABASE_PORT),
-      user: process.env.DATABASE_USER_NAME,
-      password: process.env.DATABASE_PASSWORD,
-      database: process.env.DATABASE_NAME,
-      max: Number(process.env.DATABASE_CONNECTIONS_LIMIT),
-    });
+  constructor(pool) {
+    this.Pool = pool;
 
     pg.types.setTypeParser(pg.types.builtins.INT8, BigInt);
   }
@@ -38,6 +31,19 @@ export default class DatabasePool {
     }
 
     return result.rows;
+  }
+
+  static fromEnvironment() {
+    const pool = new pg.Pool({
+      host: process.env.DATABASE_HOST,
+      port: Number(process.env.DATABASE_PORT),
+      user: process.env.DATABASE_USER_NAME,
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE_NAME,
+      max: Number(process.env.DATABASE_CONNECTIONS_LIMIT),
+    });
+
+    return new this(pool);
   }
 
   static async begin(connection) {

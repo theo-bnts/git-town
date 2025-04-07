@@ -1,9 +1,9 @@
-import AuthorizationMiddleware from '../../../../../entities/tools/AuthorizationMiddleware.js';
-import ParametersMiddleware from '../../../../../entities/tools/ParametersMiddleware.js';
+import AuthorizationMiddleware from '../../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import ParametersMiddleware from '../../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Repository from '../../../../../entities/Repository.js';
 import User from '../../../../../entities/User.js';
 import UserRepository from '../../../../../entities/UserRepository.js';
-import GitHubApp from '../../../../../entities/tools/GitHubApp.js';
+import GitHubApp from '../../../../../entities/tools/GitHub/GitHubApp.js';
 
 export default async function route(app) {
   app.route({
@@ -51,10 +51,7 @@ export default async function route(app) {
       }
 
       if (user.GitHubOrganizationMember) {
-        GitHubApp.Instance.Repositories.removeMember(
-          repository.GitHubId,
-          user.GitHubId,
-        );
+        GitHubApp.EnvironmentInstance.Repositories.removeMember(repository.GitHubId, user.GitHubId);
       }
 
       const userRepository = await UserRepository.fromUserAndRepository(user, repository);

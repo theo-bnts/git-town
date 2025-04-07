@@ -1,5 +1,5 @@
-import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
-import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
+import AuthorizationMiddleware from '../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Promotion from '../../../../entities/Promotion.js';
 import User from '../../../../entities/User.js';
 import UserPromotion from '../../../../entities/UserPromotion.js';

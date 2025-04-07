@@ -1,4 +1,4 @@
-import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
+import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Security from '../../../../entities/tools/Security.js';
 import Token from '../../../../entities/Token.js';
 import User from '../../../../entities/User.js';

@@ -1,6 +1,6 @@
-import AuthorizationMiddleware from '../../../../../entities/tools/AuthorizationMiddleware.js';
-import GitHubUser from '../../../../../entities/tools/GitHubUser.js';
-import ParametersMiddleware from '../../../../../entities/tools/ParametersMiddleware.js';
+import AuthorizationMiddleware from '../../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import GitHubApp from '../../../../../entities/tools/GitHub/GitHubApp.js';
+import ParametersMiddleware from '../../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import User from '../../../../../entities/User.js';
 
 export default async function route(app) {
@@ -53,14 +53,16 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'GITHUB_ID_ALREADY_DEFINED' };
       }
 
-      let gitHubUser;
+      let gitHubApp;
       try {
-        gitHubUser = await GitHubUser.fromOAuthCode(oAuthCode);
+        gitHubApp = await GitHubApp.fromOAuthCode(oAuthCode);
       } catch (error) {
         throw { statusCode: 401, error: 'INVALID_OAUTH_CODE' };
       }
 
-      user.GitHubId = await gitHubUser.getUserId();
+      const { Id: gitHubUserId } = await gitHubApp.Users.getAuthenticated();
+
+      user.GitHubId = gitHubUserId;
 
       if (await User.isGitHubIdInserted(user.GitHubId)) {
         throw { statusCode: 409, error: 'DUPLICATE_GITHUB_ID' };

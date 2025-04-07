@@ -1,10 +1,10 @@
-import EnseignementUnit from '../EnseignementUnit.js';
-import Milestone from '../Milestone.js';
-import Promotion from '../Promotion.js';
-import Repository from '../Repository.js';
-import Template from '../Template.js';
-import Token from '../Token.js';
-import User from '../User.js';
+import EnseignementUnit from '../../EnseignementUnit.js';
+import Milestone from '../../Milestone.js';
+import Promotion from '../../Promotion.js';
+import Repository from '../../Repository.js';
+import Template from '../../Template.js';
+import Token from '../../Token.js';
+import User from '../../User.js';
 
 export default class ParametersMiddleware {
   static async assertEnseignementUnitIdInserted(request) {

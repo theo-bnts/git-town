@@ -1,6 +1,6 @@
-import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
+import AuthorizationMiddleware from '../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import Milestone from '../../../../entities/Milestone.js';
-import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
+import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Template from '../../../../entities/Template.js';
 
 export default async function route(app) {

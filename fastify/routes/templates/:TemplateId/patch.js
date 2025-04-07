@@ -1,6 +1,6 @@
-import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
+import AuthorizationMiddleware from '../../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import EnseignementUnit from '../../../entities/EnseignementUnit.js';
-import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.js';
+import ParametersMiddleware from '../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Repository from '../../../entities/Repository.js';
 import Template from '../../../entities/Template.js';
 

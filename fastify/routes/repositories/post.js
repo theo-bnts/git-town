@@ -1,6 +1,6 @@
-import AuthorizationMiddleware from '../../entities/tools/AuthorizationMiddleware.js';
+import AuthorizationMiddleware from '../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import DatabasePool from '../../entities/tools/DatabasePool.js';
-import GitHubApp from '../../entities/tools/GitHubApp.js';
+import GitHubApp from '../../entities/tools/GitHub/GitHubApp.js';
 import Milestone from '../../entities/Milestone.js';
 import Promotion from '../../entities/Promotion.js';
 import Repository from '../../entities/Repository.js';
@@ -70,7 +70,7 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'YEAR_MISMATCH' };
       }
 
-      const connection = await DatabasePool.Instance.createConnection();
+      const connection = await DatabasePool.EnvironmentInstance.createConnection();
 
       await DatabasePool.begin(connection);
 
@@ -88,13 +88,13 @@ export default async function route(app) {
 
       await repository.insert(connection);
 
-      await GitHubApp.Instance.Repositories.add(repository.Id);
+      await GitHubApp.EnvironmentInstance.Repositories.add(repository.Id);
 
       const milestones = await Milestone.fromTemplate(template);
 
       await Promise.all(
         milestones.map(async (milestone) => (
-          GitHubApp.Instance.Milestones.add(
+          GitHubApp.EnvironmentInstance.Milestones.add(
             repository.Id,
             milestone.Title,
             milestone.Date,

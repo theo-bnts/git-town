@@ -20,7 +20,7 @@ export default class EnseignementUnit {
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         INSERT INTO public.enseignement_unit (initialism, name)
         VALUES ($1::text, $2::text)
@@ -35,7 +35,7 @@ export default class EnseignementUnit {
   }
 
   async update() {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         UPDATE public.enseignement_unit
         SET initialism = $1::text, name = $2::text
@@ -49,7 +49,7 @@ export default class EnseignementUnit {
   }
 
   async delete() {
-    await DatabasePool.Instance.query(
+    await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         DELETE FROM public.enseignement_unit
         WHERE id = $1::uuid
@@ -59,7 +59,7 @@ export default class EnseignementUnit {
   }
 
   static async isIdInserted(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.enseignement_unit
@@ -72,7 +72,7 @@ export default class EnseignementUnit {
   }
 
   static async isInitialismInserted(initialism) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.enseignement_unit
@@ -85,7 +85,7 @@ export default class EnseignementUnit {
   }
 
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,
@@ -109,7 +109,7 @@ export default class EnseignementUnit {
   }
 
   static async all() {
-    const rows = await DatabasePool.Instance.query(
+    const rows = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,

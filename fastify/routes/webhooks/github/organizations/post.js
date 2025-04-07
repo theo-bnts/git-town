@@ -1,5 +1,5 @@
-import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
-import GitHubApp from '../../../../entities/tools/GitHubApp.js';
+import AuthorizationMiddleware from '../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import GitHubApp from '../../../../entities/tools/GitHub/GitHubApp.js';
 import User from '../../../../entities/User.js';
 import UserRepository from '../../../../entities/UserRepository.js';
 
@@ -82,19 +82,19 @@ export default async function route(app) {
         if (user.Role.Keyword === 'student') {
           await Promise.all(
             userRepositories.map(async (userRepository) => (
-              GitHubApp.Instance.Repositories.addMember(
+              GitHubApp.EnvironmentInstance.Repositories.addMember(
                 userRepository.Repository.Id,
                 user.GitHubId,
               )
             )),
           );
         } else {
-          await GitHubApp.Instance.EducationalTeam.addMember(user.GitHubId);
+          await GitHubApp.EnvironmentInstance.EducationalTeam.addMember(user.GitHubId);
         }
       } else if (user.Role.Keyword === 'student') {
         await Promise.all(
           userRepositories.map(async (userRepository) => (
-            GitHubApp.Instance.Repositories.removeMember(
+            GitHubApp.EnvironmentInstance.Repositories.removeMember(
               userRepository.Repository.Id,
               user.GitHubId,
             )

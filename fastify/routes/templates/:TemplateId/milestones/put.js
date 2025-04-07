@@ -1,9 +1,9 @@
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
-import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
-import GitHubApp from '../../../../entities/tools/GitHubApp.js';
+import AuthorizationMiddleware from '../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import GitHubApp from '../../../../entities/tools/GitHub/GitHubApp.js';
 import Milestone from '../../../../entities/Milestone.js';
-import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
+import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Template from '../../../../entities/Template.js';
 import Repository from '../../../../entities/Repository.js';
 
@@ -58,7 +58,9 @@ export default async function route(app) {
 
       const template = await Template.fromId(templateId);
 
-      const date = moment(dateString).toDate();
+      const date = DateTime
+        .fromISO(dateString)
+        .toJSDate();
 
       if (await Milestone.isTemplateAndTitleInserted(template, title)) {
         throw { statusCode: 409, error: 'DUPLICATE_TITLE' };
@@ -81,7 +83,7 @@ export default async function route(app) {
 
       await Promise.all(
         repositories.map(async (repository) => (
-          GitHubApp.Instance.Milestones.add(
+          GitHubApp.EnvironmentInstance.Milestones.add(
             repository.Id,
             milestone.Title,
             milestone.Date,

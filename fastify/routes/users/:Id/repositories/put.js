@@ -1,6 +1,6 @@
-import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
-import GitHubApp from '../../../../entities/tools/GitHubApp.js';
-import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
+import AuthorizationMiddleware from '../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import GitHubApp from '../../../../entities/tools/GitHub/GitHubApp.js';
+import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Repository from '../../../../entities/Repository.js';
 import User from '../../../../entities/User.js';
 import UserRepository from '../../../../entities/UserRepository.js';
@@ -71,15 +71,10 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'DUPLICATE' };
       }
 
-      await GitHubApp.Instance.EducationalTeam.addRepository(
-        repository.Id,
-      );
+      await GitHubApp.EnvironmentInstance.EducationalTeam.addRepository(repository.Id);
 
       if (user.GitHubOrganizationMember) {
-        await GitHubApp.Instance.Repositories.addMember(
-          repository.Id,
-          user.GitHubId,
-        );
+        await GitHubApp.EnvironmentInstance.Repositories.addMember(repository.Id, user.GitHubId);
       }
 
       const userRepository = new UserRepository(

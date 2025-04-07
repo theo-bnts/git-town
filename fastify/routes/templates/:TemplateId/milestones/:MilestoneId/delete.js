@@ -9,7 +9,7 @@ import Template from '../../../../../entities/Template.js';
 
 export default async function route(app) {
   app.route({
-    method: 'PATCH',
+    method: 'DELETE',
     url: '/templates/:TemplateId/milestones/:MilestoneId',
     schema: {
       headers: {
@@ -35,21 +35,6 @@ export default async function route(app) {
           },
         },
       },
-      body: {
-        type: 'object',
-        properties: {
-          Title: {
-            type: 'string',
-            maxLength: Number(process.env.MILESTONE_TITLE_MAX_LENGTH),
-            pattern: process.env.GENERIC_PATTERN,
-          },
-          Date: {
-            type: 'string',
-            format: 'date',
-          },
-        },
-        minProperties: 1,
-      },
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
@@ -60,39 +45,9 @@ export default async function route(app) {
     },
     handler: async (request) => {
       const { TemplateId: templateId, MilestoneId: milestoneId } = request.params;
-      const { Title: title, Date: dateString } = request.body;
 
       const template = await Template.fromId(templateId);
       const milestone = await Milestone.fromId(milestoneId);
-
-      const oldTitle = milestone.Title;
-      const oldDate = milestone.Date;
-
-      if (title) {
-        if (title === milestone.Title) {
-          throw { statusCode: 409, error: 'SAME_TITLE' };
-        }
-
-        if (await Milestone.isTemplateAndTitleInserted(template, title)) {
-          throw { statusCode: 409, error: 'DUPLICATE_TITLE' };
-        }
-
-        milestone.Title = title;
-      }
-
-      if (dateString) {
-        const date = DateTime.fromISO(dateString).toJSDate();
-
-        if (DateTime.fromJSDate(date).equals(DateTime.fromJSDate(milestone.Date))) {
-          throw { statusCode: 409, error: 'SAME_DATE' };
-        }
-
-        if (await Milestone.isTemplateAndDateInserted(template, date)) {
-          throw { statusCode: 409, error: 'DUPLICATE_DATE' };
-        }
-
-        milestone.Date = date;
-      }
 
       const repositories = await Repository.fromTemplate(template);
 
@@ -103,22 +58,20 @@ export default async function route(app) {
           );
 
           const concernedGitHubMilestone = gitHubMilestones.find((gitHubMilestone) => (
-            gitHubMilestone.Title === oldTitle
+            gitHubMilestone.Title === milestone.Title
             && DateTime
               .fromJSDate(gitHubMilestone.Date)
-              .hasSame(DateTime.fromJSDate(oldDate), 'day')
+              .hasSame(DateTime.fromJSDate(milestone.Date), 'day')
           ));
 
-          return GitHubApp.EnvironmentInstance.Milestones.update(
+          return GitHubApp.EnvironmentInstance.Milestones.remove(
             repository.Id,
             concernedGitHubMilestone.Number,
-            milestone.Title,
-            milestone.Date,
           );
         }),
       );
 
-      await milestone.update();
+      await milestone.delete();
     },
   });
 }

@@ -1,4 +1,4 @@
-import AuthorizationMiddleware from '../../entities/tools/AuthorizationMiddleware.js';
+import AuthorizationMiddleware from '../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import Diploma from '../../entities/Diploma.js';
 import Promotion from '../../entities/Promotion.js';
 import PromotionLevel from '../../entities/PromotionLevel.js';

@@ -1,6 +1,6 @@
 import Token from '../../../../../entities/Token.js';
-import AuthorizationMiddleware from '../../../../../entities/tools/AuthorizationMiddleware.js';
-import ParametersMiddleware from '../../../../../entities/tools/ParametersMiddleware.js';
+import AuthorizationMiddleware from '../../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import ParametersMiddleware from '../../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import User from '../../../../../entities/User.js';
 
 export default async function route(app) {

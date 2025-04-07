@@ -1,4 +1,4 @@
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import DatabasePool from './tools/DatabasePool.js';
 import Template from './Template.js';
@@ -26,7 +26,7 @@ export default class Milestone {
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         INSERT INTO public.milestone (template_id, title, date)
         VALUES ($1::uuid, $2::text, $3::date)
@@ -41,7 +41,7 @@ export default class Milestone {
   }
 
   async update() {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         UPDATE public.milestone
         SET template_id = $1::uuid, title = $2::text, date = $3::date
@@ -54,18 +54,30 @@ export default class Milestone {
     this.UpdatedAt = row.updated_at;
   }
 
+  async delete() {
+    await DatabasePool.EnvironmentInstance.query(
+      /* sql */ `
+        DELETE FROM public.milestone
+        WHERE id = $1::uuid
+      `,
+      [this.Id],
+    );
+  }
+
   toJSON() {
     return {
       Id: this.Id,
       CreatedAt: this.CreatedAt,
       UpdatedAt: this.UpdatedAt,
       Title: this.Title,
-      Date: moment(this.Date).format('YYYY-MM-DD'),
+      Date: DateTime
+        .fromJSDate(this.Date)
+        .toFormat('yyyy-MM-dd'),
     };
   }
 
   static async isIdInserted(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.milestone
@@ -78,7 +90,7 @@ export default class Milestone {
   }
 
   static async isTemplateAndTitleInserted(template, title) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.milestone
@@ -92,7 +104,7 @@ export default class Milestone {
   }
 
   static async isTemplateAndDateInserted(template, date) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.milestone
@@ -106,7 +118,7 @@ export default class Milestone {
   }
 
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,
@@ -134,7 +146,7 @@ export default class Milestone {
   }
 
   static async fromTemplate(template) {
-    const rows = await DatabasePool.Instance.query(
+    const rows = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,

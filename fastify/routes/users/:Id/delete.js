@@ -1,6 +1,6 @@
-import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
-import GitHubApp from '../../../entities/tools/GitHubApp.js';
-import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.js';
+import AuthorizationMiddleware from '../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import GitHubApp from '../../../entities/tools/GitHub/GitHubApp.js';
+import ParametersMiddleware from '../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Request from '../../../entities/tools/Request.js';
 import User from '../../../entities/User.js';
 import UserRepository from '../../../entities/UserRepository.js';
@@ -53,15 +53,17 @@ export default async function route(app) {
 
       if (await requestedUser.GitHubId !== null) {
         if (await requestedUser.GitHubOrganizationMember) {
-          await GitHubApp.Instance.Organization.removeMember(requestedUser.GitHubId);
+          await GitHubApp.EnvironmentInstance.Organization.removeMember(requestedUser.GitHubId);
         } else {
-          const userInvitations = await GitHubApp.Instance.Organization.getInvitations(
+          const userInvitations = await GitHubApp.EnvironmentInstance.Organization.getInvitations(
             requestedUser.GitHubId,
           );
 
           await Promise.all(
             userInvitations.map(
-              async (invitation) => GitHubApp.Instance.Organization.removeInvitation(invitation.Id),
+              async (invitation) => (
+                GitHubApp.EnvironmentInstance.Organization.removeInvitation(invitation.Id)
+              ),
             ),
           );
         }

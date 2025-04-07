@@ -36,7 +36,7 @@ export default class Repository {
   }
 
   async insert(connection) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         INSERT INTO public.repository (
           archived_at,
@@ -78,7 +78,7 @@ export default class Repository {
   }
 
   static async isIdInserted(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.repository
@@ -91,7 +91,7 @@ export default class Repository {
   }
 
   static async isPromotionInserted(promotion) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.repository
@@ -104,7 +104,7 @@ export default class Repository {
   }
 
   static async isTemplateInserted(template) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.repository
@@ -117,7 +117,7 @@ export default class Repository {
   }
 
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           repository.created_at,
@@ -147,7 +147,7 @@ export default class Repository {
   }
 
   static async fromTemplate(template) {
-    const rows = await DatabasePool.Instance.query(
+    const rows = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           repository.id,
@@ -181,7 +181,7 @@ export default class Repository {
   }
 
   static async all() {
-    const rows = await DatabasePool.Instance.query(
+    const rows = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           repository.id,

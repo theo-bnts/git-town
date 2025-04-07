@@ -1,12 +1,12 @@
 import AuthorizationMiddleware from '../../../entities/tools/Middleware/AuthorizationMiddleware.js';
-import EnseignementUnit from '../../../entities/EnseignementUnit.js';
 import ParametersMiddleware from '../../../entities/tools/Middleware/ParametersMiddleware.js';
+import Repository from '../../../entities/Repository.js';
 import Template from '../../../entities/Template.js';
 
 export default async function route(app) {
   app.route({
     method: 'DELETE',
-    url: '/enseignement-units/:EnseignementUnitId',
+    url: '/templates/:TemplateId',
     schema: {
       headers: {
         type: 'object',
@@ -21,7 +21,7 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          EnseignementUnitId: {
+          TemplateId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -31,18 +31,18 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await ParametersMiddleware.assertEnseignementUnitIdInserted(request);
+      await ParametersMiddleware.assertTemplateIdInserted(request);
     },
     handler: async (request) => {
-      const { EnseignementUnitId: enseignementUnitId } = request.params;
+      const { TemplateId: templateId } = request.params;
 
-      const enseignementUnit = await EnseignementUnit.fromId(enseignementUnitId);
+      const template = await Template.fromId(templateId);
 
-      if (await Template.isEnseignementUnitInserted(enseignementUnit)) {
-        throw { statusCode: 409, error: 'HAS_TEMPLATES' };
+      if (await Repository.isTemplateInserted(template)) {
+        throw { statusCode: 409, error: 'HAS_REPOSITORIES' };
       }
 
-      await enseignementUnit.delete();
+      await template.delete();
     },
   });
 }
