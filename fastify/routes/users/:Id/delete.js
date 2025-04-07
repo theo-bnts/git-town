@@ -53,15 +53,15 @@ export default async function route(app) {
 
       if (await requestedUser.GitHubId !== null) {
         if (await requestedUser.GitHubOrganizationMember) {
-          await GitHubApp.Instance.deleteOrganizationMember(requestedUser.GitHubId);
+          await GitHubApp.Instance.Organization.removeMember(requestedUser.GitHubId);
         } else {
-          const userInvitations = await GitHubApp.Instance.getOrganizationInvitations(
+          const userInvitations = await GitHubApp.Instance.Organization.getInvitations(
             requestedUser.GitHubId,
           );
 
           await Promise.all(
             userInvitations.map(
-              async (invitation) => GitHubApp.Instance.deleteOrganizationInvitation(invitation.Id),
+              async (invitation) => GitHubApp.Instance.Organization.removeInvitation(invitation.Id),
             ),
           );
         }

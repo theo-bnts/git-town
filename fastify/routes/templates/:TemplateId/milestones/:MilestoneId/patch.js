@@ -98,7 +98,7 @@ export default async function route(app) {
 
       await Promise.all(
         repositories.map(async (repository) => {
-          const gitHubMilestones = await GitHubApp.Instance.getOrganizationRepositoryMilestones(
+          const gitHubMilestones = await GitHubApp.Instance.Milestones.get(
             repository.Id,
           );
 
@@ -108,7 +108,7 @@ export default async function route(app) {
               === moment(oldDate).format('YYYY-MM-DD')
           ));
 
-          return GitHubApp.Instance.updateOrganizationRepositoryMilestone(
+          return GitHubApp.Instance.Milestones.update(
             repository.Id,
             concernedGitHubMilestone.Number,
             milestone.Title,

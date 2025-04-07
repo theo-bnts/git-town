@@ -81,7 +81,7 @@ export default async function route(app) {
 
       await Promise.all(
         repositories.map(async (repository) => (
-          GitHubApp.Instance.addOrganizationRepositoryMilestone(
+          GitHubApp.Instance.Milestones.add(
             repository.Id,
             milestone.Title,
             milestone.Date,

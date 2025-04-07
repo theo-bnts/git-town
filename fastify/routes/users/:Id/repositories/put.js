@@ -71,12 +71,12 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'DUPLICATE' };
       }
 
-      await GitHubApp.Instance.addOrganizationEducationalTeamToAnOrganizationRepository(
+      await GitHubApp.Instance.EducationalTeam.addRepository(
         repository.Id,
       );
 
       if (user.GitHubOrganizationMember) {
-        await GitHubApp.Instance.addOrganizationMemberToAnOrganizationRepository(
+        await GitHubApp.Instance.Repositories.addMember(
           repository.Id,
           user.GitHubId,
         );
