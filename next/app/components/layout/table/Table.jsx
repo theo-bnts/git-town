@@ -83,7 +83,7 @@ export default function Table({ columns, data, toolbarContents }) {
         {toolbarContents}
       </TableToolbar>
   
-      <div ref={containerRef} className="overflow-x-auto overflow-y-auto" style={{ maxHeight: "calc(70vh)" }}>
+      <div ref={containerRef} className="overflow-x-auto overflow-y-auto w-full h-full">
         <table>
           <TableHeader
             columns={columns}

@@ -1,7 +1,6 @@
-// app/components/layout/PanelManager.jsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/app/components/layout/Header';
 import Sidebar from '@/app/components/layout/Sidebar';
 import UsersPanel from '@/app/components/layout/panel/UsersPanel';
@@ -20,22 +19,39 @@ export default function PanelManager({ fullName }) {
     (item) => item.label === activePanel
   )?.component;
 
-  return (
-    <div className="flex flex-col min-h-screen max-w-screen-2xl mx-auto">
-      <header className="pt-4 px-4 flex-shrink-0">
-        <Header fullName={fullName} />
-      </header>
-      <div className="flex flex-1 pt-4 px-4 overflow-hidden">
-        <div className="w-1/6 pr-2 flex-shrink-0">
-          <Sidebar
-            items={navItems}
-            activePanel={activePanel}
-            onSelect={setActivePanel}
-            className="h-full"
-          />
-        </div>
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-        <main className="w-5/6 pl-2 overflow-auto">
+  return (
+    <div className="flex flex-col h-screen max-w-[2000] mx-auto">
+      <header className="pt-4 px-4">
+        <Header 
+          fullName={fullName} 
+          navItems={navItems} 
+          activePanel={activePanel} 
+          setActivePanel={setActivePanel}
+          isMobile={isMobile}
+        />
+      </header>
+
+      <div className="flex flex-1 pt-4 px-4 overflow-hidden">
+        {!isMobile && (
+          <div className="w-[125px] pr-2">
+            <Sidebar
+              items={navItems}
+              activePanel={activePanel}
+              onSelect={setActivePanel}
+              className="h-full"
+            />
+          </div>
+        )}
+
+        <main className="flex-1 overflow-hidden flex flex-col">
           {ActivePanelComponent && <ActivePanelComponent />}
         </main>
 

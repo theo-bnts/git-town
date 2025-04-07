@@ -15,7 +15,7 @@ export default function Sidebar({ items, activePanel, onSelect, className = "" }
         const isActive = activePanel === item.label;
         const cardVariant = isActive ? "navbar" : "navbar_unselected";
         return (
-          <li key={index} className="list-none w-full flex-shrink-0">
+          <li key={index} className="list-none w-full ">
             <Card variant={cardVariant} className="w-full">
               <button
                 className="w-full text-center py-10 px-4"

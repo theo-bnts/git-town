@@ -1,9 +1,8 @@
-// app/components/layout/Header.jsx
 'use client';
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { SignOutIcon } from "@primer/octicons-react";
+import { SignOutIcon, ThreeBarsIcon } from "@primer/octicons-react";
 import { useRouter } from "next/navigation";
 
 import delToken from "@/app/services/api/users/id/token/delToken";
@@ -17,21 +16,22 @@ import Button from "@/app/components/ui/Button";
 
 const getInitials = (name) => {
   if (!name) return "";
-  return name.split(" ").map((word) => word[0]);
+  return name.split(" ").map((word) => word[0]).join("");
 };
 
-export default function Header({ fullName }) {
-  const [isMobile, setIsMobile] = useState(false);
+export default function Header({
+  fullName,
+  navItems = [],
+  activePanel,
+  setActivePanel,
+  isMobile = false,
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const displayName = isMobile ? getInitials(fullName) : fullName || "Utilisateur";
+  const displayName = isMobile
+    ? getInitials(fullName)
+    : fullName || "Utilisateur";
 
   const handleSignOut = async () => {
     try {
@@ -54,23 +54,50 @@ export default function Header({ fullName }) {
   };
 
   return (
-    <>
-      <Card variant="default">
+    <Card variant="default">
+      <div className="flex flex-col">
         <div className="flex items-center justify-between">
-          <div>
+          <div className="flex items-center">
+            {isMobile && (
+              <button
+                onClick={() => setMenuOpen((prev) => !prev)}
+                className="mr-2"
+              >
+                <ThreeBarsIcon size={24} />
+              </button>
+            )}
             <Image src={gittownlogo} alt="GitTown" className="w-40" />
           </div>
+
           <div className="flex items-center space-x-4">
             <p className={`${textStyles.bold} text-xl`}>{displayName}</p>
-            <Button
-              variant="action_sq_warn"
-              onClick={handleSignOut}
-            >
+            <Button variant="action_sq_warn" onClick={handleSignOut}>
               <SignOutIcon size={24} />
             </Button>
           </div>
         </div>
-      </Card>
-    </>
+
+        {isMobile && menuOpen && (
+          <ul className="flex flex-col space-y-4 mt-4">
+          {navItems.map((item, index) => {
+            const isActive = activePanel === item.label;
+            return (
+              <li key={index}>
+                <button
+                  className={`text-left w-full text-xl ${isActive ? textStyles.selected : textStyles.default}`}
+                  onClick={() => {
+                    setActivePanel(item.label);
+                    setMenuOpen(false);
+                  }}
+                >
+                  {item.label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>        
+        )}
+      </div>
+    </Card>
   );
 }
