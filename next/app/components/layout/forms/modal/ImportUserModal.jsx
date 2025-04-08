@@ -248,7 +248,7 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
 
             {isProcessing && (
               <div className="w-full bg-gray-300 rounded-full h-2.5 mt-2">
-                <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress}%` }} />
+                <div className="bg-[var(--accent-color)] h-2.5 rounded-full" style={{ width: `${progress}%` }} />
               </div>
             )}
 
