@@ -4,11 +4,12 @@ import React, { useState, useEffect } from 'react';
 import Header from '@/app/components/layout/Header';
 import Sidebar from '@/app/components/layout/Sidebar';
 import UsersPanel from '@/app/components/layout/panel/UsersPanel';
+import PromotionPanel from '@/app/components/layout/panel/PromotionsPanel';
 
 export default function PanelManager({ fullName }) {
   const navItems = [
     { label: "Utilisateurs", component: UsersPanel },
-    { label: "Promotions", component: () => <div>Future Promotions Panel</div> },
+    { label: "Promotions", component: PromotionPanel },
     { label: "Dépots", component: () => <div>Future Dépots Panel</div> },
     { label: "Modèles", component: () => <div>Future Modèles Panel</div> },
     { label: "UE", component: () => <div>Future UE Panel</div> },

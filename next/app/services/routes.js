@@ -32,6 +32,9 @@ export const userPromotionsRoute = (userId) =>
 export const promotionsRoute = () =>
   `${API_BASE_URL}/promotions`;
 
+export const promotionRoute = (promotionId) =>
+  `${API_BASE_URL}/promotions/${promotionId}`;
+
 export const editPromotionRoute = (promotionId) =>
   `${API_BASE_URL}/promotions/${promotionId}`;
 

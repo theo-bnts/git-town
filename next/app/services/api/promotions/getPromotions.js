@@ -1,7 +1,7 @@
 'use client';
 
-import { handleApiError } from "@/app/services/errorHandler";
-import { promotionsRoute } from "../../routes";
+import { handleApiError } from '@/app/services/errorHandler';
+import { promotionsRoute } from '@/app/services/routes';
 
 /**
  * Réupération de la liste des promotions

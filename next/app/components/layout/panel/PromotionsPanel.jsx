@@ -1,121 +1,48 @@
 // /app/components/layout/panel/PromotionsPanel.jsx
 'use client';
-/*
+
 import { useState, useEffect, useCallback } from 'react';
-import {
-  PencilIcon,
-  DuplicateIcon,
-  MarkGithubIcon,
-  TrashIcon,
-  PlusIcon,
-  UploadIcon
-} from '@primer/octicons-react';
+import { PencilIcon, TrashIcon, PlusIcon } from '@primer/octicons-react';
 
-import deleteUser from '@/app/services/api/users/deleteUser';
-import getUsers from '@/app/services/api/users/getUsers';
-import getUserPromotions from '@/app/services/api/users/getUserPromotions';
 import { getCookie } from '@/app/services/cookies';
-
-import Button from '@/app/components/ui/Button';
-import ConfirmCard from '@/app/components/ui/ConfirmCard';
-import ImportUserModal from '../forms/modal/ImportUserModal';
+import getPromotions from '@/app/services/api/promotions/getPromotions';
+import deletePromotion from '@/app/services/api/promotions/id/deletePromotion';
 import Table from '@/app/components/layout/table/Table';
-import UserModal from '@/app/components/layout/forms/modal/UserModal';
+import Button from '@/app/components/ui/Button';
+import PromotionModal from '@/app/components/layout/forms/modal/PromotionModal';
+import ConfirmCard from '@/app/components/ui/ConfirmCard';
 
 const columns = [
-  { key: 'name', title: 'Année', sortable: true },
-  { key: 'email', title: 'Diplôme', sortable: true },
-  { key: 'role', title: 'Niveau', sortable: true },
+  { key: 'year', title: 'Année', sortable: true },
+  { key: 'diploma', title: 'Diplôme', sortable: true },
+  { key: 'level', title: 'Niveau', sortable: true },
   { key: 'actions', title: 'Action(s)', sortable: false },
 ];
 
-/*const mapPromotion = (promo) => {
-  if (promo.Diploma && promo.PromotionLevel) {
-    const value = `${promo.Diploma.Initialism} ${promo.PromotionLevel.Initialism} - ${promo.Year}`;
-    return {
-      id: promo.Id,
-      value,
-      full: {
-        Diploma: { Initialism: promo.Diploma.Initialism },
-        PromotionLevel: { Initialism: promo.PromotionLevel.Initialism },
-        Year: promo.Year
-      }
-    };
-  }
-  return { id: promo.Id, value: '', full: {} };
-};*/
-/*
-const mapUser = async (user, token) => {
-  const rawPromotions = await getUserPromotions(user.Id, token);
-  const promotionsDisplay = Array.isArray(rawPromotions)
-    ? rawPromotions
-        .map(promo => (promo.Diploma && promo.PromotionLevel)
-          ? `${promo.Diploma.Initialism} ${promo.PromotionLevel.Initialism} - ${promo.Year}`
-          : '')
-        .filter((str) => str !== '')
-        .sort((a, b) => a.localeCompare(b))
-        .join(', ')
-    : '';
-  return {
-    raw: user,
-    rawPromotions,
-    name: user.FullName,
-    email: user.EmailAddress,
-    role: user.Role ? user.Role.Name : 'N/A',
-    promotions: promotionsDisplay,
-  };
-};
+// Fonction de mapping pour préparer les données du tableau
+const mapPromotionToTableData = (promo) => ({
+  raw: promo,
+  year: promo.Year,
+  diploma: promo.Diploma
+    ? `${promo.Diploma.Name} (${promo.Diploma.Initialism})`
+    : '',
+  level: promo.PromotionLevel
+    ? `${promo.PromotionLevel.Name} (${promo.PromotionLevel.Initialism})`
+    : '',
+});
 
-const fetchUsers = async (token) => {
-  const users = await getUsers(token);
-  const transformed = await Promise.all(users.map(user => mapUser(user, token)));
-  return transformed;
-};
-
-export default function UsersPanel() {
+export default function PromotionsPanel() {
   const [authToken, setAuthToken] = useState('');
-  const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [userModalOpen, setUserModalOpen] = useState(false);
-  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [promotions, setPromotions] = useState([]);
+
+  const [promotionModalOpen, setPromotionModalOpen] = useState(false);
+  const [selectedPromotion, setSelectedPromotion] = useState(null);
+  
+  // Pour la suppression
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
+  const [promotionToDelete, setPromotionToDelete] = useState(null);
 
-  const updateActions = (user) => [
-    {
-      icon: <PencilIcon size={16} />,
-      onClick: () => {
-        setSelectedUser({
-          Id: user.raw.Id,
-          nom: user.raw.FullName,
-          email: user.raw.EmailAddress,
-          role: user.raw.Role,
-          promotions: Array.isArray(user.rawPromotions)
-            ? user.rawPromotions.map(mapPromotion)
-            : [],
-          createdAt: user.raw.CreatedAt,
-          updatedAt: user.raw.UpdatedAt,
-        });
-        setUserModalOpen(true);
-      },
-    },
-    {
-      icon: <DuplicateIcon size={16} />,
-      onClick: () => console.log(`Duplicate ${user.raw.FullName}`),
-    },
-    {
-      icon: <MarkGithubIcon size={16} />,
-      onClick: () => console.log(`Github ${user.raw.FullName}`),
-    },
-    {
-      icon: <TrashIcon size={16} />,
-      onClick: () => {
-        setUserToDelete(user);
-        setConfirmOpen(true);
-      },
-    },
-  ];
-
+  // Récupère le token
   useEffect(() => {
     (async () => {
       const token = await getCookie('token');
@@ -123,96 +50,119 @@ export default function UsersPanel() {
     })();
   }, []);
 
-  const refreshUsers = useCallback(() => {
-    if (authToken) {
-      fetchUsers(authToken).then((data) => {
-        const updated = data.map((user) => ({
-          ...user,
-          actions: updateActions(user),
+  // Rafraîchit la liste des promotions
+  const refreshPromotions = useCallback(() => {
+    if (!authToken) return;
+    getPromotions(authToken)
+      .then((data) => {
+        const mapped = data.map(mapPromotionToTableData);
+        const withActions = mapped.map((item) => ({
+          ...item,
+          actions: renderActions(item),
         }));
-        setUsers(updated);
+        setPromotions(withActions);
+      })
+      .catch((error) => {
+        alert(`Erreur lors de la récupération des promotions : ${error.message}`);
       });
-    }
   }, [authToken]);
 
+  const renderActions = (item) => [
+    {
+      icon: <PencilIcon size={16} />,
+      onClick: () => {
+        setSelectedPromotion({
+          Id: item.raw.Id,
+          createdAt: item.raw.CreatedAt,
+          updatedAt: item.raw.UpdatedAt,
+          Diploma: {
+            Initialism: item.raw.Diploma?.Initialism || '',
+          },
+          PromotionLevel: {
+            Initialism: item.raw.PromotionLevel?.Initialism || '',
+          },
+          Year: item.raw.Year,
+        });
+        setPromotionModalOpen(true);
+      },
+    },
+    {
+      icon: <TrashIcon size={16} />,
+      onClick: () => {
+        setPromotionToDelete(item);
+        setConfirmOpen(true);
+      },
+    },
+  ];
+
   useEffect(() => {
-    refreshUsers();
-  }, [refreshUsers]);
+    refreshPromotions();
+  }, [refreshPromotions]);
 
   const toolbarContents = (
     <>
-      <Button variant="default_sq" onClick={() => setUserModalOpen(true)}>
+      <Button variant="default_sq" onClick={() => {
+        setSelectedPromotion(null);
+        setPromotionModalOpen(true);
+      }}>
         <PlusIcon size={24} className="text-white" />
-      </Button>
-      <Button variant="default_sq" onClick={() => setImportModalOpen(true)}>
-        <UploadIcon size={24} className="text-white" />
       </Button>
     </>
   );
 
   const handleConfirmDelete = async () => {
-    if (userToDelete && authToken) {
+    if (promotionToDelete && authToken) {
       try {
-        await deleteUser(userToDelete.raw.Id, authToken);
-        refreshUsers();
+        await deletePromotion(promotionToDelete.raw.Id, authToken);
+        refreshPromotions();
       } catch (error) {
         alert(`Erreur lors de la suppression : ${error.message}`);
       }
     }
     setConfirmOpen(false);
-    setUserToDelete(null);
+    setPromotionToDelete(null);
   };
 
   const handleCancelDelete = () => {
     setConfirmOpen(false);
-    setUserToDelete(null);
+    setPromotionToDelete(null);
   };
 
   return (
-    <div className="flex flex-col flex-1 p-8">
+    <>
       <Table
         columns={columns}
-        data={users}
+        data={promotions}
         toolbarContents={toolbarContents}
-        onModelUpdated={refreshUsers}
       />
-      {userModalOpen && (
-        <UserModal
-          isOpen={userModalOpen}
-          initialData={selectedUser || {}}
+
+      {promotionModalOpen && (
+        <PromotionModal
+          isOpen={promotionModalOpen}
+          initialData={selectedPromotion || {}}
           onClose={() => {
-            setUserModalOpen(false);
-            setSelectedUser(null);
+            setPromotionModalOpen(false);
+            setSelectedPromotion(null);
           }}
           onSave={() => {
-            refreshUsers();
-            setUserModalOpen(false);
-            setSelectedUser(null);
+            refreshPromotions();
+            setPromotionModalOpen(false);
+            setSelectedPromotion(null);
           }}
         />
       )}
-      {importModalOpen && (
-        <ImportUserModal
-          isOpen={importModalOpen}
-          onClose={() => setImportModalOpen(false)}
-          onImport={() => {
-            refreshUsers();
-            setImportModalOpen(false);
-          }}
-        />
-      )}
+
       {confirmOpen && (
         <ConfirmCard
           message={
             <span>
-              Voulez-vous vraiment supprimer <strong>{userToDelete?.raw.FullName}</strong> ?
+              Voulez-vous vraiment supprimer la promotion de <strong>{promotionToDelete?.raw.Diploma?.Initialism} {promotionToDelete?.raw.PromotionLevel?.Name} - {promotionToDelete?.raw.Year}</strong> ?
             </span>
           }
           onConfirm={handleConfirmDelete}
           onCancel={handleCancelDelete}
         />
       )}
-    </div>
+    </>
   );
 }
-*/
