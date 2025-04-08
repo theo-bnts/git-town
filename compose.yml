@@ -61,8 +61,6 @@ services:
       - next_rejects:/app/rejects:rw
     networks:
       - next_network
-    ports:
-      - 8081:80
 
 volumes:
   postgres_data_volume:
@@ -79,12 +77,12 @@ volumes:
     name: git_town_next_rejects
 
 networks:
-  #postgres_network:
-  #  driver: bridge
-  #  name: git_town_postgres_network
-  #fastify_network:
-  #  driver: bridge
-  #  name: git_town_fastify_network
+  postgres_network:
+    driver: bridge
+    name: git_town_postgres_network
+  fastify_network:
+    driver: bridge
+    name: git_town_fastify_network
   next_network:
     driver: bridge
     name: git_town_next_network

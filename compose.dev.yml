@@ -83,12 +83,12 @@ volumes:
     name: git_town_next_data_rejects
 
 networks:
-  #postgres_network:
-  #  driver: bridge
-  #  name: git_town_postgres_network
-  #fastify_network:
-  #  driver: bridge
-  #  name: git_town_fastify_network
+  postgres_network:
+    driver: bridge
+    name: git_town_postgres_network
+  fastify_network:
+    driver: bridge
+    name: git_town_fastify_network
   next_network:
     driver: bridge
     name: git_town_next_network
