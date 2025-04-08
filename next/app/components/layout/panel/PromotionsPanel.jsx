@@ -19,7 +19,6 @@ const columns = [
   { key: 'actions', title: 'Action(s)', sortable: false },
 ];
 
-// Fonction de mapping pour préparer les données du tableau
 const mapPromotionToTableData = (promo) => ({
   raw: promo,
   year: promo.Year,
@@ -38,11 +37,9 @@ export default function PromotionsPanel() {
   const [promotionModalOpen, setPromotionModalOpen] = useState(false);
   const [selectedPromotion, setSelectedPromotion] = useState(null);
   
-  // Pour la suppression
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [promotionToDelete, setPromotionToDelete] = useState(null);
 
-  // Récupère le token
   useEffect(() => {
     (async () => {
       const token = await getCookie('token');
@@ -50,7 +47,6 @@ export default function PromotionsPanel() {
     })();
   }, []);
 
-  // Rafraîchit la liste des promotions
   const refreshPromotions = useCallback(() => {
     if (!authToken) return;
     getPromotions(authToken)
@@ -156,7 +152,12 @@ export default function PromotionsPanel() {
         <ConfirmCard
           message={
             <span>
-              Voulez-vous vraiment supprimer la promotion de <strong>{promotionToDelete?.raw.Diploma?.Initialism} {promotionToDelete?.raw.PromotionLevel?.Name} - {promotionToDelete?.raw.Year}</strong> ?
+              Voulez-vous vraiment supprimer la promotion de "
+                <strong>
+                  {promotionToDelete?.raw.Diploma?.Initialism} {' '}
+                  {promotionToDelete?.raw.PromotionLevel?.Name} - {' '}
+                  {promotionToDelete?.raw.Year}
+                </strong>" ?
             </span>
           }
           onConfirm={handleConfirmDelete}

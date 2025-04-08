@@ -1,6 +1,6 @@
 import Token from '../../../../../entities/Token.js';
-import AuthorizationMiddleware from '../../../../../entities/tools/AuthorizationMiddleware.js';
-import ParametersMiddleware from '../../../../../entities/tools/ParametersMiddleware.js';
+import AuthorizationMiddleware from '../../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import ParametersMiddleware from '../../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import User from '../../../../../entities/User.js';
 
 export default async function route(app) {
@@ -35,8 +35,8 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRoleOrUserIdMatch(request, 'administrator');
-      await ParametersMiddleware.assertUserIdExists(request);
-      await ParametersMiddleware.assertTokenIdExists(request);
+      await ParametersMiddleware.assertUserIdInserted(request);
+      await ParametersMiddleware.assertTokenIdInserted(request);
       await ParametersMiddleware.assertUserIdAndTokenIdMatch(request);
     },
     handler: async (request) => {

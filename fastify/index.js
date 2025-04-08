@@ -6,13 +6,13 @@ import rateLimit from '@fastify/rate-limit';
 import rawBody from 'fastify-raw-body';
 
 import DatabasePool from './entities/tools/DatabasePool.js';
-import GitHubApp from './entities/tools/GitHubApp.js';
+import GitHubApp from './entities/tools/GitHub/GitHubApp.js';
 import MailTransporter from './entities/tools/MailTransporter.js';
 import Request from './entities/tools/Request.js';
 
-DatabasePool.Instance = new DatabasePool();
-GitHubApp.Instance = new GitHubApp();
-MailTransporter.Instance = new MailTransporter();
+DatabasePool.EnvironmentInstance = DatabasePool.fromEnvironment();
+GitHubApp.EnvironmentInstance = GitHubApp.fromEnvironment();
+MailTransporter.EnvironmentInstance = MailTransporter.fromEnvironment();
 
 /* eslint-disable-next-line no-extend-native */
 BigInt.prototype.toJSON = function toJSON() {
@@ -27,6 +27,7 @@ const app = fastify({
 
 await app.register(cors, {
   origin: process.env.FRONTEND_BASE_URL,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
 });
 
 await app.register(rateLimit, {

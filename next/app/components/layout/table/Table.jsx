@@ -1,29 +1,60 @@
-// /app/components/layout/table/Table.jsx
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
+import { normalizeString } from '@/app/utils/stringUtils';
+
+import ComboBox from '@/app/components/ui/combobox/ComboBox';
 import EmptyTableCard from '@/app/components/layout/table/EmptyTableCard';
 import TableHeader from '@/app/components/layout/table/TableHeader';
 import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
 
 export default function Table({ columns, data, toolbarContents }) {
-
-  const [sortedData, setSortedData] = useState(data);
   const [visibleCount, setVisibleCount] = useState(0);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortOrder, setSortOrder] = useState('asc');
+  const [filterValues, setFilterValues] = useState({});
 
   const containerRef = useRef(null);
   const sentinelRef = useRef(null);
   const rowHeight = 50;
 
+  const processedData = useMemo(() => {
+    let filtered = data.filter((row) => {
+      return Object.entries(filterValues).every(([key, filterValue]) => {
+        if (!filterValue || filterValue === "") return true;
+        const cellValue = row[key];
+        if (!cellValue) return false;
+        if (typeof cellValue === "string") {
+          return normalizeString(cellValue)
+            .includes(normalizeString(filterValue));
+        }
+        return cellValue === filterValue;
+      });
+    });
+    if (sortColumn) {
+      filtered.sort((a, b) => {
+        if (!sortColumn) return 0;
+        return sortOrder === "asc"
+          ? a[sortColumn] > b[sortColumn]
+            ? 1
+            : -1
+          : a[sortColumn] < b[sortColumn]
+          ? 1
+          : -1;
+      });
+    }
+    return filtered;
+  }, [data, filterValues, sortColumn, sortOrder]);
+
   const loadMoreRows = () => {
     if (containerRef.current) {
       const containerHeight = containerRef.current.clientHeight;
       const rowsToAdd = Math.ceil(containerHeight / rowHeight);
-      setVisibleCount((prev) => Math.min(sortedData.length, prev + rowsToAdd));
+      setVisibleCount(
+        (prev) => Math.min(processedData.length, prev + rowsToAdd)
+      );
     }
   };
 
@@ -33,7 +64,7 @@ export default function Table({ columns, data, toolbarContents }) {
       const initialRows = Math.ceil(containerHeight / rowHeight);
       setVisibleCount(initialRows);
     }
-  }, [containerRef, sortedData]);
+  }, [containerRef, processedData]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -47,20 +78,18 @@ export default function Table({ columns, data, toolbarContents }) {
       observer.observe(sentinelRef.current);
     }
     return () => observer.disconnect();
-  }, [sentinelRef, sortedData, visibleCount]);
+  }, [sentinelRef, processedData, visibleCount]);
 
   const handleSort = (columnKey) => {
-    const newOrder = (sortColumn === columnKey && sortOrder === 'asc') ? 'desc' : 'asc';
+    const newOrder = (sortColumn === columnKey && sortOrder === 'asc')
+      ? 'desc'
+      : 'asc';
     setSortColumn(columnKey);
     setSortOrder(newOrder);
+  };
 
-    const sorted = [...data].sort((a, b) => {
-      if (!columnKey) return 0;
-      return newOrder === 'asc'
-        ? a[columnKey] > b[columnKey] ? 1 : -1
-        : a[columnKey] < b[columnKey] ? 1 : -1;
-    });
-    setSortedData(sorted);
+  const handleFilterChange = (columnKey, value) => {
+    setFilterValues(prev => ({ ...prev, [columnKey]: value }));
     if (containerRef.current) {
       const containerHeight = containerRef.current.clientHeight;
       const initialRows = Math.ceil(containerHeight / rowHeight);
@@ -68,19 +97,60 @@ export default function Table({ columns, data, toolbarContents }) {
     }
   };
 
-  useEffect(() => {
-    setSortedData(data);
-    if (containerRef.current) {
-      const containerHeight = containerRef.current.clientHeight;
-      const initialRows = Math.ceil(containerHeight / rowHeight);
-      setVisibleCount(initialRows);
-    }
-  }, [data]);
+  const filterComboboxes = columns
+    .filter(col => col.key !== 'actions')
+    .map(col => {
+      const allValues = data.reduce((acc, row) => {
+        const cellValue = row[col.key];
+        if (!cellValue) return acc;
+        if (typeof cellValue === 'string') {
+          const tokens = cellValue
+            .split(/[,\;\/]+/)
+            .map(token => token.trim())
+            .filter(token => token);
+          return acc.concat(tokens);
+        }
+        return acc.concat(cellValue);
+      }, []);
+      const uniqueValues = Array.from(new Set(allValues));
+      const comboOptions = uniqueValues.map(option => ({
+        id: option,
+        value: option,
+      }));
+      const selectedValue = filterValues[col.key] || '';
+      return (
+        <ComboBox
+          key={col.key}
+          placeholder={`${col.title}`}
+          options={comboOptions}
+          value={selectedValue
+            ? { id: selectedValue, value: selectedValue }
+            : null
+          }
+          onSelect={(selectedOption) =>
+            handleFilterChange(col.key, selectedOption
+              ? selectedOption.value
+              : ''
+            )
+          }
+          onInputChange={(inputValue) =>
+            handleFilterChange(col.key, inputValue)
+          }
+        />
+      );
+    });
 
   return (
     <>
       <TableToolbar>
-        {toolbarContents}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+          <div className="flex items-center gap-4">
+            {toolbarContents}
+          </div>
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {filterComboboxes}
+          </div>
+        </div>
       </TableToolbar>
   
       <div ref={containerRef} className="overflow-x-auto overflow-y-auto w-full h-full">
@@ -92,9 +162,9 @@ export default function Table({ columns, data, toolbarContents }) {
             sortOrder={sortOrder}
           />
           <tbody>
-            {sortedData.length > 0 ? (
+            {processedData.length > 0 ? (
               <>
-                {sortedData.slice(0, visibleCount).map((row, index) => (
+                {processedData.slice(0, visibleCount).map((row, index) => (
                   <TableRow key={index} rowData={row} columns={columns} />
                 ))}
                 <tr ref={sentinelRef}>
@@ -113,5 +183,4 @@ export default function Table({ columns, data, toolbarContents }) {
       </div>
     </>
   );
-  
 }

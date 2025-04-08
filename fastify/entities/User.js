@@ -59,7 +59,7 @@ export default class User {
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         INSERT INTO public.user (
           email_address,
@@ -98,7 +98,7 @@ export default class User {
   }
 
   async update() {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         UPDATE public.user
         SET
@@ -128,7 +128,7 @@ export default class User {
   }
 
   async delete() {
-    await DatabasePool.Instance.query(
+    await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         DELETE FROM public.user
         WHERE id = $1::uuid
@@ -159,7 +159,7 @@ export default class User {
   }
 
   static async isIdInserted(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.user
@@ -172,7 +172,7 @@ export default class User {
   }
 
   static async isEmailAddressInserted(emailAddress) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.user
@@ -185,7 +185,7 @@ export default class User {
   }
 
   static async isGitHubIdInserted(gitHubId) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.user
@@ -198,7 +198,7 @@ export default class User {
   }
 
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           created_at,
@@ -233,7 +233,7 @@ export default class User {
   }
 
   static async fromEmailAddress(emailAddress) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,
@@ -268,7 +268,7 @@ export default class User {
   }
 
   static async fromGitHubId(gitHubId) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,
@@ -303,7 +303,7 @@ export default class User {
   }
 
   static async all() {
-    const rows = await DatabasePool.Instance.query(
+    const rows = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,

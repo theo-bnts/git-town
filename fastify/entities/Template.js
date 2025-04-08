@@ -27,7 +27,7 @@ export default class Template {
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         INSERT INTO public.template (enseignement_unit_id, year)
         VALUES ($1::uuid, $2::integer)
@@ -42,7 +42,7 @@ export default class Template {
   }
 
   async update() {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         UPDATE public.template
         SET enseignement_unit_id = $1::uuid, year = $2::integer
@@ -55,8 +55,18 @@ export default class Template {
     this.UpdatedAt = row.updated_at;
   }
 
+  async delete() {
+    await DatabasePool.EnvironmentInstance.query(
+      /* sql */ `
+        DELETE FROM public.template
+        WHERE id = $1::uuid
+      `,
+      [this.Id],
+    );
+  }
+
   static async isIdInserted(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.template
@@ -69,7 +79,7 @@ export default class Template {
   }
 
   static async isEnseignementUnitInserted(enseignementUnit) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.template
@@ -82,7 +92,7 @@ export default class Template {
   }
 
   static async isEnseignementUnitAndYearInserted(enseignementUnit, year) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.template
@@ -96,7 +106,7 @@ export default class Template {
   }
 
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,
@@ -110,17 +120,19 @@ export default class Template {
       [id],
     );
 
+    const enseignementUnit = await EnseignementUnit.fromId(row.enseignement_unit_id);
+
     return new this(
       row.id,
       row.created_at,
       row.updated_at,
-      row.enseignement_unit_id,
+      enseignementUnit,
       row.year,
     );
   }
 
   static async all() {
-    const rows = await DatabasePool.Instance.query(
+    const rows = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,

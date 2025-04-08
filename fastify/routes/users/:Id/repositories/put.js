@@ -1,6 +1,6 @@
-import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
-import GitHubApp from '../../../../entities/tools/GitHubApp.js';
-import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
+import AuthorizationMiddleware from '../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import GitHubApp from '../../../../entities/tools/GitHub/GitHubApp.js';
+import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Repository from '../../../../entities/Repository.js';
 import User from '../../../../entities/User.js';
 import UserRepository from '../../../../entities/UserRepository.js';
@@ -49,7 +49,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await ParametersMiddleware.assertUserIdExists(request);
+      await ParametersMiddleware.assertUserIdInserted(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;
@@ -68,18 +68,13 @@ export default async function route(app) {
       const repository = await Repository.fromId(repositoryId);
 
       if (await UserRepository.isUserAndRepositoryInserted(user, repository)) {
-        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+        throw { statusCode: 409, error: 'DUPLICATE' };
       }
 
-      await GitHubApp.Instance.addOrganizationEducationalTeamToAnOrganizationRepository(
-        repository.Id,
-      );
+      await GitHubApp.EnvironmentInstance.EducationalTeam.addRepository(repository.Id);
 
       if (user.GitHubOrganizationMember) {
-        await GitHubApp.Instance.addOrganizationMemberToAnOrganizationRepository(
-          repository.Id,
-          user.GitHubId,
-        );
+        await GitHubApp.EnvironmentInstance.Repositories.addMember(repository.Id, user.GitHubId);
       }
 
       const userRepository = new UserRepository(

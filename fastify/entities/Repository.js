@@ -36,7 +36,7 @@ export default class Repository {
   }
 
   async insert(connection) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         INSERT INTO public.repository (
           archived_at,
@@ -78,7 +78,7 @@ export default class Repository {
   }
 
   static async isIdInserted(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.repository
@@ -91,7 +91,7 @@ export default class Repository {
   }
 
   static async isPromotionInserted(promotion) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.repository
@@ -103,8 +103,21 @@ export default class Repository {
     return row.count > 0;
   }
 
+  static async isTemplateInserted(template) {
+    const [row] = await DatabasePool.EnvironmentInstance.query(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.repository
+        WHERE repository.template_id = $1::uuid
+      `,
+      [template.Id],
+    );
+
+    return row.count > 0;
+  }
+
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           repository.created_at,
@@ -133,8 +146,42 @@ export default class Repository {
     );
   }
 
+  static async fromTemplate(template) {
+    const rows = await DatabasePool.EnvironmentInstance.query(
+      /* sql */ `
+        SELECT
+          repository.id,
+          repository.created_at,
+          repository.updated_at,
+          repository.archived_at,
+          repository.template_id,
+          repository.promotion_id,
+          repository.comment
+        FROM public.repository
+        WHERE repository.template_id = $1::uuid
+      `,
+      [template.Id],
+    );
+
+    return Promise.all(
+      rows.map(async (row) => {
+        const promotion = await Promotion.fromId(row.promotion_id);
+
+        return new this(
+          row.id,
+          row.created_at,
+          row.updated_at,
+          row.archived_at,
+          template,
+          promotion,
+          row.comment,
+        );
+      }),
+    );
+  }
+
   static async all() {
-    const rows = await DatabasePool.Instance.query(
+    const rows = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           repository.id,

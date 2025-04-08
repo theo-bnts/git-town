@@ -1,7 +1,11 @@
-import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
+import { DateTime } from 'luxon';
+
+import AuthorizationMiddleware from '../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import GitHubApp from '../../../../entities/tools/GitHub/GitHubApp.js';
 import Milestone from '../../../../entities/Milestone.js';
-import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
+import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Template from '../../../../entities/Template.js';
+import Repository from '../../../../entities/Repository.js';
 
 export default async function route(app) {
   app.route({
@@ -46,7 +50,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await ParametersMiddleware.assertTemplateIdExists(request);
+      await ParametersMiddleware.assertTemplateIdInserted(request);
     },
     handler: async (request) => {
       const { TemplateId: templateId } = request.params;
@@ -54,10 +58,16 @@ export default async function route(app) {
 
       const template = await Template.fromId(templateId);
 
-      const date = new Date(dateString);
+      const date = DateTime
+        .fromISO(dateString)
+        .toJSDate();
 
-      if (await Milestone.isTemplateTitleAndDateInserted(template, title, date)) {
-        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+      if (await Milestone.isTemplateAndTitleInserted(template, title)) {
+        throw { statusCode: 409, error: 'DUPLICATE_TITLE' };
+      }
+
+      if (await Milestone.isTemplateAndDateInserted(template, date)) {
+        throw { statusCode: 409, error: 'DUPLICATE_DATE' };
       }
 
       const milestone = new Milestone(
@@ -67,6 +77,18 @@ export default async function route(app) {
         template,
         title,
         date,
+      );
+
+      const repositories = await Repository.fromTemplate(template);
+
+      await Promise.all(
+        repositories.map(async (repository) => (
+          GitHubApp.EnvironmentInstance.Milestones.add(
+            repository.Id,
+            milestone.Title,
+            milestone.Date,
+          )
+        )),
       );
 
       await milestone.insert();

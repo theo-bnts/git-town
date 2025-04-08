@@ -1,4 +1,4 @@
-import AuthorizationMiddleware from '../../entities/tools/AuthorizationMiddleware.js';
+import AuthorizationMiddleware from '../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import Diploma from '../../entities/Diploma.js';
 import Promotion from '../../entities/Promotion.js';
 import PromotionLevel from '../../entities/PromotionLevel.js';
@@ -74,7 +74,7 @@ export default async function route(app) {
       const promotionLevel = await PromotionLevel.fromInitialism(promotionLevelInitialism);
 
       if (await Promotion.isDiplomaPromotionLevelAndYearInserted(diploma, promotionLevel, year)) {
-        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+        throw { statusCode: 409, error: 'DUPLICATE' };
       }
 
       const promotion = new Promotion(

@@ -1,3 +1,5 @@
+import { DateTime } from 'luxon';
+
 import DatabasePool from './tools/DatabasePool.js';
 import User from './User.js';
 
@@ -25,13 +27,15 @@ export default class Token {
       return false;
     }
 
-    const expirationSeconds = Number(process.env.TOKEN_EXPIRATION_SECONDS);
-    const expirationDate = new Date(this.CreatedAt.getTime() + (expirationSeconds * 1000));
-    return expirationDate > new Date();
+    const expirationDate = DateTime
+      .fromJSDate(this.CreatedAt)
+      .plus({ seconds: Number(process.env.TOKEN_EXPIRATION_SECONDS) });
+
+    return expirationDate > DateTime.now();
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         INSERT INTO public.token (user_id, value)
         VALUES ($1::uuid, $2::text)
@@ -46,7 +50,7 @@ export default class Token {
   }
 
   async delete() {
-    await DatabasePool.Instance.query(
+    await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         DELETE FROM public.token
         WHERE id = $1::uuid
@@ -65,7 +69,7 @@ export default class Token {
   }
 
   static async isIdInserted(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.token
@@ -78,7 +82,7 @@ export default class Token {
   }
 
   static async isValueInserted(value) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.token
@@ -91,7 +95,7 @@ export default class Token {
   }
 
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,
@@ -117,7 +121,7 @@ export default class Token {
   }
 
   static async fromValue(value) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,
@@ -142,7 +146,7 @@ export default class Token {
   }
 
   static async fromUser(user) {
-    const rows = await DatabasePool.Instance.query(
+    const rows = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,

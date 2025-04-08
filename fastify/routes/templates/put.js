@@ -1,9 +1,8 @@
-import AuthorizationMiddleware from '../../entities/tools/AuthorizationMiddleware.js';
+import AuthorizationMiddleware from '../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import EnseignementUnit from '../../entities/EnseignementUnit.js';
 import Template from '../../entities/Template.js';
 
 export default async function route(app) {
-  // TODO: Replace Initialism with Id
   app.route({
     method: 'PUT',
     url: '/templates',
@@ -24,12 +23,12 @@ export default async function route(app) {
           EnseignementUnit: {
             type: 'object',
             properties: {
-              Initialism: {
+              Id: {
                 type: 'string',
-                pattern: process.env.ENSEIGNEMENT_UNIT_INITIALISM_PATTERN,
+                pattern: process.env.UUID_PATTERN,
               },
             },
-            required: ['Initialism'],
+            required: ['Id'],
           },
           Year: {
             type: 'integer',
@@ -45,19 +44,16 @@ export default async function route(app) {
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
     },
     handler: async (request) => {
-      const {
-        EnseignementUnit: { Initialism: enseignementUnitInitialism },
-        Year: year,
-      } = request.body;
+      const { EnseignementUnit: { Id: enseignementUnitId }, Year: year } = request.body;
 
-      if (!await EnseignementUnit.isInitialismInserted(enseignementUnitInitialism)) {
-        throw { statusCode: 404, error: 'UNKNOWN_ENSEIGNEMENT_UNIT_INITIALISM' };
+      if (!await EnseignementUnit.isIdInserted(enseignementUnitId)) {
+        throw { statusCode: 404, error: 'UNKNOWN_ENSEIGNEMENT_UNIT_ID' };
       }
 
-      const enseignementUnit = await EnseignementUnit.fromInitialism(enseignementUnitInitialism);
+      const enseignementUnit = await EnseignementUnit.fromId(enseignementUnitId);
 
       if (await Template.isEnseignementUnitAndYearInserted(enseignementUnit, year)) {
-        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+        throw { statusCode: 409, error: 'DUPLICATE' };
       }
 
       const template = new Template(
