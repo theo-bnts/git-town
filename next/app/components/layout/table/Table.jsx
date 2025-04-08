@@ -141,7 +141,7 @@ export default function Table({ columns, data, toolbarContents }) {
     });
 
   return (
-    <div className="w-full max-w-7xl px-4 mx-auto">
+    <>
       <TableToolbar>
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
           <div className="flex items-center gap-4">
@@ -152,13 +152,9 @@ export default function Table({ columns, data, toolbarContents }) {
           </div>
         </div>
       </TableToolbar>
-
-      <div
-        ref={containerRef}
-        className="w-full overflow-x-auto overflow-y-auto"
-        style={{ maxHeight: "calc(100vh - 50px)" }}
-      >
-        <table className="min-w-[800px] border-collapse table-auto">
+  
+      <div ref={containerRef} className="overflow-x-auto overflow-y-auto w-full h-full">
+        <table>
           <TableHeader
             columns={columns}
             onSort={handleSort}
@@ -172,12 +168,12 @@ export default function Table({ columns, data, toolbarContents }) {
                   <TableRow key={index} rowData={row} columns={columns} />
                 ))}
                 <tr ref={sentinelRef}>
-                  <td colSpan={columns.length}></td>
+                  <td colSpan={columns.length} />
                 </tr>
               </>
             ) : (
               <tr>
-                <td colSpan={columns.length} className="py-4">
+                <td colSpan={columns.length}>
                   <EmptyTableCard />
                 </td>
               </tr>
@@ -185,6 +181,6 @@ export default function Table({ columns, data, toolbarContents }) {
           </tbody>
         </table>
       </div>
-    </div>
+    </>
   );
 }

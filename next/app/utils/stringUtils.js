@@ -2,6 +2,9 @@
 'use client';
 
 export function normalizeString(str) {
+  if (typeof str !== 'string') {
+    str = String(str);
+  }
   return str
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
@@ -10,7 +13,10 @@ export function normalizeString(str) {
 
 export function highlightMatch(text, query) {
   if (!query) return text;
-  const matchIndex = normalizeString(text).indexOf(normalizeString(query));
+  if (typeof text !== 'string') text = String(text);
+  const normalizedText = normalizeString(text);
+  const normalizedQuery = normalizeString(query);
+  const matchIndex = normalizedText.indexOf(normalizedQuery);
   if (matchIndex === -1) return text;
 
   return (

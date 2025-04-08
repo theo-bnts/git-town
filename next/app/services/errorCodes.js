@@ -32,6 +32,9 @@ export const API_ERRORS = {
     GITHUB_ID_ALREADY_DEFINED: "(409) : GitHub ID déjà défini.",
     ALREADY_MEMBER: "(409) : Membre de l’organisation GitHub.",
     DUPLICATE_GITHUB_ID: "(409) : GitHub ID déjà utilisé.",
+    NOT_STUDENT_ROLE : "(409) : Le rôle n’est pas étudiant.",
+    SAME_DIPLOMA_INITIALISM: "(409) : Même Diplôme selectionné.",
+    DUPLICATE: "(409) : Configuration déjà existante.",
     default: "(409) : Conflit de requête.",
   },
   429: {

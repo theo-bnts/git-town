@@ -20,7 +20,7 @@ export default async function getUser(userId, token) {
 
   const data = await res.json();
 
-  if (res.ok) 
+  if (res.ok)
     return data;
 
   handleApiError(res, data);

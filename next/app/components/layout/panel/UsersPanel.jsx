@@ -170,7 +170,7 @@ export default function UsersPanel() {
   };
 
   return (
-    <div className="flex flex-col flex-1 p-8">
+    <>
       <Table
         columns={columns}
         data={users}
@@ -213,6 +213,6 @@ export default function UsersPanel() {
           onCancel={handleCancelDelete}
         />
       )}
-    </div>
+    </>
   );
 }

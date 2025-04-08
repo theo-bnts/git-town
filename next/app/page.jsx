@@ -2,10 +2,8 @@
 
 import React from 'react';
 import { cookies } from 'next/headers';
-
 import getUser from '@/app/services/api/users/id/getUser';
-import UsersPanel from '@/app/components/layout/panel/UsersPanel';
-import Header from '@/app/components/layout/Header';
+import PanelManager from '@/app/components/layout/PanelManager';
 
 async function getCookieValue(key) {
   const cookieStore = await cookies();
@@ -15,7 +13,7 @@ async function getCookieValue(key) {
 export default async function HomePage() {
   const token = await getCookieValue("token");
   const userId = await getCookieValue("userId");
-  
+
   let fullName = null;
   if (token && userId) {
     try {
@@ -26,10 +24,5 @@ export default async function HomePage() {
     }
   }
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header fullName={fullName} />
-      <UsersPanel />
-    </div>
-  );
+  return <PanelManager fullName={fullName} />;
 }
