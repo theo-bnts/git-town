@@ -49,7 +49,7 @@ export default class TemporaryCode {
         FROM public.temporary_code tc
         WHERE tc.user_id = $1::uuid
         AND tc.value = $2::text
-        AND (tc.created_at + ($3::int * INTERVAL '1 second')) > NOW()
+        AND (tc.created_at + ($3::int * INTERVAL '1 minute')) > NOW()
         AND NOT EXISTS (
           SELECT 1
           FROM public.temporary_code tc2
@@ -57,7 +57,7 @@ export default class TemporaryCode {
           AND tc2.created_at > tc.created_at
         )
       `,
-      [user.Id, value, Number(process.env.TEMPORARY_CODE_EXPIRATION_SECONDS)],
+      [user.Id, value, Number(process.env.TEMPORARY_CODE_EXPIRATION_MINUTES)],
     );
 
     return row.count === 1n;

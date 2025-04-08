@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { readFileSync } from 'fs';
 
 export default class MailTransporter {
   Transporter;
@@ -19,13 +20,14 @@ export default class MailTransporter {
   }
 
   async sendTemporaryCode(emailAddress, temporaryCode) {
+    const template = readFileSync('resources/mails/temporary-code.html', 'utf-8');
+
     await this.sendEmail(
       emailAddress,
-      'Code temporaire',
-      process.env.MAIL_BODY.replace(
-        '%CONTENT%',
-        `Votre code temporaire est <b>${temporaryCode.Value}</b>.<br>Il expirera dans ${process.env.TEMPORARY_CODE_EXPIRATION_SECONDS / 60} minutes.`,
-      ),
+      'Ton code temporaire',
+      template
+        .replace('{{CODE}}', temporaryCode.Value)
+        .replace('{{MINUTES}}', Number(process.env.TEMPORARY_CODE_EXPIRATION_MINUTES)),
     );
   }
 
