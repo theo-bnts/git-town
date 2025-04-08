@@ -1,5 +1,5 @@
-import AuthorizationMiddleware from '../../../../entities/tools/AuthorizationMiddleware.js';
-import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
+import AuthorizationMiddleware from '../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Promotion from '../../../../entities/Promotion.js';
 import User from '../../../../entities/User.js';
 import UserPromotion from '../../../../entities/UserPromotion.js';
@@ -48,7 +48,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await ParametersMiddleware.assertUserIdExists(request);
+      await ParametersMiddleware.assertUserIdInserted(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;
@@ -67,7 +67,7 @@ export default async function route(app) {
       const promotion = await Promotion.fromId(promotionId);
 
       if (await UserPromotion.isUserAndPromotionInserted(user, promotion)) {
-        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+        throw { statusCode: 409, error: 'DUPLICATE' };
       }
 
       const userPromotion = new UserPromotion(

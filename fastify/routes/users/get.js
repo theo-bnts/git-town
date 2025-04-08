@@ -1,4 +1,4 @@
-import AuthorizationMiddleware from '../../entities/tools/AuthorizationMiddleware.js';
+import AuthorizationMiddleware from '../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import User from '../../entities/User.js';
 
 export default async function route(app) {

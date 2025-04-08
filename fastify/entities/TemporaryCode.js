@@ -20,7 +20,7 @@ export default class TemporaryCode {
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         INSERT INTO public.temporary_code (user_id, value)
         VALUES ($1::uuid, $2::text)
@@ -43,13 +43,13 @@ export default class TemporaryCode {
   }
 
   static async isValueInserted(value, user) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.temporary_code tc
         WHERE tc.user_id = $1::uuid
         AND tc.value = $2::text
-        AND (tc.created_at + ($3::int * INTERVAL '1 second')) > NOW()
+        AND (tc.created_at + ($3::int * INTERVAL '1 minute')) > NOW()
         AND NOT EXISTS (
           SELECT 1
           FROM public.temporary_code tc2
@@ -57,14 +57,14 @@ export default class TemporaryCode {
           AND tc2.created_at > tc.created_at
         )
       `,
-      [user.Id, value, Number(process.env.TEMPORARY_CODE_EXPIRATION_SECONDS)],
+      [user.Id, value, Number(process.env.TEMPORARY_CODE_EXPIRATION_MINUTES)],
     );
 
     return row.count === 1n;
   }
 
   static async deleteAll(user) {
-    await DatabasePool.Instance.query(
+    await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         DELETE FROM public.temporary_code
         WHERE user_id = $1::uuid

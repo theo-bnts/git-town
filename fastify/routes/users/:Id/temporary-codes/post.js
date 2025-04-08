@@ -1,5 +1,5 @@
 import MailTransporter from '../../../../entities/tools/MailTransporter.js';
-import ParametersMiddleware from '../../../../entities/tools/ParametersMiddleware.js';
+import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Security from '../../../../entities/tools/Security.js';
 import TemporaryCode from '../../../../entities/TemporaryCode.js';
 import User from '../../../../entities/User.js';
@@ -26,7 +26,7 @@ export default async function route(app) {
         keyGenerator: (request) => `${request.params.UserId}-${request.routeOptions.url}`,
       },
     },
-    preHandler: async (request) => ParametersMiddleware.assertUserIdExists(request),
+    preHandler: async (request) => ParametersMiddleware.assertUserIdInserted(request),
     handler: async (request) => {
       const { UserId: userId } = request.params;
 
@@ -42,7 +42,7 @@ export default async function route(app) {
 
       await temporaryCode.insert();
 
-      await MailTransporter.Instance.sendTemporaryCode(
+      await MailTransporter.EnvironmentInstance.sendTemporaryCode(
         user.EmailAddress,
         temporaryCode,
       );

@@ -1,13 +1,13 @@
-import EnseignementUnit from '../EnseignementUnit.js';
-import Milestone from '../Milestone.js';
-import Promotion from '../Promotion.js';
-import Repository from '../Repository.js';
-import Template from '../Template.js';
-import Token from '../Token.js';
-import User from '../User.js';
+import EnseignementUnit from '../../EnseignementUnit.js';
+import Milestone from '../../Milestone.js';
+import Promotion from '../../Promotion.js';
+import Repository from '../../Repository.js';
+import Template from '../../Template.js';
+import Token from '../../Token.js';
+import User from '../../User.js';
 
 export default class ParametersMiddleware {
-  static async assertEnseignementUnitIdExists(request) {
+  static async assertEnseignementUnitIdInserted(request) {
     const { EnseignementUnitId: enseignementUnitId } = request.params;
 
     if (!(await EnseignementUnit.isIdInserted(enseignementUnitId))) {
@@ -15,7 +15,7 @@ export default class ParametersMiddleware {
     }
   }
 
-  static async assertMilestoneIdExists(request) {
+  static async assertMilestoneIdInserted(request) {
     const { MilestoneId: milestoneId } = request.params;
 
     if (!(await Milestone.isIdInserted(milestoneId))) {
@@ -23,7 +23,7 @@ export default class ParametersMiddleware {
     }
   }
 
-  static async assertPromotionIdExists(request) {
+  static async assertPromotionIdInserted(request) {
     const { PromotionId: promotionId } = request.params;
 
     if (!(await Promotion.isIdInserted(promotionId))) {
@@ -31,7 +31,7 @@ export default class ParametersMiddleware {
     }
   }
 
-  static async assertRepositoryIdExists(request) {
+  static async assertRepositoryIdInserted(request) {
     const { RepositoryId: repositoryId } = request.params;
 
     if (!(await Repository.isIdInserted(repositoryId))) {
@@ -39,7 +39,7 @@ export default class ParametersMiddleware {
     }
   }
 
-  static async assertTemplateIdExists(request) {
+  static async assertTemplateIdInserted(request) {
     const { TemplateId: templateId } = request.params;
 
     if (!(await Template.isIdInserted(templateId))) {
@@ -47,7 +47,7 @@ export default class ParametersMiddleware {
     }
   }
 
-  static async assertTokenIdExists(request) {
+  static async assertTokenIdInserted(request) {
     const { TokenId: tokenId } = request.params;
 
     if (!(await Token.isIdInserted(tokenId))) {
@@ -55,7 +55,7 @@ export default class ParametersMiddleware {
     }
   }
 
-  static async assertUserIdExists(request) {
+  static async assertUserIdInserted(request) {
     const { UserId: userId } = request.params;
 
     if (!(await User.isIdInserted(userId))) {
@@ -79,7 +79,7 @@ export default class ParametersMiddleware {
     const milestone = await Milestone.fromId(milestoneId);
 
     if (templateId !== milestone.Template.Id) {
-      throw { statusCode: 409, error: 'TEMPLATE_ID_MISMATCH' };
+      throw { statusCode: 409, error: 'TEMPLATE_AND_MILESTONE_ID_MISMATCH' };
     }
   }
 }

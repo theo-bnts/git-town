@@ -1,5 +1,5 @@
-import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
-import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.js';
+import AuthorizationMiddleware from '../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import ParametersMiddleware from '../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Request from '../../../entities/tools/Request.js';
 import User from '../../../entities/User.js';
 import Role from '../../../entities/Role.js';
@@ -58,7 +58,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await ParametersMiddleware.assertUserIdExists(request);
+      await ParametersMiddleware.assertUserIdInserted(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;

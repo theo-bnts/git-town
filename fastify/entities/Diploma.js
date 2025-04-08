@@ -20,7 +20,7 @@ export default class Diploma {
   }
 
   static async isInitialismInserted(initialism) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.diploma
@@ -33,7 +33,7 @@ export default class Diploma {
   }
 
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,
@@ -57,7 +57,7 @@ export default class Diploma {
   }
 
   static async fromInitialism(initialism) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,

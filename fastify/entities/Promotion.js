@@ -25,7 +25,7 @@ export default class Promotion {
   }
 
   async insert() {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         INSERT INTO public.promotion (diploma_id, promotion_level_id, year)
         VALUES ($1::uuid, $2::uuid, $3::integer)
@@ -40,7 +40,7 @@ export default class Promotion {
   }
 
   async update() {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         UPDATE public.promotion
         SET
@@ -62,7 +62,7 @@ export default class Promotion {
   }
 
   async delete() {
-    await DatabasePool.Instance.query(
+    await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         DELETE FROM public.promotion
         WHERE id = $1::uuid
@@ -72,7 +72,7 @@ export default class Promotion {
   }
 
   static async isIdInserted(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.promotion
@@ -85,7 +85,7 @@ export default class Promotion {
   }
 
   static async isDiplomaPromotionLevelAndYearInserted(diploma, promotionLevel, year) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT COUNT(*) AS count
         FROM public.promotion
@@ -100,7 +100,7 @@ export default class Promotion {
   }
 
   static async fromId(id) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,
@@ -129,7 +129,7 @@ export default class Promotion {
   }
 
   static async fromDiplomaPromotionLevelAndYear(diploma, promotionLevel, year) {
-    const [row] = await DatabasePool.Instance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,
@@ -154,7 +154,7 @@ export default class Promotion {
   }
 
   static async all() {
-    const rows = await DatabasePool.Instance.query(
+    const rows = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
           id,

@@ -1,10 +1,9 @@
-import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
-import GitHubApp from '../../../entities/tools/GitHubApp.js';
-import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.js';
+import AuthorizationMiddleware from '../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import GitHubApp from '../../../entities/tools/GitHub/GitHubApp.js';
+import ParametersMiddleware from '../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Request from '../../../entities/tools/Request.js';
 import User from '../../../entities/User.js';
 import UserRepository from '../../../entities/UserRepository.js';
-import UserPromotion from '../../../entities/UserPromotion.js';
 
 export default async function route(app) {
   app.route({
@@ -34,7 +33,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await ParametersMiddleware.assertUserIdExists(request);
+      await ParametersMiddleware.assertUserIdInserted(request);
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;
@@ -52,21 +51,19 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'HAS_REPOSITORIES' };
       }
 
-      if (await UserPromotion.isUserInserted(requestedUser)) {
-        throw { statusCode: 409, error: 'HAS_PROMOTIONS' };
-      }
-
       if (await requestedUser.GitHubId !== null) {
         if (await requestedUser.GitHubOrganizationMember) {
-          await GitHubApp.Instance.deleteOrganizationMember(requestedUser.GitHubId);
+          await GitHubApp.EnvironmentInstance.Organization.removeMember(requestedUser.GitHubId);
         } else {
-          const userInvitations = await GitHubApp.Instance.getOrganizationInvitations(
+          const userInvitations = await GitHubApp.EnvironmentInstance.Organization.getInvitations(
             requestedUser.GitHubId,
           );
 
           await Promise.all(
             userInvitations.map(
-              async (invitation) => GitHubApp.Instance.deleteOrganizationInvitation(invitation.Id),
+              async (invitation) => (
+                GitHubApp.EnvironmentInstance.Organization.removeInvitation(invitation.Id)
+              ),
             ),
           );
         }

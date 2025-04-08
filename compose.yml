@@ -10,6 +10,18 @@ services:
       - postgres_data_volume:/var/lib/postgresql/data:rw
     networks:
       - postgres_network
+  postgres_backup_local:
+    depends_on:
+      - postgres
+    image: prodrigestivill/postgres-backup-local
+    container_name: git_town_postgres_backup_local
+    restart: unless-stopped
+    env_file:
+      - ./postgres_backup_local/.env
+    volumes:
+      - postgres_backup_local_volume:/backups:rw
+    networks:
+      - postgres_network
   fastify:
     depends_on:
       - postgres
@@ -53,6 +65,8 @@ services:
 volumes:
   postgres_data_volume:
     name: git_town_postgres_data_volume
+  postgres_backup_local_volume:
+    name: git_town_postgres_backup_local_volume
   fastify_node_modules:
     name: git_town_fastify_node_modules
   next_node_modules:

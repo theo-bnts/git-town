@@ -1,6 +1,6 @@
-import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
+import AuthorizationMiddleware from '../../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import EnseignementUnit from '../../../entities/EnseignementUnit.js';
-import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.js';
+import ParametersMiddleware from '../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Template from '../../../entities/Template.js';
 
 export default async function route(app) {
@@ -31,7 +31,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await ParametersMiddleware.assertEnseignementUnitIdExists(request);
+      await ParametersMiddleware.assertEnseignementUnitIdInserted(request);
     },
     handler: async (request) => {
       const { EnseignementUnitId: enseignementUnitId } = request.params;

@@ -1,5 +1,5 @@
-import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
-import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.js';
+import AuthorizationMiddleware from '../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import ParametersMiddleware from '../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Promotion from '../../../entities/Promotion.js';
 import Repository from '../../../entities/Repository.js';
 
@@ -31,7 +31,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await ParametersMiddleware.assertPromotionIdExists(request);
+      await ParametersMiddleware.assertPromotionIdInserted(request);
     },
     handler: async (request) => {
       const { PromotionId: promotionId } = request.params;

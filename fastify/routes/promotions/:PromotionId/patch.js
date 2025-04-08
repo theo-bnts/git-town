@@ -1,8 +1,9 @@
-import AuthorizationMiddleware from '../../../entities/tools/AuthorizationMiddleware.js';
+import AuthorizationMiddleware from '../../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import Diploma from '../../../entities/Diploma.js';
-import ParametersMiddleware from '../../../entities/tools/ParametersMiddleware.js';
+import ParametersMiddleware from '../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Promotion from '../../../entities/Promotion.js';
 import PromotionLevel from '../../../entities/PromotionLevel.js';
+import Repository from '../../../entities/Repository.js';
 
 export default async function route(app) {
   app.route({
@@ -63,7 +64,7 @@ export default async function route(app) {
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
-      await ParametersMiddleware.assertPromotionIdExists(request);
+      await ParametersMiddleware.assertPromotionIdInserted(request);
     },
     handler: async (request) => {
       const { PromotionId: promotionId } = request.params;
@@ -96,8 +97,7 @@ export default async function route(app) {
           throw { statusCode: 409, error: 'SAME_PROMOTION_LEVEL_INITIALISM' };
         }
 
-        promotion.PromotionLevel = await PromotionLevel
-          .fromInitialism(promotionLevelInitialism);
+        promotion.PromotionLevel = await PromotionLevel.fromInitialism(promotionLevelInitialism);
       }
 
       if (year !== undefined) {
@@ -105,11 +105,19 @@ export default async function route(app) {
           throw { statusCode: 409, error: 'SAME_YEAR' };
         }
 
+        if (await Repository.isPromotionInserted(promotion)) {
+          throw { statusCode: 409, error: 'YEAR_UNEDITABLE_WHILE_LINKED_TO_REPOSITORIES' };
+        }
+
         promotion.Year = year;
       }
 
-      if (await Promotion.isDiplomaPromotionLevelAndYearInserted(diploma, promotionLevel, year)) {
-        throw { statusCode: 409, error: 'ALREADY_EXISTS' };
+      if (await Promotion.isDiplomaPromotionLevelAndYearInserted(
+        promotion.Diploma,
+        promotion.PromotionLevel,
+        promotion.Year,
+      )) {
+        throw { statusCode: 409, error: 'DUPLICATE' };
       }
 
       await promotion.update();

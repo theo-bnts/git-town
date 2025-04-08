@@ -1,6 +1,6 @@
-import Request from './Request.js';
-import Role from '../Role.js';
-import Security from './Security.js';
+import Request from '../Request.js';
+import Role from '../../Role.js';
+import Security from '../Security.js';
 
 export default class AuthorizationMiddleware {
   static async assertAuthentication(request) {
