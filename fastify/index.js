@@ -7,12 +7,12 @@ import rawBody from 'fastify-raw-body';
 
 import DatabasePool from './entities/tools/DatabasePool.js';
 import GitHubApp from './entities/tools/GitHub/GitHubApp.js';
-import MailTransporter from './entities/tools/MailTransporter.js';
+import EmailTransporter from './entities/tools/EmailTransporter.js';
 import Request from './entities/tools/Request.js';
 
 DatabasePool.EnvironmentInstance = DatabasePool.fromEnvironment();
 GitHubApp.EnvironmentInstance = GitHubApp.fromEnvironment();
-MailTransporter.EnvironmentInstance = MailTransporter.fromEnvironment();
+EmailTransporter.EnvironmentInstance = EmailTransporter.fromEnvironment();
 
 /* eslint-disable-next-line no-extend-native */
 BigInt.prototype.toJSON = function toJSON() {

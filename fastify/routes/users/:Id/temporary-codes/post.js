@@ -1,4 +1,4 @@
-import MailTransporter from '../../../../entities/tools/MailTransporter.js';
+import EmailTransporter from '../../../../entities/tools/EmailTransporter.js';
 import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Security from '../../../../entities/tools/Security.js';
 import TemporaryCode from '../../../../entities/TemporaryCode.js';
@@ -42,7 +42,7 @@ export default async function route(app) {
 
       await temporaryCode.insert();
 
-      await MailTransporter.EnvironmentInstance.sendTemporaryCode(
+      await EmailTransporter.EnvironmentInstance.sendTemporaryCode(
         user.EmailAddress,
         temporaryCode,
       );
