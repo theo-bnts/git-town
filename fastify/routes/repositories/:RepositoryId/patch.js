@@ -55,7 +55,7 @@ export default async function route(app) {
             required: ['Id'],
           },
         },
-        required: ['Template', 'Promotion'],
+        minProperties: 1,
       },
     },
     preHandler: async (request) => {
