@@ -102,6 +102,8 @@ export default async function route(app) {
         )),
       );
 
+      await GitHubApp.EnvironmentInstance.EducationalTeam.addRepository(repository.Id);
+
       await DatabasePool.commit(connection);
       await DatabasePool.release(connection);
 

@@ -3,6 +3,7 @@ import GitHubApp from '../../../../entities/tools/GitHub/GitHubApp.js';
 import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Repository from '../../../../entities/Repository.js';
 import User from '../../../../entities/User.js';
+import UserPromotion from '../../../../entities/UserPromotion.js';
 import UserRepository from '../../../../entities/UserRepository.js';
 
 export default async function route(app) {
@@ -67,11 +68,13 @@ export default async function route(app) {
 
       const repository = await Repository.fromId(repositoryId);
 
+      if (!await UserPromotion.isUserAndPromotionInserted(user, repository.Promotion)) {
+        throw { statusCode: 409, error: 'NOT_IN_REPOSITORY_PROMOTION' };
+      }
+
       if (await UserRepository.isUserAndRepositoryInserted(user, repository)) {
         throw { statusCode: 409, error: 'DUPLICATE' };
       }
-
-      await GitHubApp.EnvironmentInstance.EducationalTeam.addRepository(repository.Id);
 
       if (user.GitHubOrganizationMember) {
         await GitHubApp.EnvironmentInstance.Repositories.addMember(repository.Id, user.GitHubId);
