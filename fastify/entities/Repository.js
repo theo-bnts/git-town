@@ -67,7 +67,7 @@ export default class Repository {
   }
 
   async update() {
-    await DatabasePool.EnvironmentInstance.query(
+    const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         UPDATE public.repository
         SET
@@ -86,6 +86,8 @@ export default class Repository {
         this.Id,
       ],
     );
+
+    this.UpdatedAt = row.updated_at;
   }
 
   toStudentJSON() {
