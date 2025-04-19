@@ -67,7 +67,7 @@ export default class UserRepository {
       `,
       [repository.Id],
     );
-    
+
     return row.count > 0;
   }
 

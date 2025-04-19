@@ -124,10 +124,10 @@ export default async function route(app) {
         if (promotionId === repository.Promotion.Id) {
           throw { statusCode: 409, error: 'SAME_PROMOTION_ID' };
         }
-        
+
         repository.Promotion = await Promotion.fromId(promotionId);
       }
-      
+
       if (repository.Template.Year !== repository.Promotion.Year) {
         throw { statusCode: 409, error: 'YEAR_MISMATCH' };
       }
