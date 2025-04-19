@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import { readFileSync } from 'fs';
 
-export default class MailTransporter {
+export default class EmailTransporter {
   Transporter;
 
   static EnvironmentInstance = null;
@@ -12,7 +12,7 @@ export default class MailTransporter {
 
   async sendEmail(to, subject, html) {
     await this.Transporter.sendMail({
-      from: `"${process.env.MAIL_FROM_NAME}" <${process.env.MAIL_FROM_ADDRESS}>`,
+      from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_FROM_ADDRESS}>`,
       to,
       subject,
       html,

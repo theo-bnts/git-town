@@ -66,6 +66,30 @@ export default class Repository {
     this.UpdatedAt = row.updated_at;
   }
 
+  async update() {
+    const [row] = await DatabasePool.EnvironmentInstance.query(
+      /* sql */ `
+        UPDATE public.repository
+        SET
+          archived_at = $1::timestamp with time zone,
+          template_id = $2::uuid,
+          promotion_id = $3::uuid,
+          comment = $4::text
+        WHERE id = $5::uuid
+        RETURNING updated_at
+      `,
+      [
+        this.ArchivedAt,
+        this.Template.Id,
+        this.Promotion.Id,
+        this.Comment,
+        this.Id,
+      ],
+    );
+
+    this.UpdatedAt = row.updated_at;
+  }
+
   toStudentJSON() {
     return {
       id: this.Id,

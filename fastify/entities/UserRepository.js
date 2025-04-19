@@ -58,6 +58,19 @@ export default class UserRepository {
     return row.count > 0;
   }
 
+  static async isRepositoryInserted(repository) {
+    const [row] = await DatabasePool.EnvironmentInstance.query(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.user_repository
+        WHERE user_repository.repository_id = $1::uuid
+      `,
+      [repository.Id],
+    );
+
+    return row.count > 0;
+  }
+
   static async isUserAndRepositoryInserted(user, repository) {
     const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `

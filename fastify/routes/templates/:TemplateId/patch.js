@@ -69,7 +69,7 @@ export default async function route(app) {
         }
 
         if (enseignementUnitId === template.EnseignementUnit.Id) {
-          throw { statusCode: 409, error: 'SAME_ENSEIGNEMENT_UNIT' };
+          throw { statusCode: 409, error: 'SAME_ENSEIGNEMENT_UNIT_ID' };
         }
 
         template.EnseignementUnit = await EnseignementUnit.fromId(enseignementUnitId);
