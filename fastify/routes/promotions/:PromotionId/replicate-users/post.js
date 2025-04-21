@@ -1,7 +1,7 @@
-import AuthorizationMiddleware from '../../../entities/tools/Middleware/AuthorizationMiddleware.js';
-import ParametersMiddleware from '../../../entities/tools/Middleware/ParametersMiddleware.js';
-import Promotion from '../../../entities/Promotion.js';
-import UserPromotion from '../../../entities/UserPromotion.js';
+import AuthorizationMiddleware from '../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
+import Promotion from '../../../../entities/Promotion.js';
+import UserPromotion from '../../../../entities/UserPromotion.js';
 
 export default async function route(app) {
   app.route({
@@ -51,7 +51,7 @@ export default async function route(app) {
         throw { statusCode: 404, error: 'UNKNOWN_TARGET_PROMOTION_ID' };
       }
 
-      if (sourcePromotionId === targetPromotionId) {
+      if (targetPromotionId === sourcePromotionId) {
         throw { statusCode: 409, error: 'SAME_PROMOTION_ID' };
       }
 

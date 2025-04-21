@@ -40,7 +40,7 @@ export default class GitHubEducationalTeam {
   async addRepository(repositoryName) {
     const { Name: organizationName } = await this.App.Organization.get();
 
-    const { Slug: teamSlug } = await this.App.Teams.getEducationalTeam();
+    const { Slug: teamSlug } = await this.get();
 
     await this.App.Octokit.rest.teams.addOrUpdateRepoPermissionsInOrg({
       org: organizationName,

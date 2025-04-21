@@ -70,7 +70,7 @@ export default async function route(app) {
       const repository = await Repository.fromId(repositoryId);
 
       if (repository.ArchivedAt !== null) {
-        throw { statusCode: 409, error: 'ARCHIVED' };
+        throw { statusCode: 423, error: 'ARCHIVED' };
       }
 
       if (await UserRepository.isRepositoryInserted(repository)) {

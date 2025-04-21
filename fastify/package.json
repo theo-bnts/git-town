@@ -20,7 +20,8 @@
     "desm": "1",
     "fastify": "5",
     "fastify-raw-body": "5",
-    "luxon": "^3.6.1",
+    "luxon": "3",
+    "node-ssh": "13",
     "nodemailer": "6",
     "octokit": "4",
     "pg": "8"
