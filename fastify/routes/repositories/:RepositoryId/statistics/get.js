@@ -1,6 +1,7 @@
 import AuthorizationMiddleware from '../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import GitHubApp from '../../../../entities/tools/GitHub/GitHubApp.js';
 import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
+import User from '../../../../entities/User.js';
 
 export default async function route(app) {
   app.route({
@@ -39,6 +40,9 @@ export default async function route(app) {
     handler: async (request) => {
       const { RepositoryId: repositoryId } = request.params;
 
+      const languages = await GitHubApp.EnvironmentInstance.Repositories
+        .getLanguages(repositoryId);
+
       const hourlyAndDailyCumulativeCommits = await GitHubApp.EnvironmentInstance.Repositories
         .getHourlyAndDailyCumulativeCommits(repositoryId);
 
@@ -48,14 +52,43 @@ export default async function route(app) {
       const weeklyLines = await GitHubApp.EnvironmentInstance.Repositories
         .getWeeklyLines(repositoryId);
 
+      const usersWeeklyCommitsAndLines = await GitHubApp.EnvironmentInstance.Repositories
+        .getUsersWeeklyCommitsAndLines(repositoryId);
+
+      const existantUsers = await Promise.all(
+        usersWeeklyCommitsAndLines.map((userContributions) => (
+          User.isGitHubIdInserted(userContributions.User.Id))),
+      );
+
+      const filteredUsersWeeklyCommitsAndLines = usersWeeklyCommitsAndLines
+        .filter((_, index) => existantUsers[index]);
+
+      const mappedUsersWeeklyCommitsAndLines = await Promise.all(
+        filteredUsersWeeklyCommitsAndLines.map(async (userContributions) => {
+          const user = await User.fromGitHubId(userContributions.User.Id);
+          return { ...userContributions, User: user };
+        }),
+      );
+
+      const sortedUsersWeeklyCommitsAndLines = mappedUsersWeeklyCommitsAndLines
+        .sort((a, b) => a.User.FullName.localeCompare(b.User.FullName));
+
+      const pullRequestCounts = await GitHubApp.EnvironmentInstance.Repositories
+        .getPullRequestCounts(repositoryId);
+
       return {
-        Commits: {
-          ...hourlyAndDailyCumulativeCommits,
-          Weekly: weeklyCommits,
+        Global: {
+          Languages: languages,
+          PullRequests: pullRequestCounts,
+          Commits: {
+            ...hourlyAndDailyCumulativeCommits,
+            Weekly: weeklyCommits,
+          },
+          Lines: {
+            Weekly: weeklyLines,
+          },
         },
-        Lines: {
-          Weekly: weeklyLines,
-        },
+        Users: sortedUsersWeeklyCommitsAndLines,
       };
     },
   });

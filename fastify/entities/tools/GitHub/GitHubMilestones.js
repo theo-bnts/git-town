@@ -10,10 +10,13 @@ export default class GitHubMilestones {
   async get(repositoryName) {
     const { Name: organizationName } = await this.App.Organization.get();
 
-    const { data: milestones } = await this.App.Octokit.rest.issues.listMilestones({
-      owner: organizationName,
-      repo: repositoryName,
-    });
+    const milestones = await this.App.Octokit.paginate(
+      this.App.Octokit.rest.issues.listMilestones,
+      {
+        owner: organizationName,
+        repo: repositoryName,
+      },
+    );
 
     return milestones.map((milestone) => ({
       Id: milestone.id,

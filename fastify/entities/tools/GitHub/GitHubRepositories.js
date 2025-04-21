@@ -1,4 +1,4 @@
-import { DateTime, Duration } from 'luxon';
+import { DateTime } from 'luxon';
 
 export default class GitHubRepositories {
   App;
@@ -66,13 +66,90 @@ export default class GitHubRepositories {
     });
   }
 
-  async getWeeklyCommits(repositoryName) {
+  async getLanguages(repositoryName) {
     const { Name: organizationName } = await this.App.Organization.get();
 
-    const { data: commits } = await this.App.Octokit.rest.repos.getCommitActivityStats({
+    const { data: languages } = await this.App.Octokit.rest.repos.listLanguages({
       owner: organizationName,
       repo: repositoryName,
     });
+
+    const languagesArray = Object.entries(languages);
+
+    const languagesSize = languagesArray.reduce((accumulator, [, size]) => accumulator + size, 0);
+
+    return languagesArray
+      .map(([name, size]) => ({
+        Name: name,
+        Percentage: Math.round((size / languagesSize) * 100 * 10) / 10,
+      }));
+  }
+
+  async getPullRequestCounts(repositoryName) {
+    const { Name: organizationName } = await this.App.Organization.get();
+
+    const pullRequests = await this.App.Octokit.paginate(
+      this.App.Octokit.rest.pulls.list,
+      {
+        owner: organizationName,
+        repo: repositoryName,
+        state: 'all',
+      },
+    );
+
+    const pullRequestWeekStartTimestamps = pullRequests.map((pullRequest) => DateTime.fromISO(pullRequest.created_at, { zone: 'UTC' })
+      .startOf('week')
+      .toMillis());
+
+    const uniquePullRequestWeekStartTimestamps = Array.from(
+      new Set(pullRequestWeekStartTimestamps),
+    );
+
+    const firstDayOfFirstWeek = DateTime
+      .fromMillis(uniquePullRequestWeekStartTimestamps[0], { zone: 'UTC' })
+      .toJSDate();
+    const firstDayOfLastWeek = DateTime
+      .fromMillis(
+        uniquePullRequestWeekStartTimestamps[uniquePullRequestWeekStartTimestamps.length - 1],
+        { zone: 'UTC' },
+      )
+      .toJSDate();
+
+    const weeklyCounts = uniquePullRequestWeekStartTimestamps.map((uniqueTimestamps) => (
+      pullRequestWeekStartTimestamps
+        .filter((timestamps) => timestamps === uniqueTimestamps)
+        .length
+    ));
+
+    return {
+      Global: {
+        All: pullRequests.length,
+        Open: pullRequests.filter((pullRequest) => pullRequest.state === 'open').length,
+        Closed: pullRequests.filter((pullRequest) => pullRequest.state === 'closed').length,
+        Weekly: {
+          FirstDayOfFirstWeek: firstDayOfFirstWeek,
+          FirstDayOfLastWeek: firstDayOfLastWeek,
+          Counts: weeklyCounts,
+        },
+      },
+      User: {
+      },
+    };
+  }
+
+  async getWeeklyCommits(repositoryName) {
+    const { Name: organizationName } = await this.App.Organization.get();
+
+    const response = await this.App.Octokit.rest.repos.getCommitActivityStats({
+      owner: organizationName,
+      repo: repositoryName,
+    });
+
+    if (response.status === 202) {
+      return null;
+    }
+
+    const commits = response.data;
 
     const firstWeekIndex = commits.findIndex((week) => week.total !== 0);
     const lastWeekIndex = commits.findLastIndex((week) => week.total !== 0);
@@ -81,7 +158,6 @@ export default class GitHubRepositories {
       .fromSeconds(commits[firstWeekIndex].week, { zone: 'UTC' })
       .plus({ days: 1 })
       .toJSDate();
-
     const firstDayOfLastWeek = DateTime
       .fromSeconds(commits[lastWeekIndex].week, { zone: 'UTC' })
       .plus({ days: 1 })
@@ -109,10 +185,16 @@ export default class GitHubRepositories {
   async getWeeklyLines(repositoryName) {
     const { Name: organizationName } = await this.App.Organization.get();
 
-    const { data: lines } = await this.App.Octokit.rest.repos.getCodeFrequencyStats({
+    const response = await this.App.Octokit.rest.repos.getCodeFrequencyStats({
       owner: organizationName,
       repo: repositoryName,
     });
+
+    if (response.status === 202) {
+      return null;
+    }
+
+    const lines = response.data;
 
     const firstWeekIndex = lines.findIndex((week) => week[1] !== 0 || week[2] !== 0);
     const lastWeekIndex = lines.findLastIndex((week) => week[1] !== 0 || week[2] !== 0);
@@ -121,7 +203,6 @@ export default class GitHubRepositories {
       .fromSeconds(lines[firstWeekIndex][0], { zone: 'UTC' })
       .plus({ days: 1 })
       .toJSDate();
-
     const firstDayOfLastWeek = DateTime
       .fromSeconds(lines[lastWeekIndex][0], { zone: 'UTC' })
       .plus({ days: 1 })
@@ -151,7 +232,7 @@ export default class GitHubRepositories {
     });
 
     const hourlyCumulativeCommitCounts = Array.from({ length: 24 }, () => 0);
-    const dailyCumulativeCommitCounts  = Array.from({ length: 7 }, () => 0);
+    const dailyCumulativeCommitCounts = Array.from({ length: 7 }, () => 0);
 
     commits.forEach(([day, hour, count]) => {
       hourlyCumulativeCommitCounts[hour] += count;
@@ -168,5 +249,73 @@ export default class GitHubRepositories {
         Counts: dailyCumulativeCommitCounts,
       },
     };
+  }
+
+  async getUsersWeeklyCommitsAndLines(repositoryName) {
+    const { Name: organizationName } = await this.App.Organization.get();
+
+    const response = await this.App.Octokit.rest.repos.getContributorsStats({
+      owner: organizationName,
+      repo: repositoryName,
+    });
+
+    if (response.status === 202) {
+      return null;
+    }
+
+    const commits = response.data;
+
+    return commits.map((userContributions) => {
+      const firstWeekIndex = userContributions.weeks.findIndex((week) => week.c !== 0);
+      const lastWeekIndex = userContributions.weeks.findLastIndex((week) => week.c !== 0);
+
+      const firstDayOfFirstWeek = DateTime
+        .fromSeconds(userContributions.weeks[firstWeekIndex].w, { zone: 'UTC' })
+        .plus({ days: 1 })
+        .toJSDate();
+      const firstDayOfLastWeek = DateTime
+        .fromSeconds(userContributions.weeks[lastWeekIndex].w, { zone: 'UTC' })
+        .plus({ days: 1 })
+        .toJSDate();
+
+      const commitCounts = userContributions.weeks
+        .slice(firstWeekIndex, lastWeekIndex + 1)
+        .map((week, index) => {
+          const todaySunday = week.c;
+          const nextSunday = userContributions.weeks[firstWeekIndex + index + 1] !== undefined
+            ? userContributions.weeks[firstWeekIndex + index + 1].c
+            : 0;
+
+          return week.c - todaySunday + nextSunday;
+        });
+
+      const linesCounts = userContributions.weeks
+        .slice(firstWeekIndex, lastWeekIndex + 1)
+        .map((week) => ({
+          Additions: week.a,
+          Deletions: Math.abs(week.d),
+          Differentials: week.a + week.d,
+        }));
+
+      return {
+        User: {
+          Id: userContributions.author.id,
+        },
+        Commits: {
+          Weekly: {
+            FirstDayOfFirstWeek: firstDayOfFirstWeek,
+            FirstDayOfLastWeek: firstDayOfLastWeek,
+            Counts: commitCounts,
+          },
+        },
+        Lines: {
+          Weekly: {
+            FirstDayOfFirstWeek: firstDayOfFirstWeek,
+            FirstDayOfLastWeek: firstDayOfLastWeek,
+            Counts: linesCounts,
+          },
+        },
+      };
+    });
   }
 }
