@@ -39,11 +39,23 @@ export default async function route(app) {
     handler: async (request) => {
       const { RepositoryId: repositoryId } = request.params;
 
-      const commits = await GitHubApp.EnvironmentInstance.Repositories
-        .getWeeklyCommitCount(repositoryId);
+      const hourlyAndDailyCumulativeCommits = await GitHubApp.EnvironmentInstance.Repositories
+        .getHourlyAndDailyCumulativeCommits(repositoryId);
+
+      const weeklyCommits = await GitHubApp.EnvironmentInstance.Repositories
+        .getWeeklyCommits(repositoryId);
+
+      const weeklyLines = await GitHubApp.EnvironmentInstance.Repositories
+        .getWeeklyLines(repositoryId);
 
       return {
-        Commits: commits,
+        Commits: {
+          ...hourlyAndDailyCumulativeCommits,
+          Weekly: weeklyCommits,
+        },
+        Lines: {
+          Weekly: weeklyLines,
+        },
       };
     },
   });
