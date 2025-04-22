@@ -49,3 +49,9 @@ export const enseignementUnitsRoute = () =>
 
 export const enseignementUnitRoute = (unitId) =>
   `${API_BASE_URL}/enseignement-units/${unitId}`;
+
+export const templatesRoute = () =>
+  `${API_BASE_URL}/templates`;
+
+export const templateRoute = (templateId) =>
+  `${API_BASE_URL}/templates/${templateId}`;

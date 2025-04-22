@@ -5,14 +5,15 @@ import Header from '@/app/components/layout/Header';
 import Sidebar from '@/app/components/layout/Sidebar';
 import UsersPanel from '@/app/components/layout/panel/UsersPanel';
 import PromotionPanel from '@/app/components/layout/panel/PromotionsPanel';
-import EnseignementUnitPanel from './panel/EnseignementUnitPanel';
+import EnseignementUnitPanel from '@/app/components/layout/panel/EnseignementUnitPanel';
+import TemplatePanel from '@/app/components/layout/panel/TemplatePanel';
 
 export default function PanelManager({ fullName }) {
   const navItems = [
     { label: "Utilisateurs", component: UsersPanel },
     { label: "Promotions", component: PromotionPanel },
     { label: "Dépots", component: () => <div>Future Dépots Panel</div> },
-    { label: "Modèles", component: () => <div>Future Modèles Panel</div> },
+    { label: "Modèles", component: TemplatePanel },
     { label: "UE", component: EnseignementUnitPanel },
   ];
 
