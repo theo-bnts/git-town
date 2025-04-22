@@ -43,3 +43,9 @@ export const delTokenRoute = (userId, tokenId) =>
 
 export const deleteUserPromotionRoute = (userId, userPromotionId) =>
   `${API_BASE_URL}/users/${userId}/promotions/${userPromotionId}`;
+
+export const enseignementUnitsRoute = () =>
+  `${API_BASE_URL}/enseignement-units`;
+
+export const enseignementUnitRoute = (unitId) =>
+  `${API_BASE_URL}/enseignement-units/${unitId}`;
