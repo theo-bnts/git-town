@@ -4,9 +4,12 @@ import { handleApiError } from '@/app/services/errorHandler';
 import { templatesRoute } from '@/app/services/routes';
 
 /**
- * GET /templates
- * @param {string} token
- * @returns {Promise<object[]>}
+ * Récupère la liste des templates
+ * (GET /templates)
+ *
+ * @param {string} token - Le token d'authentification.
+ * @returns {Promise<object[]>} - La liste des templates.
+ * @throws {Error} - En cas d'erreur lors de la récupération.
  */
 export default async function getTemplates(token) {
   const url = templatesRoute();

@@ -1,157 +1,133 @@
-// /app/components/layout/forms/modal/TemplateModal.jsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getCookie } from '@/app/services/cookies';
 
 import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
-import MilestoneListBox from '@/app/components/ui/milestone/MilestoneListBox';
+import MilestoneListBox from '@/app/components/ui/listbox/MilestoneListBox';
 
-import saveTemplate from '@/app/services/api/templates/saveTemplate';
-import getEnseignementUnits from '@/app/services/api/enseignementUnit/getEnseignementUnits';
-import getTemplateMilestones from '@/app/services/api/templates/id/milestone/getTemplateMilestones';
-import saveTemplateMilestone from '@/app/services/api/templates/id/milestone/saveTemplateMilestone';
+import saveTemplate            from '@/app/services/api/templates/saveTemplate';
+import getEnseignementUnits    from '@/app/services/api/enseignementUnit/getEnseignementUnits';
+import getTemplateMilestones   from '@/app/services/api/templates/id/milestone/getTemplateMilestones';
+import saveTemplateMilestone   from '@/app/services/api/templates/id/milestone/saveTemplateMilestone';
 import deleteTemplateMilestone from '@/app/services/api/templates/id/milestone/id/deleteTemplateMilestone';
 
-export default function TemplateModal({
-  isOpen,
-  initialData = {},
-  onClose,
-  onSave,
-}) {
-  const [authToken,      setAuthToken]      = useState('');
-  const [errors,         setErrors]         = useState({});
-  const [apiError,       setApiError]       = useState('');
-  const [unitsOptions,   setUnitsOptions]   = useState([]);
-  const [milestones,     setMilestones]     = useState([]);
+export default function TemplateModal({ isOpen, initialData = {}, onClose, onSave }) {
+  const [authToken, setAuthToken]     = useState('');
 
+  /* ---------------- données principales ---------------- */
+  const [ueOpts, setUeOpts] = useState([]);
+  const [ueSel , setUeSel ] = useState(null);
+  const [year  , setYear  ] = useState(initialData.Year || '');
+
+  /* ---------------- jalons (état local) ---------------- */
+  const [initialMs , setInitialMs ] = useState([]);
+  const [milestones, setMilestones] = useState([]);
+
+  /* token ------------------------------------------------ */
+  useEffect(() => { (async () => setAuthToken(await getCookie('token')))(); }, []);
+
+  /* liste UE + sélection par défaut --------------------- */
   useEffect(() => {
-    (async () => {
-      const token = await getCookie('token');
-      setAuthToken(token);
-    })();
-  }, []);
+    if (!isOpen || !authToken) return;
+    getEnseignementUnits(authToken).then((arr) => {
+      const opts = arr.map((u) => ({ id: u.Id, value: u.Initialism, full: u }));
+      setUeOpts(opts);
 
+      if (initialData.EnseignementUnit?.Id) {
+        setUeSel(opts.find((o) => o.id === initialData.EnseignementUnit.Id) || null);
+      }
+    });
+  }, [isOpen, authToken, initialData]);
+
+  /* jalons initiaux ------------------------------------- */
   useEffect(() => {
-    if (isOpen && authToken) {
-      getEnseignementUnits(authToken).then((data) => {
-        setUnitsOptions(data.map((u) => ({
-          id: u.Id,
-          value: `${u.Initialism}`,
-          full: { Name: u.Name, Initialism: u.Initialism },
-        })));
-      });
-    }
-  }, [isOpen, authToken]);
+    if (!isOpen || !authToken || !initialData.Id) { setInitialMs([]); setMilestones([]); return; }
+    getTemplateMilestones(initialData.Id, authToken)
+      .then((list) => { setInitialMs(list); setMilestones(list); })
+      .catch(()      => { setInitialMs([]);   setMilestones([]);   });
+  }, [isOpen, authToken, initialData.Id]);
 
-  useEffect(() => {
-    if (isOpen && initialData.Id && authToken) {
-      getTemplateMilestones(initialData.Id, authToken)
-        .then(setMilestones)
-        .catch(() => setMilestones([]));
-    } else if (!initialData.Id) {
-      setMilestones([]);
-    }
-  }, [isOpen, initialData.Id, authToken]);
-
-  const initialUnitOption = initialData?.EnseignementUnit?.Id
-    ? unitsOptions.find((o) => o.id === initialData.EnseignementUnit.Id)
-    : null;
-
+  /* champs DynamicModal --------------------------------- */
   const fields = [
-    { label: 'UE',    value: initialUnitOption, options: unitsOptions },
-    { label: 'Année', value: initialData.Year || '' },
+    { label: 'UE',    value: ueSel, options: ueOpts },
+    { label: 'Année', value: year },
   ];
 
-  const validate = (vals) => {
+  /* validation + submit ---------------------------------- */
+  const validate = (f) => {
     const e = {};
-    if (!vals['UE'] || !vals['UE'].id) e['UE'] = 'Sélection obligatoire.';
-    if (!vals['Année']) e['Année'] = 'L’année est obligatoire.';
-    else {
-      const y = parseInt(vals['Année'], 10);
-      if (isNaN(y) || y < 2000 || y > 2099) e['Année'] = 'Année 2000‑2099.';
-    }
+    if (!f['UE']?.id) e.UE = 'Sélection obligatoire.';
+    const y = parseInt(f['Année'], 10);
+    if (!f['Année']) e.year = 'Champ requis.';
+    else if (isNaN(y) || y < 2000 || y > 2099) e.year = 'Année 2000-2099.';
     return e;
   };
 
-  const diffTemplate = (orig, mod) => {
-    const d = {};
-    if (orig.EnseignementUnit?.Id !== mod.EnseignementUnit.Id) {
-      d.EnseignementUnit = { Id: mod.EnseignementUnit.Id };
-    }
-    if (orig.Year !== mod.Year) d.Year = mod.Year;
-    return d;
-  };
-
   const handleSubmit = async (vals) => {
-    const v = validate(vals);
-    if (Object.keys(v).length) { setErrors(v); return; }
-    setErrors({}); setApiError('');
+    const err = validate(vals);
+    if (Object.keys(err).length) return alert(Object.values(err).join('\n'));
 
-    const payloadFull = {
+    /* ---------- template -------------------------------- */
+    const payload = {
       EnseignementUnit: { Id: vals['UE'].id },
-      Year: parseInt(vals['Année'], 10),
+      Year            : parseInt(vals['Année'], 10),
     };
+    const isEdit = !!initialData.Id;
+    if (isEdit) {
+      if (initialData.EnseignementUnit?.Id === payload.EnseignementUnit.Id) delete payload.EnseignementUnit;
+      if (initialData.Year === payload.Year) delete payload.Year;
+    }
 
-    const isEdit  = !!initialData.Id;
-    const payload = isEdit ? diffTemplate(initialData, payloadFull) : payloadFull;
+    let tplId = initialData.Id;
+    if (!isEdit) {
+      const res = await saveTemplate(null, payload, authToken);
+      tplId = res.Id;
+    } else if (Object.keys(payload).length) {
+      await saveTemplate(tplId, payload, authToken);
+    }
 
-    if (isEdit && Object.keys(payload).length === 0) { onClose(); return; }
+    /* ---------- jalons ---------------------------------- */
+    /** liste actuelle depuis le composant MilestoneListBox */
+    const curList = milestones;
 
-    try {
-      await saveTemplate(isEdit ? initialData.Id : null, payload, authToken);
-      onSave();
-      onClose();
-    } catch (err) { setApiError(err.message); }
+    const curKeepIds = new Set(
+      curList.filter((m) => !String(m.id).startsWith('n-')).map((m) => m.id)
+    );
+    const toDelete   = initialMs.filter((m) => !curKeepIds.has(m.Id));
+    const toAdd      = curList.filter((m) => String(m.id).startsWith('n-'));
+
+    await Promise.all([
+      ...toDelete.map((m) => deleteTemplateMilestone(tplId, m.Id, authToken)),
+      ...toAdd.map((m) => saveTemplateMilestone(
+        tplId,
+        null,
+        { Title: m.Title, Date: m.Date },
+        authToken
+      )),
+    ]);
+
+    onSave();
+    onClose();
   };
 
-  const addMilestone = async ({ Title, Date }) => {
-    try {
-      const newMs = await saveTemplateMilestone(initialData.Id, null, { Title, Date }, authToken);
-      setMilestones((prev) => [...prev, newMs]);
-    } catch (err) { alert(err.message); }
-  };
+  /* clé pour forcer DynamicModal à se ré-initialiser quand UE chargée */
+  const modalKey = `tpl-${ueSel?.id || 'none'}-${isOpen}`;
 
-  const removeMilestone = async (msId) => {
-    try {
-      await deleteTemplateMilestone(initialData.Id, msId, authToken);
-      setMilestones((prev) => prev.filter((m) => m.Id !== msId));
-    } catch (err) { alert(err.message); }
-  };
-
-  const clearError    = (label) => { setErrors((p) => ({ ...p, [label]: '' })); if (apiError) setApiError(''); };
-  const clearApiError = () => setApiError('');
-  const handleClose   = () => { setErrors({}); setApiError(''); onClose(); };
+  if (!isOpen) return null;
 
   return (
-    <>
-      <DynamicModal
-        metadata={{
-          createdAt: initialData.CreatedAt,
-          updatedAt: initialData.UpdatedAt,
-        }}
-        errors={errors}
-        apiError={apiError}
-        clearApiError={clearApiError}
-        fields={fields}
-        isOpen={isOpen}
-        onClose={handleClose}
-        onSubmit={handleSubmit}
-        onClearError={clearError}
-        title="Template"
-      />
-
-      {isOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-          <div className="w-[300px] mt-[460px] pointer-events-auto">
-            <MilestoneListBox
-              items={milestones}
-              onAdd={addMilestone}
-              onRemove={removeMilestone}
-            />
-          </div>
-        </div>
-      )}
-    </>
+    <DynamicModal
+      key={modalKey}
+      title="Édition"
+      fields={fields}
+      isOpen={isOpen}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      metadata={{ createdAt: initialData.CreatedAt, updatedAt: initialData.UpdatedAt }}
+    >
+      <p className="mt-6 mb-1">Milestones</p>
+      <MilestoneListBox initial={milestones} onChange={setMilestones} />
+    </DynamicModal>
   );
 }

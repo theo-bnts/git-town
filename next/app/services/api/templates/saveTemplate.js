@@ -4,12 +4,14 @@ import { handleApiError } from '@/app/services/errorHandler';
 import { templateRoute, templatesRoute } from '@/app/services/routes';
 
 /**
- * PUT  /templates              (création)
- * PATCH /templates/:id         (édition)
+ * Enregistre un template
+ * (PUT /templates ou PATCH /templates/:templateId)
  *
- * @param {string|null} templateId
- * @param {object}      payload   { EnseignementUnit:{Id}, Year }
- * @param {string}      token
+ * @param {string} templateId - L'identifiant du template (optionnel).
+ * @param {object} payload - Les données du template à enregistrer.
+ * @param {string} token - Le token d'authentification.
+ * @returns {Promise<object>} - La réponse de l'API.
+ * @throws {Error} - En cas d'erreur lors de l'enregistrement.
  */
 export default async function saveTemplate(templateId, payload, token) {
   const url    = templateId ? templateRoute(templateId) : templatesRoute();

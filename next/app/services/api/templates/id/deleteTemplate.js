@@ -4,10 +4,13 @@ import { handleApiError } from '@/app/services/errorHandler';
 import { templateRoute } from '@/app/services/routes';
 
 /**
- * DELETE /templates/:id
+ * Supprime un template
+ * (DELETE /templates/:templateId)
  *
- * @param {string} templateId
- * @param {string} token
+ * @param {string} templateId - L'identifiant du template à supprimer.
+ * @param {string} token - Le token d'authentification.
+ * @returns {Promise<object>} - La réponse de l'API.
+ * @throws {Error} - En cas d'erreur lors de la suppression.
  */
 export default async function deleteTemplate(templateId, token) {
   const url = templateRoute(templateId);

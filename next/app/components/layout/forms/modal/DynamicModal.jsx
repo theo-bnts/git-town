@@ -28,7 +28,8 @@ export default function DynamicModal({
   onClearError, 
   apiError, 
   clearApiError,
-  metadata = {}
+  metadata = {},
+  children
 }) {
   const getInitialState = () => {
     const state = {};
@@ -197,6 +198,7 @@ export default function DynamicModal({
                 <p className={textStyles.defaultWhite}>Enregistrer</p>
               </Button>
             </div>
+            {children && <div className="mt-6">{children}</div>}
           </form>
         </Card>
         {apiError && (
