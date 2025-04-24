@@ -3,202 +3,116 @@
 import React, { useState, useEffect } from 'react';
 import { textStyles } from '@/app/styles/tailwindStyles';
 import { XIcon } from '@primer/octicons-react';
-
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import ComboBox from '@/app/components/ui/combobox/ComboBox';
 import Input from '@/app/components/ui/Input';
 import ListBox from '@/app/components/ui/listbox/ListBox';
 
-function formatDate(dateStr) {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  return new Intl.DateTimeFormat(
-    'fr-FR', { dateStyle: 'long', timeStyle: 'short' }
-  ).format(date);
+function formatDate(d) {
+  if (!d) return '';
+  return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(new Date(d));
 }
 
-export default function DynamicModal({ 
-  title, 
-  fields: initialFields, 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  errors = {}, 
-  onClearError, 
-  apiError, 
+export default function DynamicModal({
+  title,
+  fields: initialFields,
+  isOpen,
+  onClose,
+  onSubmit,
+  errors = {},
+  onClearError,
+  apiError,
   clearApiError,
-  metadata = {},
-  children
+  metadata = {}
 }) {
-  const getInitialState = () => {
-    const state = {};
-    initialFields.forEach(field => {
-      state[field.label] = field.value;
-    });
-    return state;
+  const initState = () => {
+    const s = {};
+    initialFields.forEach(f => { s[f.label] = f.value; });
+    return s;
   };
+  const [fields, setFields] = useState(initState());
 
-  const [fields, setFields] = useState(getInitialState());
+  useEffect(() => { if (!isOpen) setFields(initState()); }, [isOpen, initialFields]);
 
-  useEffect(() => {
-    if (!isOpen) {
-      setFields(getInitialState());
-    }
-  }, [isOpen, initialFields]);
-
-  const handleChange = (label, newValue) => {
-    setFields(prev => ({ ...prev, [label]: newValue }));
-    if (apiError) {
-      clearApiError();
-    }
-  };
-
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(fields);
+  const change = (l, v) => {
+    setFields(p => ({ ...p, [l]: v }));
+    if (apiError) clearApiError();
   };
 
   if (!isOpen) return null;
 
-  const createdAtFormatted = metadata.createdAt 
-    ? formatDate(metadata.createdAt) 
-    : null;
-
-  const updatedAtFormatted = metadata.updatedAt 
-    ? formatDate(metadata.updatedAt) 
-    : null;
-
   return (
-    <div className="
-      fixed inset-0 bg-[var(--popup-color)] 
-      flex items-center justify-center z-50
-    ">
-      {(createdAtFormatted || updatedAtFormatted) && (
+    <div className="fixed inset-0 bg-[var(--popup-color)] flex items-center justify-center z-50">
+      {(metadata.createdAt || metadata.updatedAt) && (
         <div className="absolute top-4 right-4">
           <Card variant="info">
-            {
-              createdAtFormatted && (
-                <p className={`text-sm ${textStyles.default}`}>
-                  Créé le {createdAtFormatted}
-                </p>
-              )
-            }
-            {
-              updatedAtFormatted && (
-                <p className={`text-sm ${textStyles.default}`}>
-                  Modifié le {updatedAtFormatted}
-                </p>
-              )
-            }
+            {metadata.createdAt && <p className={`text-sm ${textStyles.default}`}>Créé le {formatDate(metadata.createdAt)}</p>}
+            {metadata.updatedAt && <p className={`text-sm ${textStyles.default}`}>Modifié le {formatDate(metadata.updatedAt)}</p>}
           </Card>
         </div>
       )}
       <div className="w-[300px]">
         <Card variant="default" className="relative p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold">{title || "Édition"}</h3>
-            <Button variant="action_sq_warn" onClick={onClose}>
-              <XIcon size={24} />
-            </Button>
+            <h3 className="text-lg font-bold">{title || 'Édition'}</h3>
+            <Button variant="action_sq_warn" onClick={onClose}><XIcon size={24} /></Button>
           </div>
-          <form onSubmit={handleFormSubmit} className="space-y-4">
-            {initialFields.map(field => {
-              const { label, value, options } = field;
-              let inputComponent = null;
-              if (options) {
-                if (
-                  typeof value === 'string' || 
-                  (typeof value === 'object' && !Array.isArray(value))
-                ) {
-                  const mappedOptions = options.map((item, idx) => {
-                    if (Array.isArray(item)) {
-                      return {
-                        id: item[0] !== undefined ? item[0] : idx,
-                        value: item[1] !== undefined ? item[1] : item[0]
-                      };
-                    } else if (typeof item === 'object' && item !== null) {
-                      return {
-                        id: item.id !== undefined ? item.id : idx,
-                        value: item.name ?? item.value ?? ''
-                      };
-                    }
-                    return { id: idx, value: item };
-                  });
-                  inputComponent = (
+          <form onSubmit={e => { e.preventDefault(); onSubmit(fields); }} className="space-y-4">
+            {initialFields.map(f => {
+              const { label, options, render } = f;
+              let input;
+              if (typeof render === 'function') {
+                input = render(fields[label], v => { change(label, v); onClearError?.(label); });
+              } else if (options) {
+                if (Array.isArray(f.value)) {
+                  input = (
+                    <ListBox
+                      items={fields[label] || []}
+                      onChange={v => { change(label, v); onClearError?.(label); }}
+                      renderAdd={({ addItem }) => (
+                        <ComboBox
+                          placeholder={label}
+                          options={options}
+                          onSelect={addItem}
+                          maxVisible={4}
+                        />
+                      )}
+                    />
+                  );
+                } else {
+                  input = (
                     <ComboBox
                       placeholder={label}
-                      options={mappedOptions}
-                      onSelect={(option) => {
-                        handleChange(label, option);
-                        if (onClearError) onClearError(label);
-                      }}
+                      options={options}
+                      onSelect={o => { change(label, o); onClearError?.(label); }}
                       value={fields[label]}
                       maxVisible={6}
                     />
                   );
-                } else if (Array.isArray(value)) {
-                  let mappedOptions;
-                  if (
-                    options.length > 0 && 
-                    typeof options[0] === 'object' && 
-                    !Array.isArray(options[0])
-                  ) {
-                    mappedOptions = options;
-                  } else {
-                    mappedOptions = options.map((row, idx) => ({
-                      id: row[0] !== undefined ? row[0] : idx,
-                      value: row[1] !== undefined 
-                        ? row[1] 
-                        : (typeof row.join === 'function' 
-                          ? row.join(' - ') 
-                          : row.toString())
-                    }));
-                  }
-                  inputComponent = (
-                    <ListBox
-                      placeholder={label}
-                      options={mappedOptions}
-                      selected={fields[label] || []}
-                      onChange={(selectedOptions) => {
-                        handleChange(label, selectedOptions);
-                        if (onClearError) onClearError(label);
-                      }}
-                    />
-                  );
                 }
               } else {
-                inputComponent = (
+                input = (
                   <Input
                     variant="default"
                     name={label}
                     placeholder={label}
                     value={fields[label]}
-                    onChange={(e) => {
-                      handleChange(label, e.target.value);
-                      if (onClearError) onClearError(label);
-                    }}
+                    onChange={e => { change(label, e.target.value); onClearError?.(label); }}
                   />
                 );
               }
               return (
                 <div key={label}>
                   <p className={`mb-1 ${textStyles.default}`}>{label}</p>
-                  {inputComponent}
-                  {errors[label] && (
-                    <p className={`${textStyles.warn} text-sm mt-1`}>
-                      {errors[label]}
-                    </p>
-                  )}
+                  {input}
+                  {errors[label] && <p className={`${textStyles.warn} text-sm mt-1`}>{errors[label]}</p>}
                 </div>
               );
             })}
             <div className="flex justify-center pt-2">
-              <Button variant="default" type="submit">
-                <p className={textStyles.defaultWhite}>Enregistrer</p>
-              </Button>
+              <Button variant="default" type="submit"><p className={textStyles.defaultWhite}>Enregistrer</p></Button>
             </div>
-            {children && <div className="mt-6">{children}</div>}
           </form>
         </Card>
         {apiError && (
@@ -206,14 +120,7 @@ export default function DynamicModal({
             <Card variant="warn" className="w-full">
               <div className="flex items-center">
                 <p className="flex-1">{apiError}</p>
-                <Button 
-                  variant="cancel_action_sq" 
-                  onClick={clearApiError}
-                  className="
-                    ml-2 transition-transform 
-                    duration-200 hover:scale-110
-                  "
-                >
+                <Button variant="cancel_action_sq" onClick={clearApiError} className="ml-2 transition-transform duration-200 hover:scale-110">
                   <XIcon size={20} />
                 </Button>
               </div>

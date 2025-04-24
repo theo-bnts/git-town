@@ -1,41 +1,32 @@
 'use client';
 
-import React, { useState } from 'react';
-
+import React from 'react';
 import { listboxStyles } from '@/app/styles/tailwindStyles';
-
-import ComboBox from '@/app/components/ui/combobox/ComboBox';
 import ListBoxArea from '@/app/components/ui/listbox/ListBoxArea';
 
-export default function ListBox({ placeholder, options, selected, onChange }) {
-    const [items, setItems] = useState(selected || []);
+export default function ListBox({ items, onChange, renderAdd, renderChip, onEdit }) {
+  const addItem = (item) => {
+    if (!item || items.some((i) => i.id === item.id)) return;
+    onChange([...items, item]);
+  };
 
-    const handleAddItem = (item) => {
-        if (!item) return;
-        const exists = items.some(i => i.id === item.id || i.value === item.value);
-        if (exists) return;
-        const newItems = [...items, item];
-        setItems(newItems);
-        onChange && onChange(newItems);
-    };
+  const updateItem = (id, updates) => {
+    onChange(items.map((i) => (i.id === id ? { ...i, ...updates } : i)));
+  };
 
-    const handleRemoveItem = (itemId) => {
-        const newItems = items.filter(item => item.id !== itemId);
-        setItems(newItems);
-        onChange && onChange(newItems);
-    };
+  const removeItem = (id) => {
+    onChange(items.filter((i) => i.id !== id));
+  };
 
-    return (
-        <div className={`flex flex-col space-y-2 ${listboxStyles.default}`}>
-            <ListBoxArea items={items} onRemove={handleRemoveItem} />
-            <ComboBox
-                key={items.map(item => item.id).join('-')}
-                placeholder={placeholder}
-                options={options}
-                onSelect={handleAddItem}
-                maxVisible={4}
-                autoOpen={false}
-            />
-        </div>
-    );
+  return (
+    <div className={`flex flex-col space-y-2 ${listboxStyles.default}`}>
+      <ListBoxArea
+        items={items}
+        onRemove={removeItem}
+        onEdit={onEdit}
+        renderChip={renderChip}
+      />
+      {renderAdd ? renderAdd({ addItem, updateItem }) : null}
+    </div>
+  );
 }

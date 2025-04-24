@@ -36,6 +36,8 @@ export const API_ERRORS = {
     SAME_DIPLOMA_INITIALISM: "(409) : Même Diplôme selectionné.",
     DUPLICATE_INITIALISM: "(409) : Sigle déjà utilisé.",
     DUPLICATE: "(409) : Configuration déjà existante.",
+    SAME_TITLE: "(409) : Même titre déjà utilisé.",
+    DUPLICATE_TITLE: "(409) : Titre déjà utilisé.",
     default: "(409) : Conflit de requête.",
   },
   429: {
