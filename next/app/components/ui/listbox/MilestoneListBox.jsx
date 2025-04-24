@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import ListBoxArea    from '@/app/components/ui/listbox/ListBoxArea';
-import Input          from '@/app/components/ui/Input';
-import Button         from '@/app/components/ui/Button';
-import { listboxStyles } from '@/app/styles/tailwindStyles';
+import ListBoxArea from '@/app/components/ui/listbox/ListBoxArea';
+import Input from '@/app/components/ui/Input';
+import Button from '@/app/components/ui/Button';
+import { listboxStyles, textStyles } from '@/app/styles/tailwindStyles';
 
 export default function MilestoneListBox({ initial = [], onChange }) {
   const [items, setItems] = useState(initial);
@@ -58,7 +58,7 @@ export default function MilestoneListBox({ initial = [], onChange }) {
 
         <div className="flex justify-center">
           <Button type="button" variant="default" onClick={add}>
-            Ajouter Milestone
+            <p className={textStyles.defaultWhite}>Ajouter milestone</p>
           </Button>
         </div>
       </div>
