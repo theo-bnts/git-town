@@ -41,6 +41,7 @@ export default async function route(app) {
       const { RepositoryId: repositoryId } = request.params;
 
       const [
+        repository,
         languages,
         pullRequestCounts,
         hourlyAndDailyCumulativeCommits,
@@ -48,6 +49,7 @@ export default async function route(app) {
         weeklyLines,
         usersWeeklyCommitsAndLines,
       ] = await Promise.all([
+        GitHubApp.EnvironmentInstance.Repositories.get(repositoryId),
         GitHubApp.EnvironmentInstance.Repositories.getLanguages(repositoryId),
         GitHubApp.EnvironmentInstance.Repositories.getPullRequestCounts(repositoryId),
         GitHubApp.EnvironmentInstance.Repositories.getHourlyAndDailyCumulativeCommits(repositoryId),
@@ -141,7 +143,11 @@ export default async function route(app) {
       return {
         Global: {
           Languages: languages,
+          Issues: {
+            Open: repository.Issues.Open - pullRequestCounts.Global.Open,
+          },
           PullRequests: pullRequestCounts.Global,
+          Pushes: repository.Pushes,
           Commits: {
             ...hourlyAndDailyCumulativeCommits,
             Weekly: weeklyCommits,

@@ -16,7 +16,21 @@ export default class GitHubRepositories {
     });
 
     return {
-      DefaultBranchName: repository.default_branch,
+      Branches: {
+        Default: {
+          Name: repository.default_branch,
+        },
+      },
+      Issues: {
+        Open: repository.open_issues_count,
+      },
+      Pushes: {
+        Last: {
+          Date: repository.pushed_at !== repository.created_at
+            ? new Date(repository.pushed_at)
+            : null,
+        },
+      },
     };
   }
 
