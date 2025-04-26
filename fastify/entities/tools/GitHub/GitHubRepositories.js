@@ -32,13 +32,23 @@ export default class GitHubRepositories {
     });
   }
 
-  async update(repositoryName, defaultBranchName) {
+  async updateDefaultBranch(repositoryName, defaultBranchName) {
     const { Name: organizationName } = await this.App.Organization.get();
 
     await this.App.Octokit.rest.repos.update({
       owner: organizationName,
       repo: repositoryName,
       default_branch: defaultBranchName,
+    });
+  }
+
+  async updateArchivageState(repositoryName, archived) {
+    const { Name: organizationName } = await this.App.Organization.get();
+
+    await this.App.Octokit.rest.repos.update({
+      owner: organizationName,
+      repo: repositoryName,
+      archived,
     });
   }
 

@@ -77,7 +77,7 @@ export default async function route(app) {
         .get(sourceRepository.Id);
 
       await GitHubApp.EnvironmentInstance.Repositories
-        .update(targetRepository.Id, gitHubSourceRepository.DefaultBranchName);
+        .updateDefaultBranch(targetRepository.Id, gitHubSourceRepository.DefaultBranchName);
     },
   });
 }
