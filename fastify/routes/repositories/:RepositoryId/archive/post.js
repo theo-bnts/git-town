@@ -54,7 +54,7 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'SAME_STATE' };
       }
 
-      GitHubApp.EnvironmentInstance.Repositories.updateArchivageState(repository.Id, archived);
+      await GitHubApp.EnvironmentInstance.Repositories.updateArchivageState(repository.Id, archived);
 
       repository.ArchivedAt = archived ? DateTime.now() : null;
 
