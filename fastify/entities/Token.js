@@ -29,7 +29,7 @@ export default class Token {
 
     const expirationDate = DateTime
       .fromJSDate(this.CreatedAt)
-      .plus({ seconds: Number(process.env.TOKEN_EXPIRATION_SECONDS) });
+      .plus({ minutes: Number(process.env.TOKEN_EXPIRATION_MINUTES) });
 
     return expirationDate > DateTime.now();
   }

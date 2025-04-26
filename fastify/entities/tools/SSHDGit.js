@@ -20,10 +20,13 @@ export default class SSHDGit {
   }
 
   async clone(sourceRepository, targetRepository) {
-    const installationAccessToken = await GitHubApp.EnvironmentInstance
-      .getInstallationAccessToken();
-
-    const { Name: gitHubOrganizationName } = await GitHubApp.EnvironmentInstance.Organization.get();
+    const [
+      installationAccessToken,
+      { Name: gitHubOrganizationName },
+    ] = await Promise.all([
+      GitHubApp.EnvironmentInstance.getInstallationAccessToken(),
+      GitHubApp.EnvironmentInstance.Organization.get(),
+    ]);
 
     const sourceRepositoryFullName = `${sourceRepository}.git`;
     const targetRepositoryFullName = `${targetRepository}.git`;

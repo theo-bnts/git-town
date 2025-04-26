@@ -40,46 +40,100 @@ export default async function route(app) {
     handler: async (request) => {
       const { RepositoryId: repositoryId } = request.params;
 
-      const languages = await GitHubApp.EnvironmentInstance.Repositories
-        .getLanguages(repositoryId);
+      const [
+        languages,
+        pullRequestCounts,
+        hourlyAndDailyCumulativeCommits,
+        weeklyCommits,
+        weeklyLines,
+        usersWeeklyCommitsAndLines,
+      ] = await Promise.all([
+        GitHubApp.EnvironmentInstance.Repositories.getLanguages(repositoryId),
+        GitHubApp.EnvironmentInstance.Repositories.getPullRequestCounts(repositoryId),
+        GitHubApp.EnvironmentInstance.Repositories.getHourlyAndDailyCumulativeCommits(repositoryId),
+        GitHubApp.EnvironmentInstance.Repositories.getWeeklyCommits(repositoryId),
+        GitHubApp.EnvironmentInstance.Repositories.getWeeklyLines(repositoryId),
+        GitHubApp.EnvironmentInstance.Repositories.getUsersWeeklyCommitsAndLines(repositoryId),
+      ]);
 
-      const hourlyAndDailyCumulativeCommits = await GitHubApp.EnvironmentInstance.Repositories
-        .getHourlyAndDailyCumulativeCommits(repositoryId);
+      const mappedUsersPullRequestCounts = new Map();
 
-      const weeklyCommits = await GitHubApp.EnvironmentInstance.Repositories
-        .getWeeklyCommits(repositoryId);
-
-      const weeklyLines = await GitHubApp.EnvironmentInstance.Repositories
-        .getWeeklyLines(repositoryId);
-
-      const usersWeeklyCommitsAndLines = await GitHubApp.EnvironmentInstance.Repositories
-        .getUsersWeeklyCommitsAndLines(repositoryId);
-
-      const existantUsers = await Promise.all(
-        usersWeeklyCommitsAndLines.map((userContributions) => (
+      const existantPullRequestsUsers = await Promise.all(
+        pullRequestCounts.Users.map((userContributions) => (
           User.isGitHubIdInserted(userContributions.User.Id))),
       );
 
-      const filteredUsersWeeklyCommitsAndLines = usersWeeklyCommitsAndLines
-        .filter((_, index) => existantUsers[index]);
+      const filteredUsersPullRequestCounts = pullRequestCounts.Users
+        .filter((_, index) => existantPullRequestsUsers[index]);
 
-      const mappedUsersWeeklyCommitsAndLines = await Promise.all(
-        filteredUsersWeeklyCommitsAndLines.map(async (userContributions) => {
+      await Promise.all(
+        filteredUsersPullRequestCounts.map(async (userContributions) => {
           const user = await User.fromGitHubId(userContributions.User.Id);
-          return { ...userContributions, User: user };
+
+          mappedUsersPullRequestCounts.set(user.Id, {
+            User: user,
+            PullRequests: {
+              Open: userContributions.Open,
+              Closed: userContributions.Closed,
+              Weekly: userContributions.Weekly,
+            },
+          });
         }),
       );
 
-      const sortedUsersWeeklyCommitsAndLines = mappedUsersWeeklyCommitsAndLines
-        .sort((a, b) => a.User.FullName.localeCompare(b.User.FullName));
+      const mappedUsersWeeklyCommitsAndLines = new Map();
 
-      const pullRequestCounts = await GitHubApp.EnvironmentInstance.Repositories
-        .getPullRequestCounts(repositoryId);
+      if (usersWeeklyCommitsAndLines !== null) {
+        const existantWeeklyCommitsAndLinesUsers = await Promise.all(
+          usersWeeklyCommitsAndLines.map((userContributions) => (
+            User.isGitHubIdInserted(userContributions.User.Id))),
+        );
+
+        const filteredUsersWeeklyCommitsAndLines = usersWeeklyCommitsAndLines
+          .filter((_, index) => existantWeeklyCommitsAndLinesUsers[index]);
+
+        await Promise.all(
+          filteredUsersWeeklyCommitsAndLines.map(async (userContributions) => {
+            const user = await User.fromGitHubId(userContributions.User.Id);
+
+            mappedUsersWeeklyCommitsAndLines.set(user.Id, {
+              User: user,
+              Commits: userContributions.Commits,
+              Lines: userContributions.Lines,
+            });
+          }),
+        );
+      }
+
+      const sortedUsersContributions = Array.from(
+        [mappedUsersPullRequestCounts, mappedUsersWeeklyCommitsAndLines]
+          .reduce((accumulator, current) => {
+            current.forEach((userData, userId) => {
+              const previousUserData = accumulator.get(userId) || {
+                User: userData.User,
+                Commits: null,
+                Lines: null,
+                PullRequests: null,
+              };
+
+              accumulator.set(userId, {
+                User: userData.User,
+                PullRequests: userData.PullRequests ?? previousUserData.PullRequests,
+                Commits: userData.Commits ?? previousUserData.Commits,
+                Lines: userData.Lines ?? previousUserData.Lines,
+              });
+            });
+
+            return accumulator;
+          }, new Map())
+          .values(),
+      )
+        .sort((a, b) => a.User.FullName.localeCompare(b.User.FullName));
 
       return {
         Global: {
           Languages: languages,
-          PullRequests: pullRequestCounts,
+          PullRequests: pullRequestCounts.Global,
           Commits: {
             ...hourlyAndDailyCumulativeCommits,
             Weekly: weeklyCommits,
@@ -88,7 +142,7 @@ export default async function route(app) {
             Weekly: weeklyLines,
           },
         },
-        Users: sortedUsersWeeklyCommitsAndLines,
+        Users: sortedUsersContributions,
       };
     },
   });

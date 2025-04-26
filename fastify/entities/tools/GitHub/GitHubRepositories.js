@@ -97,43 +97,95 @@ export default class GitHubRepositories {
       },
     );
 
-    const pullRequestWeekStartTimestamps = pullRequests.map((pullRequest) => DateTime.fromISO(pullRequest.created_at, { zone: 'UTC' })
-      .startOf('week')
-      .toMillis());
+    if (pullRequests.length === 0) {
+      return {
+        Global: {
+          Open: 0,
+          Closed: 0,
+          Weekly: null,
+        },
+        Users: [],
+      };
+    }
 
-    const uniquePullRequestWeekStartTimestamps = Array.from(
-      new Set(pullRequestWeekStartTimestamps),
-    );
+    const weekPullRequestCounts = new Map();
+    const usersWeekPullRequestCounts = new Map();
+
+    pullRequests.forEach((pullRequest) => {
+      const weekTimestamp = DateTime
+        .fromISO(pullRequest.created_at, { zone: 'UTC' })
+        .startOf('week')
+        .toMillis();
+
+      weekPullRequestCounts.set(
+        weekTimestamp,
+        (weekPullRequestCounts.get(weekTimestamp) ?? 0) + 1
+      );
+
+      if (!usersWeekPullRequestCounts.has(pullRequest.user.id)) {
+        usersWeekPullRequestCounts.set(pullRequest.user.id, new Map());
+      }
+
+      const userWeekPullRequestCounts = usersWeekPullRequestCounts.get(pullRequest.user.id);
+
+      userWeekPullRequestCounts.set(
+        weekTimestamp,
+        (userWeekPullRequestCounts.get(weekTimestamp) ?? 0) + 1
+      );
+    });
+
+    const sortedWeekTimestamps = Array.from(weekPullRequestCounts.keys()).sort();
 
     const firstDayOfFirstWeek = DateTime
-      .fromMillis(uniquePullRequestWeekStartTimestamps[0], { zone: 'UTC' })
-      .toJSDate();
+        .fromMillis(sortedWeekTimestamps[0], { zone: 'UTC' })
+        .toJSDate();
     const firstDayOfLastWeek = DateTime
-      .fromMillis(
-        uniquePullRequestWeekStartTimestamps[uniquePullRequestWeekStartTimestamps.length - 1],
-        { zone: 'UTC' },
-      )
-      .toJSDate();
+        .fromMillis(sortedWeekTimestamps.at(-1), { zone: 'UTC' })
+        .toJSDate();
 
-    const weeklyCounts = uniquePullRequestWeekStartTimestamps.map((uniqueTimestamps) => (
-      pullRequestWeekStartTimestamps
-        .filter((timestamps) => timestamps === uniqueTimestamps)
-        .length
-    ));
+    const openPullRequests = pullRequests.filter((pullRequest) => pullRequest.state === 'open');
+    const closedPullRequests = pullRequests.filter((pullRequest) => pullRequest.state === 'closed');
+
+    const weeklyCounts = sortedWeekTimestamps.map(
+      (weekTimestamp) => weekPullRequestCounts.get(weekTimestamp),
+    );
+
+    const usersWeeklyPullRequestCounts = Array.from(usersWeekPullRequestCounts.entries())
+      .map(([userId, userWeekPullRequestCounts]) => {
+        const sortedUserWeekTimestamps = Array.from(userWeekPullRequestCounts.keys())
+          .sort();
+
+        const firstDayOfFirstWeekUser = DateTime
+          .fromMillis(sortedUserWeekTimestamps[0], { zone: 'UTC' })
+          .toJSDate();
+        const firstDayOfLastWeekUser = DateTime
+          .fromMillis(sortedUserWeekTimestamps.at(-1), { zone: 'UTC' })
+          .toJSDate();
+
+        return {
+          User: { Id: userId },
+          Open: openPullRequests.filter((pullRequest) => pullRequest.user.id === userId).length,
+          Closed: closedPullRequests.filter((pullRequest) => pullRequest.user.id === userId).length,
+          Weekly: {
+            FirstDayOfFirstWeek: firstDayOfFirstWeekUser,
+            FirstDayOfLastWeek: firstDayOfLastWeekUser,
+            Counts: sortedUserWeekTimestamps
+              .map((timestamp) => userWeekPullRequestCounts.get(timestamp) ?? 0),
+          },
+        };
+      });
 
     return {
       Global: {
-        All: pullRequests.length,
-        Open: pullRequests.filter((pullRequest) => pullRequest.state === 'open').length,
-        Closed: pullRequests.filter((pullRequest) => pullRequest.state === 'closed').length,
+        Open: openPullRequests.length,
+        Closed: closedPullRequests.length,
         Weekly: {
           FirstDayOfFirstWeek: firstDayOfFirstWeek,
           FirstDayOfLastWeek: firstDayOfLastWeek,
           Counts: weeklyCounts,
         },
       },
-      User: {
-      },
+      Users: usersWeeklyPullRequestCounts,
     };
   }
 
@@ -145,7 +197,7 @@ export default class GitHubRepositories {
       repo: repositoryName,
     });
 
-    if (response.status === 202) {
+    if (response.status === 202 || response.status === 204) {
       return null;
     }
 
@@ -190,7 +242,7 @@ export default class GitHubRepositories {
       repo: repositoryName,
     });
 
-    if (response.status === 202) {
+    if (response.status === 202 || response.status === 204) {
       return null;
     }
 
@@ -213,7 +265,6 @@ export default class GitHubRepositories {
       .map((week) => ({
         Additions: week[1],
         Deletions: Math.abs(week[2]),
-        Differentials: week[1] + week[2],
       }));
 
     return {
@@ -226,10 +277,16 @@ export default class GitHubRepositories {
   async getHourlyAndDailyCumulativeCommits(repositoryName) {
     const { Name: organizationName } = await this.App.Organization.get();
 
-    const { data: commits } = await this.App.Octokit.rest.repos.getPunchCardStats({
+    const response = await this.App.Octokit.rest.repos.getPunchCardStats({
       owner: organizationName,
       repo: repositoryName,
     });
+
+    if (response.status === 204) {
+      return null;
+    }
+
+    const commits = response.data;
 
     const hourlyCumulativeCommitCounts = Array.from({ length: 24 }, () => 0);
     const dailyCumulativeCommitCounts = Array.from({ length: 7 }, () => 0);
@@ -259,7 +316,7 @@ export default class GitHubRepositories {
       repo: repositoryName,
     });
 
-    if (response.status === 202) {
+    if (response.status === 202 || response.status === 204) {
       return null;
     }
 
@@ -270,13 +327,13 @@ export default class GitHubRepositories {
       const lastWeekIndex = userContributions.weeks.findLastIndex((week) => week.c !== 0);
 
       const firstDayOfFirstWeek = DateTime
-        .fromSeconds(userContributions.weeks[firstWeekIndex].w, { zone: 'UTC' })
-        .plus({ days: 1 })
-        .toJSDate();
+          .fromSeconds(userContributions.weeks[firstWeekIndex].w, { zone: 'UTC' })
+          .plus({ days: 1 })
+          .toJSDate();
       const firstDayOfLastWeek = DateTime
-        .fromSeconds(userContributions.weeks[lastWeekIndex].w, { zone: 'UTC' })
-        .plus({ days: 1 })
-        .toJSDate();
+          .fromSeconds(userContributions.weeks[lastWeekIndex].w, { zone: 'UTC' })
+          .plus({ days: 1 })
+          .toJSDate();
 
       const commitCounts = userContributions.weeks
         .slice(firstWeekIndex, lastWeekIndex + 1)
@@ -294,7 +351,6 @@ export default class GitHubRepositories {
         .map((week) => ({
           Additions: week.a,
           Deletions: Math.abs(week.d),
-          Differentials: week.a + week.d,
         }));
 
       return {
