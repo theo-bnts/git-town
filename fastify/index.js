@@ -4,6 +4,8 @@ import fastify from 'fastify';
 import { join } from 'desm';
 import rateLimit from '@fastify/rate-limit';
 import rawBody from 'fastify-raw-body';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 
 import DatabasePool from './entities/tools/DatabasePool.js';
 import GitHubApp from './entities/tools/GitHub/GitHubApp.js';
@@ -60,6 +62,10 @@ await app.register(rateLimit, {
 await app.register(rawBody, {
   global: false,
 });
+
+await app.register(swagger);
+
+await app.register(swaggerUi);
 
 await app.register(autoLoad, {
   dir: join(import.meta.url, 'routes'),

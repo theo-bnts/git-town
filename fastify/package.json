@@ -13,6 +13,8 @@
     "@fastify/autoload": "6",
     "@fastify/cors": "11",
     "@fastify/rate-limit": "10",
+    "@fastify/swagger": "9",
+    "@fastify/swagger-ui": "5",
     "@octokit/auth-app": "7",
     "@octokit/auth-oauth-app": "8",
     "@security-alliance/octokit-plugin-cache": "0",

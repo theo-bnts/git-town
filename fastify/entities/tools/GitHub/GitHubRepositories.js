@@ -129,7 +129,7 @@ export default class GitHubRepositories {
 
       weekPullRequestCounts.set(
         weekTimestamp,
-        (weekPullRequestCounts.get(weekTimestamp) ?? 0) + 1
+        (weekPullRequestCounts.get(weekTimestamp) ?? 0) + 1,
       );
 
       if (!usersWeekPullRequestCounts.has(pullRequest.user.id)) {
@@ -140,18 +140,18 @@ export default class GitHubRepositories {
 
       userWeekPullRequestCounts.set(
         weekTimestamp,
-        (userWeekPullRequestCounts.get(weekTimestamp) ?? 0) + 1
+        (userWeekPullRequestCounts.get(weekTimestamp) ?? 0) + 1,
       );
     });
 
     const sortedWeekTimestamps = Array.from(weekPullRequestCounts.keys()).sort();
 
     const firstDayOfFirstWeek = DateTime
-        .fromMillis(sortedWeekTimestamps[0], { zone: 'UTC' })
-        .toJSDate();
+      .fromMillis(sortedWeekTimestamps[0], { zone: 'UTC' })
+      .toJSDate();
     const firstDayOfLastWeek = DateTime
-        .fromMillis(sortedWeekTimestamps.at(-1), { zone: 'UTC' })
-        .toJSDate();
+      .fromMillis(sortedWeekTimestamps.at(-1), { zone: 'UTC' })
+      .toJSDate();
 
     const openPullRequests = pullRequests.filter((pullRequest) => pullRequest.state === 'open');
     const closedPullRequests = pullRequests.filter((pullRequest) => pullRequest.state === 'closed');
@@ -352,13 +352,13 @@ export default class GitHubRepositories {
       const lastWeekIndex = userContributions.weeks.findLastIndex((week) => week.c !== 0);
 
       const firstDayOfFirstWeek = DateTime
-          .fromSeconds(userContributions.weeks[firstWeekIndex].w, { zone: 'UTC' })
-          .plus({ days: 1 })
-          .toJSDate();
+        .fromSeconds(userContributions.weeks[firstWeekIndex].w, { zone: 'UTC' })
+        .plus({ days: 1 })
+        .toJSDate();
       const firstDayOfLastWeek = DateTime
-          .fromSeconds(userContributions.weeks[lastWeekIndex].w, { zone: 'UTC' })
-          .plus({ days: 1 })
-          .toJSDate();
+        .fromSeconds(userContributions.weeks[lastWeekIndex].w, { zone: 'UTC' })
+        .plus({ days: 1 })
+        .toJSDate();
 
       const commitCounts = userContributions.weeks
         .slice(firstWeekIndex, lastWeekIndex + 1)
