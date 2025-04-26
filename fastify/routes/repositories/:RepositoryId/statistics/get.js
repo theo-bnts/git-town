@@ -83,7 +83,7 @@ export default async function route(app) {
 
       const mappedUsersWeeklyCommitsAndLines = new Map();
 
-      if (usersWeeklyCommitsAndLines !== null) {
+      if (usersWeeklyCommitsAndLines !== undefined) {
         const existantWeeklyCommitsAndLinesUsers = await Promise.all(
           usersWeeklyCommitsAndLines.map((userContributions) => (
             User.isGitHubIdInserted(userContributions.User.Id))),
@@ -111,9 +111,17 @@ export default async function route(app) {
             current.forEach((userData, userId) => {
               const previousUserData = accumulator.get(userId) || {
                 User: userData.User,
-                Commits: null,
-                Lines: null,
-                PullRequests: null,
+                PullRequests: {
+                  Open: 0,
+                  Closed: 0,
+                  Weekly: null,
+                },
+                Commits: {
+                  Weekly: usersWeeklyCommitsAndLines !== undefined ? null : undefined,
+                },
+                Lines: {
+                  Weekly: usersWeeklyCommitsAndLines !== undefined ? null : undefined,
+                },
               };
 
               accumulator.set(userId, {
@@ -142,7 +150,9 @@ export default async function route(app) {
             Weekly: weeklyLines,
           },
         },
-        Users: sortedUsersContributions,
+        Users: sortedUsersContributions.length > 0 || usersWeeklyCommitsAndLines !== undefined
+          ? sortedUsersContributions
+          : undefined,
       };
     },
   });

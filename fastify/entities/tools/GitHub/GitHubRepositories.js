@@ -197,7 +197,11 @@ export default class GitHubRepositories {
       repo: repositoryName,
     });
 
-    if (response.status === 202 || response.status === 204) {
+    if (response.status === 202) {
+      return undefined;
+    }
+
+    if (response.status === 204) {
       return null;
     }
 
@@ -242,7 +246,11 @@ export default class GitHubRepositories {
       repo: repositoryName,
     });
 
-    if (response.status === 202 || response.status === 204) {
+    if (response.status === 202) {
+      return undefined;
+    }
+
+    if (response.status === 204) {
       return null;
     }
 
@@ -283,7 +291,10 @@ export default class GitHubRepositories {
     });
 
     if (response.status === 204) {
-      return null;
+      return {
+        Hourly: null,
+        Daily: null,
+      };
     }
 
     const commits = response.data;
@@ -316,8 +327,12 @@ export default class GitHubRepositories {
       repo: repositoryName,
     });
 
-    if (response.status === 202 || response.status === 204) {
-      return null;
+    if (response.status === 202) {
+      return undefined;
+    }
+
+    if (response.status === 204) {
+      return [];
     }
 
     const commits = response.data;
