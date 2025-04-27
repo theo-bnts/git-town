@@ -52,8 +52,6 @@ export default class SSHDGit {
       await this.execute('git lfs push --all origin', {
         cwd: `${process.env.SSHD_GIT_CLONE_DIRECTORY}/${sourceRepositoryFullName}`,
       });
-    } catch (error) {
-      throw error;
     } finally {
       await this.execute(`rm -rf ${sourceRepositoryFullName}`, {
         cwd: process.env.SSHD_GIT_CLONE_DIRECTORY,

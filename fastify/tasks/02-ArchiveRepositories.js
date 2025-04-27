@@ -22,6 +22,7 @@ export default function task(app) {
                 true,
               );
 
+              // eslint-disable-next-line no-param-reassign
               repository.ArchivedAt = new Date();
 
               return repository.update();

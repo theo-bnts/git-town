@@ -250,8 +250,9 @@ export default class Repository {
           repository.comment
         FROM public.repository
         WHERE archived_at IS NULL
-        AND created_at < (NOW() - INTERVAL '${Number(process.env.REPOSITORY_ARCHIVAGE_AFTER_HOURS)} hours')
+        AND created_at < (NOW() - (($1 || ' hours')::interval))
       `,
+      [Number(process.env.REPOSITORY_ARCHIVAGE_AFTER_HOURS)],
     );
 
     return Promise.all(
