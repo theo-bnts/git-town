@@ -216,7 +216,41 @@ export default class Repository {
           repository.promotion_id,
           repository.comment
         FROM public.repository
-        ORDER BY repository.created_at DESC
+      `,
+    );
+
+    return Promise.all(
+      rows.map(async (row) => {
+        const template = await Template.fromId(row.template_id);
+        const promotion = await Promotion.fromId(row.promotion_id);
+
+        return new this(
+          row.id,
+          row.created_at,
+          row.updated_at,
+          row.archived_at,
+          template,
+          promotion,
+          row.comment,
+        );
+      }),
+    );
+  }
+
+  static async allToArchive() {
+    const rows = await DatabasePool.EnvironmentInstance.query(
+      /* sql */ `
+        SELECT
+          repository.id,
+          repository.created_at,
+          repository.updated_at,
+          repository.archived_at,
+          repository.template_id,
+          repository.promotion_id,
+          repository.comment
+        FROM public.repository
+        WHERE archived_at IS NULL
+        AND created_at < (NOW() - INTERVAL '${Number(process.env.REPOSITORY_ARCHIVAGE_AFTER_HOURS)} hours')
       `,
     );
 
