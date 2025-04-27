@@ -57,9 +57,6 @@ export default function PromotionsPanel() {
           actions: renderActions(item),
         }));
         setPromotions(withActions);
-      })
-      .catch((error) => {
-        alert(`Erreur lors de la récupération des promotions : ${error.message}`);
       });
   }, [authToken]);
 

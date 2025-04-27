@@ -4,8 +4,8 @@ import { API_ERRORS } from "@/app/services/errorCodes";
 /**
  * Gestion des erreurs API
  * 
- * @param {Response} res  - La réponse de l'API
- * @param {object} data - Le JSON retourné par l’API ({ error, ... })
+ * @param {Response} res - La réponse de l'API
+ * @param {object} data - Le JSON retourné par l’API
  * @throws {Error} - Avec le message construit
  */
 export function handleApiError(res, data) {

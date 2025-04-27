@@ -56,7 +56,7 @@ export default function DynamicModal({
         <Card variant="default" className="relative p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">{title || 'Édition'}</h3>
-            <Button variant="action_sq_warn" onClick={onClose}><XIcon size={24} /></Button>
+            <Button variant="action_icon_warn" onClick={onClose}><XIcon size={24} /></Button>
           </div>
           <form onSubmit={e => { e.preventDefault(); onSubmit(fields); }} className="space-y-4">
             {initialFields.map(f => {

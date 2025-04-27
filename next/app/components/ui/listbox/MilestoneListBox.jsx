@@ -96,22 +96,20 @@ export default function MilestoneListBox({ initial = [], onChange }) {
                   className="flex items-center justify-between px-4 py-2"
                 >
                   <span>{item.value}</span>
-                  <div className="space-x-1">
-                    <Button
-                      type="button"
-                      onClick={() => startEditing(item)}
-                      variant="action_sq"
-                    >
-                      <PencilIcon size={16} />
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => removeMilestone(item.localKey)}
-                      variant="action_sq_warn"
-                    >
-                      <DashIcon size={16} />
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => startEditing(item)}
+                    variant="action_icon"
+                  >
+                    <PencilIcon size={16} />
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => removeMilestone(item.localKey)}
+                    variant="action_icon_warn"
+                  >
+                    <DashIcon size={16} />
+                  </Button>
                 </div>
               ))
           )}

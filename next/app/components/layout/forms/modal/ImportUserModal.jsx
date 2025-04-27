@@ -197,7 +197,7 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
         <Card variant="default" className="relative p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Import CSV</h3>
-            <Button variant="action_sq_warn" onClick={onClose}>
+            <Button variant="action_icon_warn" onClick={onClose}>
               <XIcon size={24} />
             </Button>
           </div>
@@ -225,7 +225,7 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
                   {importedFile ? (
                     <div className="flex items-center justify-between p-2">
                       <span className={textStyles.default}>{importedFile.name}</span>
-                      <Button variant="action_sq_warn" onClick={handleRemoveFile}>
+                      <Button variant="action_icon_warn" onClick={handleRemoveFile}>
                         <DashIcon size={16} />
                       </Button>
                     </div>

@@ -12,7 +12,7 @@ export default function ListBoxItem({ option, onRemove }) {
 			<span>{option.value}</span>
 			<Button 
 				onClick={onRemove} 
-				variant="action_sq_warn">
+				variant="action_icon_warn">
 				<DashIcon size={16} />
 			</Button>
 		</div>

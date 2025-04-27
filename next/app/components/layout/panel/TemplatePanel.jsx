@@ -22,19 +22,19 @@ const columns = [
 const mapTemplateToRow = (tpl) => ({
   raw: tpl,
   year: tpl.Year,
-  ue:  `${tpl.EnseignementUnit.Name} (${tpl.EnseignementUnit.Initialism})`,
+  ue: `${tpl.EnseignementUnit.Name} (${tpl.EnseignementUnit.Initialism})`,
   milestones: tpl.Milestones ? tpl.Milestones.length : 0,
 });
 
 export default function TemplatePanel() {
-  const [authToken, setAuthToken]   = useState('');
-  const [templates, setTemplates]   = useState([]);
+  const [authToken, setAuthToken] = useState('');
+  const [templates, setTemplates] = useState([]);
 
-  const [modalOpen, setModalOpen]   = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
 
-  const [confirmOpen, setConfirmOpen]     = useState(false);
-  const [TemplateToDelete, setTemplateToDelete]     = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [TemplateToDelete, setTemplateToDelete] = useState(null);
 
   useEffect(() => {
     (async () => setAuthToken(await getCookie('token')))();
@@ -49,7 +49,6 @@ export default function TemplatePanel() {
           .map((row) => ({ ...row, actions: renderActions(row) }));
         setTemplates(rows);
       })
-      .catch((err) => alert(`Erreur de chargement : ${err.message}`));
   }, [authToken]);
 
   useEffect(() => { refresh(); }, [refresh]);

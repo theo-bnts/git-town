@@ -71,7 +71,7 @@ export default function Header({
 
           <div className="flex items-center space-x-4">
             <p className={`${textStyles.bold} text-xl`}>{displayName}</p>
-            <Button variant="action_sq_warn" onClick={handleSignOut}>
+            <Button variant="action_icon_warn" onClick={handleSignOut}>
               <SignOutIcon size={24} />
             </Button>
           </div>

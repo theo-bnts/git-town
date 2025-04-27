@@ -19,7 +19,8 @@ const buttonStyles = {
   
   outline_full: `w-full flex items-center justify-center bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)] hover:bg-[var(--primary-color-hover)] transition-colors duration-200`,
 
-  action_sq_warn: `flex items-center justify-center transition-colors duration-200 hover:scale-110 hover:text-[var(--warn-color-hover)]`,
+  action_icon_warn: `transition-colors duration-200 hover:scale-110 hover:text-[var(--warn-color-hover)]`,
+  action_icon: `transition-colors duration-200 hover:scale-110 hover:text-[var(--accent-color)]`,
   
   action_sq: `flex items-center justify-center p-2 transition-transform duration-200 hover:scale-110 hover:text-[var(--accent-color)]`,
   default_sq: `bg-[var(--accent-color)] p-2 rounded-[12.5px] hover:bg-[var(--accent-color-hover)] transition-colors duration-200`,

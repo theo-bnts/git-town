@@ -5,12 +5,12 @@ import React, { useEffect, useRef } from 'react';
 import ComboBox from '@/app/components/ui/combobox/ComboBox';
 
 export default function ListBoxPopover({ 
-  isOpen, 
-  options, 
-  onSelect, 
-  onClose, 
-  maxVisible = 4, 
-  toggleButtonRef 
+  isOpen,
+  options,
+  onSelect,
+  onClose,
+  maxVisible = 4,
+  toggleButtonRef
 }) {
   const popoverRef = useRef(null);
 

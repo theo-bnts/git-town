@@ -38,6 +38,7 @@ export const API_ERRORS = {
     DUPLICATE: "(409) : Configuration déjà existante.",
     SAME_TITLE: "(409) : Même titre déjà utilisé.",
     DUPLICATE_TITLE: "(409) : Titre déjà utilisé.",
+    DATE_OUT_OF_RANGE: "(409) : Date hors des contraintes.",
     default: "(409) : Conflit de requête.",
   },
   429: {
