@@ -56,11 +56,16 @@ export default async function route(app) {
       const { TemplateId: templateId } = request.params;
       const { Title: title, Date: dateString } = request.body;
 
-      const template = await Template.fromId(templateId);
+      const date = DateTime.fromISO(dateString).toJSDate();
 
-      const date = DateTime
-        .fromISO(dateString)
-        .toJSDate();
+      const minimumDate = DateTime.fromISO(process.env.MILESTONE_DATE_MIN).toJSDate();
+      const maximumDate = DateTime.fromISO(process.env.MILESTONE_DATE_MAX).toJSDate();
+
+      if (date < minimumDate || date > maximumDate) {
+        throw { statusCode: 409, error: 'DATE_OUT_OF_RANGE' };
+      }
+
+      const template = await Template.fromId(templateId);
 
       if (await Milestone.isTemplateAndTitleInserted(template, title)) {
         throw { statusCode: 409, error: 'DUPLICATE_TITLE' };

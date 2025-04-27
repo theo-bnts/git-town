@@ -83,6 +83,13 @@ export default async function route(app) {
       if (dateString) {
         const date = DateTime.fromISO(dateString).toJSDate();
 
+        const minimumDate = DateTime.fromISO(process.env.MILESTONE_DATE_MIN).toJSDate();
+        const maximumDate = DateTime.fromISO(process.env.MILESTONE_DATE_MAX).toJSDate();
+
+        if (date < minimumDate || date > maximumDate) {
+          throw { statusCode: 409, error: 'DATE_OUT_OF_RANGE' };
+        }
+
         if (DateTime.fromJSDate(date).equals(DateTime.fromJSDate(milestone.Date))) {
           throw { statusCode: 409, error: 'SAME_DATE' };
         }
