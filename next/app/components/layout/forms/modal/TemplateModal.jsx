@@ -3,9 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { getCookie } from '@/app/services/cookies';
 import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
-import ListBox from '@/app/components/ui/listbox/ListBox';
-import MilestoneAdder from '@/app/components/ui/listbox/MilestoneAdder';
-import MilestoneChip from '@/app/components/ui/listbox/MilestoneChip';
+import MilestoneListBox from '@/app/components/ui/listbox/MilestoneListBox';
 import saveTemplate from '@/app/services/api/templates/saveTemplate';
 import getEnseignementUnits from '@/app/services/api/enseignementUnit/getEnseignementUnits';
 import getTemplateMilestones from '@/app/services/api/templates/id/milestone/getTemplateMilestones';
@@ -14,143 +12,149 @@ import deleteTemplateMilestone from '@/app/services/api/templates/id/milestone/i
 
 export default function TemplateModal({ isOpen, initialData = {}, onClose, onSave }) {
   const [authToken, setAuthToken] = useState('');
-  const [ueOpts, setUeOpts] = useState([]);
-  const [ueSel, setUeSel] = useState(null);
-  const [year, setYear] = useState(initialData.Year || '');
-  const [initialMs, setInitialMs] = useState([]);
-  const [milestones, setMilestones] = useState([]);
-  const [editingMs, setEditingMs] = useState(null);
+  const [unitOptions, setUnitOptions] = useState([]);
+  const [selectedUnit, setSelectedUnit] = useState(null);
+  const [originalMilestones, setOriginalMilestones] = useState([]);
+  const [currentMilestones, setCurrentMilestones] = useState([]);
 
   useEffect(() => {
-    (async () => setAuthToken(await getCookie('token')))();
+    (async () => {
+      const token = await getCookie('token');
+      setAuthToken(token);
+    })();
   }, []);
 
   useEffect(() => {
     if (!isOpen || !authToken) return;
-    getEnseignementUnits(authToken).then((arr) => {
-      const opts = arr.map((u) => ({ id: u.Id, value: u.Initialism, full: u }));
-      setUeOpts(opts);
+    getEnseignementUnits(authToken).then(units => {
+      const options = units.map(unit => ({ id: unit.Id, value: unit.Initialism, full: unit }));
+      setUnitOptions(options);
       if (initialData.EnseignementUnit?.Id) {
-        setUeSel(opts.find((o) => o.id === initialData.EnseignementUnit.Id) || null);
+        setSelectedUnit(
+          options.find(option => option.id === initialData.EnseignementUnit.Id) || null
+        );
       }
     });
   }, [isOpen, authToken, initialData]);
 
   useEffect(() => {
     if (!isOpen || !authToken || !initialData.Id) {
-      setInitialMs([]);
-      setMilestones([]);
+      setOriginalMilestones([]);
+      setCurrentMilestones([]);
       return;
     }
     getTemplateMilestones(initialData.Id, authToken)
-      .then((list) => {
-        setInitialMs(list);
-        setMilestones(
-          list.map((m) => ({
-            ...m,
-            id: m.Id,
-            value: `${m.Title} – ${m.Date}`,
+      .then(list => {
+        setOriginalMilestones(list);
+        setCurrentMilestones(
+          list.map(item => ({
+            ...item,
+            id: item.Id,
+            Title: item.Title,
+            Date: item.Date,
+            value: `${item.Title} – ${item.Date}`,
           }))
         );
       })
       .catch(() => {
-        setInitialMs([]);
-        setMilestones([]);
+        setOriginalMilestones([]);
+        setCurrentMilestones([]);
       });
   }, [isOpen, authToken, initialData.Id]);
 
   const fields = [
-    { label: 'UE', value: ueSel, options: ueOpts },
-    { label: 'Année', value: year },
+    { label: 'UE', 
+      value: selectedUnit,
+      options: unitOptions 
+    },
+    { label: 'Année',  
+      value: initialData.Year?.toString() || '' },
     {
       label: 'Milestones',
-      value: milestones,
+      value: currentMilestones,
       render: () => (
-        <ListBox
-          items={milestones}
-          onChange={setMilestones}
-          renderAdd={({ addItem, updateItem }) => (
-            <MilestoneAdder
-              onAdd={addItem}
-              onUpdate={(id, up) => {
-                updateItem(id, up);
-                setEditingMs(null);
-              }}
-              editingItem={editingMs}
-            />
-          )}
-          renderChip={(props) => <MilestoneChip {...props} />}
-          onEdit={(m) => setEditingMs(m)}
+        <MilestoneListBox
+          initial={currentMilestones}
+          onChange={setCurrentMilestones}
         />
-      ),
-    },
+      )
+    }
   ];
 
-  const validate = (f) => {
-    const e = {};
-    if (!f.UE?.id) e.UE = 'Sélection obligatoire.';
-    const y = parseInt(f['Année'], 10);
-    if (!f['Année']) e.year = 'Champ requis.';
-    else if (isNaN(y) || y < 2000 || y > 2099) e.year = 'Année 2000-2099.';
-    return e;
+  const validate = values => {
+    const errors = {};
+    if (!values.UE?.id) errors.UE = 'Sélection de l’unité obligatoire.';
+    const yearNum = parseInt(values['Année'], 10);
+    if (!values['Année']) {
+      errors['Année'] = 'Champ requis.';
+    } else if (isNaN(yearNum) || yearNum < 2000 || yearNum > 2099) {
+      errors['Année'] = 'Année doit être entre 2000 et 2099.';
+    }
+    return errors;
   };
 
-  const handleSubmit = async (v) => {
-    const e = validate(v);
-    if (Object.keys(e).length) return alert(Object.values(e).join('\n'));
+  const handleSubmit = async values => {
+    const errors = validate(values);
+    if (Object.keys(errors).length) {
+      alert(Object.values(errors).join('\n'));
+      return;
+    }
 
-    const payload = {
-      EnseignementUnit: { Id: v.UE.id },
-      Year: parseInt(v['Année'], 10),
+    const templateData = {
+      EnseignementUnit: { Id: values.UE.id },
+      Year: parseInt(values['Année'], 10),
     };
 
-    const isEdit = !!initialData.Id;
-    if (isEdit) {
-      if (initialData.EnseignementUnit?.Id === payload.EnseignementUnit.Id)
-        delete payload.EnseignementUnit;
-      if (initialData.Year === payload.Year) delete payload.Year;
+    const isUpdating = Boolean(initialData.Id);
+    if (isUpdating) {
+      if (initialData.EnseignementUnit?.Id === templateData.EnseignementUnit.Id) {
+        delete templateData.EnseignementUnit;
+      }
+      if (initialData.Year === templateData.Year) {
+        delete templateData.Year;
+      }
     }
 
-    let tplId = initialData.Id;
-    if (!isEdit) {
-      tplId = (await saveTemplate(null, payload, authToken)).Id;
-    } else if (Object.keys(payload).length) {
-      await saveTemplate(tplId, payload, authToken);
+    let templateId = initialData.Id;
+    if (!isUpdating) {
+      const created = await saveTemplate(null, templateData, authToken);
+      templateId = created.Id;
+    } else if (Object.keys(templateData).length) {
+      await saveTemplate(templateId, templateData, authToken);
     }
 
-    const keepIds = new Set(
-      milestones
-        .filter((m) => !String(m.id).startsWith('n-'))
-        .map((m) => m.id)
+    const keptIds = new Set(
+      currentMilestones
+        .filter(milestone => milestone.Id != null)
+        .map(milestone => milestone.Id)
     );
-    const toDel = initialMs.filter((m) => !keepIds.has(m.Id));
-    const toAdd = milestones.filter((m) => String(m.id).startsWith('n-'));
-    const toPatch = milestones.filter(
-      (m) =>
-        !String(m.id).startsWith('n-') &&
-        initialMs.some(
-          (im) => im.Id === m.id && (im.Title !== m.Title || im.Date !== m.Date)
-        )
-    );
+
+    const milestonesToDelete = originalMilestones.filter(originalMilestone => !keptIds.has(originalMilestone.Id));
+    const milestonesToAdd    = currentMilestones.filter(milestone => milestone.Id == null);
+    const milestonesToPatch  = currentMilestones.filter(milestone => {
+      if (milestone.Id == null) return false;
+      const originalMilestone = originalMilestones.find(o => o.Id === milestone.Id);
+      return originalMilestone && (originalMilestone.Title !== milestone.Title || originalMilestone.Date !== milestone.Date);
+    });
 
     await Promise.all([
-      ...toDel.map((m) => deleteTemplateMilestone(tplId, m.Id, authToken)),
-      ...toAdd.map((m) =>
+      ...milestonesToDelete.map(originalMilestone =>
+        deleteTemplateMilestone(templateId, originalMilestone.Id, authToken)
+      ),
+      ...milestonesToAdd.map(newItem =>
+        saveTemplateMilestone(templateId, null, { Title: newItem.Title, Date: newItem.Date }, authToken)
+      ),
+      ...milestonesToPatch.map(updated =>
         saveTemplateMilestone(
-          tplId,
-          null,
-          { Title: m.Title, Date: m.Date },
+          templateId,
+          updated.Id,
+          {
+            ...(originalMilestones.find(o => o.Id === updated.Id).Title !== updated.Title && { Title: updated.Title }),
+            ...(originalMilestones.find(o => o.Id === updated.Id).Date  !== updated.Date  && { Date:  updated.Date })
+          },
           authToken
         )
-      ),
-      ...toPatch.map((m) =>
-        saveTemplateMilestone(
-          tplId,
-          m.id,
-          { Title: m.Title, Date: m.Date },
-          authToken
-        )
-      ),
+      )
     ]);
 
     onSave();
@@ -161,7 +165,7 @@ export default function TemplateModal({ isOpen, initialData = {}, onClose, onSav
 
   return (
     <DynamicModal
-      key={`tpl-${ueSel?.id || 'none'}-${isOpen}`}
+      key={`template-${selectedUnit?.id || 'none'}-${isOpen}`}
       title="Édition"
       fields={fields}
       isOpen={isOpen}
@@ -169,7 +173,7 @@ export default function TemplateModal({ isOpen, initialData = {}, onClose, onSav
       onSubmit={handleSubmit}
       metadata={{
         createdAt: initialData.CreatedAt,
-        updatedAt: initialData.UpdatedAt,
+        updatedAt: initialData.UpdatedAt
       }}
     />
   );

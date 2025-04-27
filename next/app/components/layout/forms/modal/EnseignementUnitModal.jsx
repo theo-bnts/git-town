@@ -12,9 +12,9 @@ export default function EnseignementUnitModal({
   onSave,
 }) {
   const [initialUnit, setInitialUnit] = useState(initialData);
-  const [errors, setErrors]           = useState({});
-  const [apiError, setApiError]       = useState('');
-  const [authToken, setAuthToken]     = useState('');
+  const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
+  const [authToken, setAuthToken] = useState('');
 
   useEffect(() => {
     (async () => {
