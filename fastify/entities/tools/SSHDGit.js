@@ -53,7 +53,7 @@ export default class SSHDGit {
         cwd: `${process.env.SSHD_GIT_CLONE_DIRECTORY}/${sourceRepositoryFullName}`,
       });
     } catch (error) {
-      throw new Error(error);
+      throw error;
     } finally {
       await this.execute(`rm -rf ${sourceRepositoryFullName}`, {
         cwd: process.env.SSHD_GIT_CLONE_DIRECTORY,
