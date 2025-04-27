@@ -8,9 +8,10 @@ export default class GitHubEducationalTeam {
   async get() {
     const { Name: organizationName } = await this.App.Organization.get();
 
-    const { data: teams } = await this.App.Octokit.rest.teams.list({
-      org: organizationName,
-    });
+    const teams = await this.App.Octokit.paginate(
+      this.App.Octokit.rest.teams.list,
+      { org: organizationName },
+    );
 
     const educationalTeam = teams.find(
       (team) => team.id === Number(process.env.GITHUB_EDUCATIONAL_TEAM_ID),
@@ -40,7 +41,7 @@ export default class GitHubEducationalTeam {
   async addRepository(repositoryName) {
     const { Name: organizationName } = await this.App.Organization.get();
 
-    const { Slug: teamSlug } = await this.App.Teams.getEducationalTeam();
+    const { Slug: teamSlug } = await this.get();
 
     await this.App.Octokit.rest.teams.addOrUpdateRepoPermissionsInOrg({
       org: organizationName,

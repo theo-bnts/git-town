@@ -4,20 +4,11 @@ import fastify from 'fastify';
 import { join } from 'desm';
 import rateLimit from '@fastify/rate-limit';
 import rawBody from 'fastify-raw-body';
+import schedule from '@fastify/schedule';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 
-import DatabasePool from './entities/tools/DatabasePool.js';
-import GitHubApp from './entities/tools/GitHub/GitHubApp.js';
-import EmailTransporter from './entities/tools/EmailTransporter.js';
 import Request from './entities/tools/Request.js';
-
-DatabasePool.EnvironmentInstance = DatabasePool.fromEnvironment();
-GitHubApp.EnvironmentInstance = GitHubApp.fromEnvironment();
-EmailTransporter.EnvironmentInstance = EmailTransporter.fromEnvironment();
-
-/* eslint-disable-next-line no-extend-native */
-BigInt.prototype.toJSON = function toJSON() {
-  return this.toString();
-};
 
 const app = fastify({
   logger: {
@@ -61,8 +52,19 @@ await app.register(rawBody, {
   global: false,
 });
 
+await app.register(swagger);
+
+await app.register(swaggerUi);
+
 await app.register(autoLoad, {
   dir: join(import.meta.url, 'routes'),
+  dirNameRoutePrefix: false,
+});
+
+await app.register(schedule);
+
+await app.register(autoLoad, {
+  dir: join(import.meta.url, 'tasks'),
   dirNameRoutePrefix: false,
 });
 

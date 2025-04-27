@@ -15,18 +15,37 @@ services:
   postgres_backup_local:
     depends_on:
       - postgres
-    image: prodrigestivill/postgres-backup-local
+    image: prodrigestivill/postgres-backup-local:17-alpine
     container_name: git_town_postgres_backup_local
     restart: unless-stopped
     env_file:
       - ./postgres_backup_local/.env
     volumes:
+      - postgres_backup_local_volume:/var/lib/postgresql/data:rw
       - postgres_backup_local_volume:/backups:rw
     networks:
       - postgres_network
+  sshd_git:
+    image: linuxserver/openssh-server:9.9_p2-r0-ls196
+    container_name: git_town_sshd_git
+    restart: unless-stopped
+    command: >
+      sh -c "
+        apk add --no-cache git git-lfs &&
+        tail -f /dev/null
+      "
+    env_file:
+      - ./sshd_git/.env
+    volumes:
+      - sshd_git_home:/config:rw
+    networks:
+      - sshd_git_network
+    ports:
+      - 2222:2222
   fastify:
     depends_on:
       - postgres
+      - sshd_git
     image: node:22-slim
     container_name: git_town_fastify
     restart: unless-stopped
@@ -44,9 +63,12 @@ services:
     networks:
       - fastify_network
       - postgres_network
+      - sshd_git_network
     ports:
       - 8080:80
   next:
+    depends_on:
+      - fastify
     image: node:22-slim
     container_name: git_town_next
     restart: unless-stopped
@@ -73,6 +95,8 @@ volumes:
     name: git_town_postgres_data_volume
   postgres_backup_local_volume:
     name: git_town_postgres_backup_local_volume
+  sshd_git_home:
+    name: git_town_sshd_git_home
   fastify_node_modules:
     name: git_town_fastify_node_modules
   next_node_modules:
@@ -86,6 +110,9 @@ networks:
   postgres_network:
     driver: bridge
     name: git_town_postgres_network
+  sshd_git_network:
+    driver: bridge
+    name: git_town_sshd_git_network
   fastify_network:
     driver: bridge
     name: git_town_fastify_network

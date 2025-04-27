@@ -1,6 +1,5 @@
-import { DateTime } from 'luxon';
-
 import AuthorizationMiddleware from '../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
+import GitHubApp from '../../../../entities/tools/GitHub/GitHubApp.js';
 import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Repository from '../../../../entities/Repository.js';
 
@@ -53,7 +52,12 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'SAME_STATE' };
       }
 
-      repository.ArchivedAt = archived ? DateTime.now() : null;
+      await GitHubApp.EnvironmentInstance.Repositories.updateArchivageState(
+        repository.Id,
+        archived,
+      );
+
+      repository.ArchivedAt = archived ? new Date() : null;
 
       await repository.update();
     },

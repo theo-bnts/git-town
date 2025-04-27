@@ -36,6 +36,15 @@ export default class GitHubApp {
     this.Users = new GitHubUsers(this);
   }
 
+  async getInstallationAccessToken() {
+    const { token } = await this.Octokit.auth({
+      type: 'installation',
+      installationId: Number(process.env.GITHUB_APP_INSTALLATION_ID),
+    });
+
+    return token;
+  }
+
   static fromEnvironment() {
     const octokit = new Octokit({
       authStrategy: createAppAuth,

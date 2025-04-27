@@ -46,7 +46,7 @@ export default async function route(app) {
 
       const tokens = await Token.fromUser(user);
 
-      await Promise.all(tokens.map((token) => token.delete()));
+      return Promise.all(tokens.map((token) => token.delete()));
     },
   });
 }
