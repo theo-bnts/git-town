@@ -1,4 +1,3 @@
-// /app/components/layout/forms/modal/PromotionModal.jsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -6,46 +5,31 @@ import { getCookie } from '@/app/services/cookies';
 import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
 import savePromotions from '@/app/services/api/promotions/savePromotions';
 
-const diplomaOptions = [
-  { id: 'MIAGE', name: 'MIAGE' }
-];
-const transformedDiplomaOptions = diplomaOptions.map(d => ({
-  id: d.id,
-  value: d.name
-}));
-
+const diplomaOptions = [{ id: 'MIAGE', name: 'MIAGE' }];
 const levelOptions = [
   { id: 'M1', name: 'M1' },
-  { id: 'M2', name: 'M2' }
+  { id: 'M2', name: 'M2' },
 ];
-const transformedLevelOptions = levelOptions.map(l => ({
-  id: l.id,
-  value: l.name
+
+const transformedDiplomaOptions = diplomaOptions.map(diploma => ({
+  id: diploma.id,
+  value: diploma.name,
 }));
 
-export default function PromotionModal({ 
-  isOpen, 
-  initialData = {}, 
-  onClose, 
-  onSave, 
+const transformedLevelOptions = levelOptions.map(level => ({
+  id: level.id,
+  value: level.name,
+}));
+
+export default function PromotionModal({
+  isOpen,
+  initialData = {},
+  onClose,
+  onSave,
 }) {
-  const [initialPromotion, setInitialPromotion] = useState(initialData);
-  const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [serverError, setServerError] = useState('');
   const [authToken, setAuthToken] = useState('');
-
-  const initialDiploma = initialData.Diploma && initialData.Diploma.Initialism
-    ? transformedDiplomaOptions.find(opt => opt.id === initialData.Diploma.Initialism)
-    : null;
-  const initialLevel = initialData.PromotionLevel && initialData.PromotionLevel.Initialism
-    ? transformedLevelOptions.find(opt => opt.id === initialData.PromotionLevel.Initialism)
-    : null;
-
-  const fields = [
-    { label: "Diplôme", value: initialDiploma, options: transformedDiplomaOptions },
-    { label: "Niveau", value: initialLevel, options: transformedLevelOptions },
-    { label: "Année", value: initialData.Year || "" }
-  ];
 
   useEffect(() => {
     (async () => {
@@ -54,116 +38,116 @@ export default function PromotionModal({
     })();
   }, []);
 
-  const validateFields = (fieldsValues) => {
-    let newErrors = {};
-    if (!fieldsValues["Diplôme"] || !fieldsValues["Diplôme"].id) {
-      newErrors["Diplôme"] = "Veuillez sélectionner un diplôme.";
-    }
-    if (!fieldsValues["Niveau"] || !fieldsValues["Niveau"].id) {
-      newErrors["Niveau"] = "Veuillez sélectionner un niveau.";
-    }
-    if (!fieldsValues["Année"]) {
-      newErrors["Année"] = "L'année est obligatoire.";
+  const initialDiploma = initialData.Diploma?.Initialism
+    ? transformedDiplomaOptions.find(opt => opt.id === initialData.Diploma.Initialism)
+    : null;
+
+  const initialLevel = initialData.PromotionLevel?.Initialism
+    ? transformedLevelOptions.find(opt => opt.id === initialData.PromotionLevel.Initialism)
+    : null;
+
+  const fields = [
+    { label: 'Diplôme', value: initialDiploma, options: transformedDiplomaOptions },
+    { label: 'Niveau', value: initialLevel, options: transformedLevelOptions },
+    { label: 'Année', value: initialData.Year || '' },
+  ];
+
+  const validate = values => {
+    const validationErrors = {};
+    if (!values.Diplôme?.id) validationErrors.Diplôme = 'Veuillez sélectionner un diplôme.';
+    if (!values.Niveau?.id) validationErrors.Niveau = 'Veuillez sélectionner un niveau.';
+    if (!values.Année) {
+      validationErrors.Année = "L'année est obligatoire.";
     } else {
-      const yearVal = parseInt(fieldsValues["Année"], 10);
-      if (isNaN(yearVal)) {
-        newErrors["Année"] = "L'année doit être un nombre valide.";
-      } else if (yearVal < 2000 || yearVal > 2099) {
-        newErrors["Année"] = "L'année doit être comprise entre 2000 et 2099.";
+      const yearNum = parseInt(values.Année, 10);
+      if (isNaN(yearNum)) {
+        validationErrors.Année = "L'année doit être un nombre valide.";
+      } else if (yearNum < 2000 || yearNum > 2099) {
+        validationErrors.Année = "L'année doit être comprise entre 2000 et 2099.";
       }
     }
-    return newErrors;
+    return validationErrors;
   };
 
-  const diffPromotion = (original, modified) => {
-    const diff = {};
-    const initialDiploma = (original.Diploma && original.Diploma.Initialism) || "";
-    if (initialDiploma.trim() !== modified.Diploma.Initialism.trim()) {
-      diff.Diploma = { Initialism: modified.Diploma.Initialism.trim() };
+  const computePromotionChanges = (original, updated) => {
+    const changes = {};
+    if ((original.Diploma?.Initialism || '') !== updated.Diploma.Initialism) {
+      changes.Diploma = { Initialism: updated.Diploma.Initialism };
     }
-    const initialLevel = (original.PromotionLevel && original.PromotionLevel.Initialism) || "";
-    if (initialLevel.trim() !== modified.PromotionLevel.Initialism.trim()) {
-      diff.PromotionLevel = { Initialism: modified.PromotionLevel.Initialism.trim() };
+    if ((original.PromotionLevel?.Initialism || '') !== updated.PromotionLevel.Initialism) {
+      changes.PromotionLevel = { Initialism: updated.PromotionLevel.Initialism };
     }
-    if (original.Year !== modified.Year) {
-      diff.Year = modified.Year;
+    if (original.Year !== updated.Year) {
+      changes.Year = updated.Year;
     }
-    return diff;
+    return changes;
   };
 
-  const handleSubmit = async (fieldsValues) => {
-    const newErrors = validateFields(fieldsValues);
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+  const handleSubmit = async values => {
+    const validationErrors = validate(values);
+    if (Object.keys(validationErrors).length) {
+      setFieldErrors(validationErrors);
       return;
     }
-    setErrors({});
-    setApiError('');
+    setFieldErrors({});
+    setServerError('');
 
-    const selectedDiploma = fieldsValues["Diplôme"];
-    const selectedLevel = fieldsValues["Niveau"];
-    const yearVal = parseInt(fieldsValues["Année"], 10);
+    const diplomaChoice = { Initialism: values.Diplôme.id };
+    const levelChoice = { Initialism: values.Niveau.id };
+    const yearValue = parseInt(values.Année, 10);
 
-    const modifiedPromotion = {
-      Diploma: { Initialism: selectedDiploma.id },
-      PromotionLevel: { Initialism: selectedLevel.id },
-      Year: yearVal
+    const promotionData = {
+      Diploma: diplomaChoice,
+      PromotionLevel: levelChoice,
+      Year: yearValue,
     };
 
-    if (initialData && initialData.Id) {
-      const differences = diffPromotion(initialPromotion, modifiedPromotion);
+    const isEdit = Boolean(initialData.Id);
+    const payload = isEdit
+      ? computePromotionChanges(initialData, promotionData)
+      : promotionData;
 
-      if (Object.keys(differences).length === 0) {
-        onClose();
-        return;
-      }
-      try {
-        await savePromotions(initialPromotion.Id, differences, authToken);
-        onSave();
-        onClose();
-      } catch (error) {
-        setApiError(error.message);
-      }
-    } else {
-      try {
-        await savePromotions(null, modifiedPromotion, authToken);
-        onSave();
-        onClose();
-      } catch (error) {
-        setApiError(error.message);
-      }
+    if (isEdit && Object.keys(payload).length === 0) {
+      onClose();
+      return;
+    }
+
+    try {
+      await savePromotions(isEdit ? initialData.Id : null, payload, authToken);
+      onSave();
+      onClose();
+    } catch (error) {
+      setServerError(error.message);
     }
   };
 
+  const clearFieldError = label => {
+    setFieldErrors(prev => ({ ...prev, [label]: '' }));
+    if (serverError) setServerError('');
+  };
+
+  const clearServerError = () => setServerError('');
+
   const handleClose = () => {
-    setErrors({});
-    setApiError('');
+    setFieldErrors({});
+    setServerError('');
     onClose();
   };
 
-  const clearApiError = () => {
-    setApiError('');
-  };
-
-  const clearError = (label) => {
-    setErrors(prev => ({ ...prev, [label]: "" }));
-    if (apiError) setApiError('');
-  };
-
   return (
-    <DynamicModal 
-      metadata={{ 
-        createdAt: initialData.createdAt, 
-        updatedAt: initialData.updatedAt 
+    <DynamicModal
+      metadata={{
+        createdAt: initialData.createdAt,
+        updatedAt: initialData.updatedAt,
       }}
-      errors={errors}
-      apiError={apiError}
-      clearApiError={clearApiError}
-      fields={fields} 
+      fields={fields}
+      errors={fieldErrors}
+      apiError={serverError}
+      clearApiError={clearServerError}
       isOpen={isOpen}
-      onClose={handleClose} 
+      onClose={handleClose}
       onSubmit={handleSubmit}
-      onClearError={clearError}
+      onClearError={clearFieldError}
     />
   );
 }

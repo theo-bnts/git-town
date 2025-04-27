@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getCookie } from '@/app/services/cookies';
 import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
 import saveEnseignementUnit from '@/app/services/api/enseignementUnit/saveEnseignementUnit';
@@ -11,9 +11,8 @@ export default function EnseignementUnitModal({
   onClose,
   onSave,
 }) {
-  const [initialUnit, setInitialUnit] = useState(initialData);
-  const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [serverError, setServerError] = useState('');
   const [authToken, setAuthToken] = useState('');
 
   useEffect(() => {
@@ -28,87 +27,84 @@ export default function EnseignementUnitModal({
     { label: 'Nom', value: initialData.Name || '' },
   ];
 
-  const validateFields = (values) => {
-    const errs = {};
-    if (!values['Sigle'] || values['Sigle'].trim() === '') {
-      errs['Sigle'] = 'Le sigle est obligatoire.';
-    }
-    if (!values['Nom'] || values['Nom'].trim() === '') {
-      errs['Nom'] = 'Le nom est obligatoire.';
-    }
-    return errs;
+  const validateFields = values => {
+    const validationErrors = {};
+    if (!values.Sigle?.trim()) validationErrors.Sigle = 'Le sigle est obligatoire.';
+    if (!values.Nom?.trim()) validationErrors.Nom = 'Le nom est obligatoire.';
+    return validationErrors;
   };
 
-  const diffUnit = (orig, mod) => {
-    const diff = {};
-    if ((orig.Initialism || '').trim() !== mod.Initialism.trim()) {
-      diff.Initialism = mod.Initialism.trim();
+  const computeUnitChanges = (originalUnit, updatedUnit) => {
+    const changes = {};
+    if ((originalUnit.Initialism || '').trim() !== updatedUnit.Initialism) {
+      changes.Initialism = updatedUnit.Initialism;
     }
-    if ((orig.Name || '').trim() !== mod.Name.trim()) {
-      diff.Name = mod.Name.trim();
+    if ((originalUnit.Name || '').trim() !== updatedUnit.Name) {
+      changes.Name = updatedUnit.Name;
     }
-    return diff;
+    return changes;
   };
 
-  const handleSubmit = async (values) => {
-    const newErrs = validateFields(values);
-    if (Object.keys(newErrs).length) {
-      setErrors(newErrs);
+  const handleSubmit = async values => {
+    const validationErrors = validateFields(values);
+    if (Object.keys(validationErrors).length) {
+      setFieldErrors(validationErrors);
       return;
     }
-    setErrors({});
-    setApiError('');
+    setFieldErrors({});
+    setServerError('');
 
-    const modifiedUnit = {
-      Initialism: values['Sigle'].trim(),
-      Name:       values['Nom'].trim(),
+    const updatedUnit = {
+      Initialism: values.Sigle.trim(),
+      Name: values.Nom.trim(),
     };
 
-    const isEdit = !!initialUnit.Id;
-    const payload = isEdit
-      ? diffUnit(initialUnit, modifiedUnit)
-      : modifiedUnit;
+    const isEditing = Boolean(initialData.Id);
+    const payload = isEditing
+      ? computeUnitChanges(initialData, updatedUnit)
+      : updatedUnit;
 
-    if (isEdit && Object.keys(payload).length === 0) {
+    if (isEditing && Object.keys(payload).length === 0) {
       onClose();
       return;
     }
 
     try {
-      await saveEnseignementUnit(isEdit ? initialUnit.Id : null, payload, authToken);
+      await saveEnseignementUnit(isEditing ? initialData.Id : null, payload, authToken);
       onSave();
       onClose();
-    } catch (err) {
-      setApiError(err.message);
+    } catch (error) {
+      setServerError(error.message);
     }
   };
 
-  const clearError = (label) => {
-    setErrors((prev) => ({ ...prev, [label]: '' }));
-    if (apiError) setApiError('');
+  const clearFieldError = label => {
+    setFieldErrors(prev => ({ ...prev, [label]: '' }));
+    if (serverError) setServerError('');
   };
-  const clearApiError = () => setApiError('');
+
+  const clearServerError = () => setServerError('');
 
   const handleClose = () => {
-    setErrors({});
-    setApiError('');
+    setFieldErrors({});
+    setServerError('');
     onClose();
   };
 
   return (
     <DynamicModal
       metadata={{
-        createdAt: initialUnit.createdAt,
-        updatedAt: initialUnit.updatedAt,
+        createdAt: initialData.createdAt,
+        updatedAt: initialData.updatedAt,
       }}
-      errors={errors}
-      apiError={apiError}
-      clearApiError={clearApiError}
       fields={fields}
+      errors={fieldErrors}
+      apiError={serverError}
+      clearApiError={clearServerError}
       isOpen={isOpen}
       onClose={handleClose}
       onSubmit={handleSubmit}
-      onClearError={clearError}
+      onClearError={clearFieldError}
     />
   );
 }
