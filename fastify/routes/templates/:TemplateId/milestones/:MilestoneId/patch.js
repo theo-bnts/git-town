@@ -90,7 +90,7 @@ export default async function route(app) {
           throw { statusCode: 409, error: 'DATE_OUT_OF_RANGE' };
         }
 
-        if (date === milestone.Date) {
+        if (DateTime.fromJSDate(date).equals(DateTime.fromJSDate(milestone.Date))) {
           throw { statusCode: 409, error: 'SAME_DATE' };
         }
 
