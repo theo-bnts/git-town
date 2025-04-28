@@ -44,7 +44,6 @@ export default function MilestoneListBox({ initial = [], onChange }) {
     const milestoneData = {
       Title: title.trim(),
       Date: `${year}-${month}-${day}`,
-      value: `${title.trim()} – ${year}-${month}-${day}`,
     };
 
     const updated = editingKey != null
@@ -89,27 +88,32 @@ export default function MilestoneListBox({ initial = [], onChange }) {
           ) : (
             items
               .slice()
-              .sort((a, b) => a.value.localeCompare(b.value))
+              .sort((a, b) => a.Title.localeCompare(b.Title))
               .map(item => (
                 <div
                   key={item.localKey}
                   className="flex items-center justify-between px-4 py-2"
                 >
-                  <span>{item.value}</span>
-                  <Button
-                    type="button"
-                    onClick={() => startEditing(item)}
-                    variant="action_icon"
-                  >
-                    <PencilIcon size={16} />
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => removeMilestone(item.localKey)}
-                    variant="action_icon_warn"
-                  >
-                    <DashIcon size={16} />
-                  </Button>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{item.Title}</span>
+                    <span className="text-sm text-gray-500">{item.Date}</span>
+                  </div>
+                  <div className="space-x-1">
+                    <Button
+                      type="button"
+                      onClick={() => startEditing(item)}
+                      variant="action_icon"
+                    >
+                      <PencilIcon size={16} />
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => removeMilestone(item.localKey)}
+                      variant="action_icon_warn"
+                    >
+                      <DashIcon size={16} />
+                    </Button>
+                  </div>
                 </div>
               ))
           )}

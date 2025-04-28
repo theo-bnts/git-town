@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon } from '@primer/octicons-react';
-
 import { getCookie } from '@/app/services/cookies';
 import getTemplates from '@/app/services/api/templates/getTemplates';
+import getTemplateMilestones from '@/app/services/api/templates/id/milestone/getTemplateMilestones';
 import deleteTemplate from '@/app/services/api/templates/id/deleteTemplate';
 
 import Table from '@/app/components/layout/table/Table';
@@ -13,108 +13,126 @@ import ConfirmCard from '@/app/components/ui/ConfirmCard';
 import TemplateModal from '@/app/components/layout/forms/modal/TemplateModal';
 
 const columns = [
-  { key: 'year', title: 'Année', sortable: true },
-  { key: 'ue', title: 'UE', sortable: true },
-  { key: 'milestones', title: 'Nombre de jalons', sortable: true },
-  { key: 'actions', title: 'Action(s)', sortable: false },
+  { key: 'year', title: 'Année', sortable: true},
+  { key: 'ue', title: 'UE', sortable: true},
+  { key: 'milestones', title: 'Nombre de jalons', sortable: true},
+  { key: 'actions', title: 'Action(s)', sortable: false},
 ];
-
-const mapTemplateToRow = (tpl) => ({
-  raw: tpl,
-  year: tpl.Year,
-  ue: `${tpl.EnseignementUnit.Name} (${tpl.EnseignementUnit.Initialism})`,
-  milestones: tpl.Milestones ? tpl.Milestones.length : 0,
-});
 
 export default function TemplatePanel() {
   const [authToken, setAuthToken] = useState('');
-  const [templates, setTemplates] = useState([]);
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [TemplateToDelete, setTemplateToDelete] = useState(null);
+  const [rows, setRows] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [templateBeingEdited, setTemplate] = useState(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState(null);
 
   useEffect(() => {
-    (async () => setAuthToken(await getCookie('token')))();
+    (async () => {
+      const token = await getCookie('token');
+      setAuthToken(token);
+    })();
   }, []);
 
-  const refresh = useCallback(() => {
+  const refreshList = useCallback(async () => {
     if (!authToken) return;
-    getTemplates(authToken)
-      .then((data) => {
-        const rows = data
-          .map(mapTemplateToRow)
-          .map((row) => ({ ...row, actions: renderActions(row) }));
-        setTemplates(rows);
+    const templates = await getTemplates(authToken);
+    const enriched = await Promise.all(
+      templates.map(async tpl => {
+        const ms = await getTemplateMilestones(tpl.Id, authToken);
+        return {
+          raw: tpl,
+          year: tpl.Year,
+          ue: `${tpl.EnseignementUnit.Name} (${tpl.EnseignementUnit.Initialism})`,
+          milestones: Array.isArray(ms) ? ms.length : 0,
+        };
       })
+    );
+    const withActions = enriched.map(row => ({
+      ...row,
+      actions: [
+        {
+          icon: <PencilIcon size={16} />,
+          onClick: () => {
+            setTemplate({
+              Id: row.raw.Id,
+              EnseignementUnit: row.raw.EnseignementUnit,
+              Year: row.raw.Year,
+              CreatedAt: row.raw.CreatedAt,
+              UpdatedAt: row.raw.UpdatedAt,
+            });
+            setIsModalOpen(true);
+          }
+        },
+        {
+          icon: <TrashIcon size={16} />,
+          onClick: () => {
+            setTemplateToDelete(row);
+            setIsConfirmOpen(true);
+          }
+        }
+      ]
+    }));
+    setRows(withActions);
   }, [authToken]);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    refreshList();
+  }, [refreshList]);
 
-  const renderActions = (row) => [
-    {
-      icon: <PencilIcon size={16} />,
-      onClick: () => {
-        setSelectedTemplate({
-          Id: row.raw.Id,
-          EnseignementUnit: row.raw.EnseignementUnit,
-          Year: row.raw.Year,
-          createdAt: row.raw.CreatedAt,
-          updatedAt: row.raw.UpdatedAt,
-        });
-        setModalOpen(true);
-      },
-    },
-    {
-      icon: <TrashIcon size={16} />,
-      onClick: () => {
-        setTemplateToDelete(row);
-        setConfirmOpen(true);
-      },
-    },
-  ];
-
-  const toolbarContents = (
-    <Button variant="default_sq" onClick={() => {
-      setSelectedTemplate(null);
-      setModalOpen(true);
-    }}>
+  const toolbar = (
+    <Button
+      variant="default_sq"
+      onClick={() => {
+        setTemplate(null);
+        setIsModalOpen(true);
+      }}
+    >
       <PlusIcon size={24} className="text-white" />
     </Button>
   );
 
   const confirmDelete = async () => {
-    if (!TemplateToDelete) return;
+    if (!templateToDelete) return;
     try {
-      await deleteTemplate(TemplateToDelete.raw.Id, authToken);
-      refresh();
+      await deleteTemplate(templateToDelete.raw.Id, authToken);
+      await refreshList();
     } catch (err) {
-      alert(`Suppression impossible : ${err.message}`);
+      alert(`Suppression impossible : ${err.message}`);
+    } finally {
+      setIsConfirmOpen(false);
+      setTemplateToDelete(null);
     }
-    setConfirmOpen(false);
-    setTemplateToDelete(null);
   };
 
   return (
     <>
-      <Table columns={columns} data={templates} toolbarContents={toolbarContents} />
+      <Table columns={columns} data={rows} toolbarContents={toolbar} />
 
-      {modalOpen && (
+      {isModalOpen && (
         <TemplateModal
-          isOpen={modalOpen}
-          initialData={selectedTemplate || {}}
-          onClose={() => { setModalOpen(false); setSelectedTemplate(null); }}
-          onSave={() => { refresh(); setModalOpen(false); setSelectedTemplate(null); }}
+          isOpen={isModalOpen}
+          initialData={templateBeingEdited || {}}
+          onClose={() => {
+            setIsModalOpen(false);
+            setTemplate(null);
+          }}
+          onSave={async () => {
+            await refreshList();
+            setIsModalOpen(false);
+            setTemplate(null);
+          }}
         />
       )}
 
-      {confirmOpen && (
+      {isConfirmOpen && (
         <ConfirmCard
-          message={<>Supprimer le template <strong>{TemplateToDelete?.ue}</strong> ?</>}
+          message={<>Supprimer le template <strong>{templateToDelete?.ue}</strong> ?</>}
           onConfirm={confirmDelete}
-          onCancel={() => { setConfirmOpen(false); setTemplateToDelete(null); }}
+          onCancel={() => {
+            setIsConfirmOpen(false);
+            setTemplateToDelete(null);
+          }}
         />
       )}
     </>
