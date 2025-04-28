@@ -1,13 +1,9 @@
 'use client';
 
 import React, { useCallback, useMemo } from 'react';
-import ListBoxContext from './context';
+import ListBoxContext from '@/app/components/ui/listbox/context';
 
-/**
- * Context provider that exposes the selected items list + CRUD helpers.
- */
 export default function ListBoxProvider({ items = [], onChange, children }) {
-  // Helpers -------------------------------------------------------------
   const addItem = useCallback(
     (item) => {
       if (!item || items.some((i) => i.id === item.id)) return;

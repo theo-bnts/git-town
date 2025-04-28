@@ -1,14 +1,11 @@
 'use client';
 
 import React from 'react';
-import ListBoxProvider from './ListBoxProvider';
-import ListBoxArea from './ListBoxArea';
+import ListBoxProvider from '@/app/components/ui/listbox/ListBoxProvider';
+import ListBoxArea from '@/app/components/ui/listbox/ListBoxArea';
 import { listboxStyles } from '@/app/styles/tailwindStyles';
 
-/**
- * Generic ListBox: just give it an AddComponent when you need a custom picker.
- */
-export default function FlexibleListBox({ items, onChange, AddComponent, renderChip }) {
+export default function ListBox({ items, onChange, AddComponent, renderChip }) {
   return (
     <div className={`flex flex-col space-y-2 ${listboxStyles.default}`}>
       <ListBoxProvider items={items} onChange={onChange}>

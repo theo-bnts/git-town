@@ -2,16 +2,15 @@
 
 import React from 'react';
 import Card from '@/app/components/ui/Card';
-import useListBox from './useListBox';
-import ListBoxItem from './ListBoxItem';
+import useListBox from '@/app/components/ui/listbox/useListBox';
+import ListBoxItem from '@/app/components/ui/listbox/ListBoxItem';
 import { listboxStyles } from '@/app/styles/tailwindStyles';
 
-/**
- * Display the list of currently selected items (with empty state).
- */
 export default function ListBoxArea({ renderChip, onEdit }) {
   const { items, removeItem } = useListBox();
-  const sorted = [...items].sort((a, b) => (a.value || '').localeCompare(b.value || ''));
+  const sorted = [...items]
+    .sort((a, b) => (a.value || '')
+    .localeCompare(b.value || ''));
 
   return (
     <div className={`flex flex-col bg-white border border-gray-200 rounded-[12.5px] overflow-hidden ${listboxStyles?.default ?? ''}`}>

@@ -4,4 +4,4 @@ export { default as ListBoxArea }    from './ListBoxArea';
 export { default as ListBoxItem }    from './ListBoxItem';
 export { default as PromotionListBox }  from './PromotionListBox';
 export { default as MilestoneListBox }  from './MilestoneListBox';
-export { default as FlexibleListBox }   from './FlexibleListBox';
+export { default as ListBox }   from './ListBox';
