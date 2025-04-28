@@ -7,7 +7,7 @@ import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import ComboBox from '@/app/components/ui/combobox/ComboBox';
 import Input from '@/app/components/ui/Input';
-import ListBox from '@/app/components/ui/listbox/ListBox';
+import { FlexibleListBox, useListBox } from '@/app/components/ui/listbox';
 
 function formatDate(d) {
   if (!d) return '';
@@ -66,18 +66,23 @@ export default function DynamicModal({
                 input = render(fields[label], v => { change(label, v); onClearError?.(label); });
               } else if (options) {
                 if (Array.isArray(f.value)) {
+                  const AddPanel = () => {
+                    const { addItem } = useListBox();
+                    return (
+                      <ComboBox
+                        placeholder={label}
+                        options={options}
+                        onSelect={addItem}
+                        maxVisible={4}
+                      />
+                    );
+                  };
+              
                   input = (
-                    <ListBox
+                    <FlexibleListBox
                       items={fields[label] || []}
                       onChange={v => { change(label, v); onClearError?.(label); }}
-                      renderAdd={({ addItem }) => (
-                        <ComboBox
-                          placeholder={label}
-                          options={options}
-                          onSelect={addItem}
-                          maxVisible={4}
-                        />
-                      )}
+                      AddComponent={AddPanel}
                     />
                   );
                 } else {
@@ -91,17 +96,7 @@ export default function DynamicModal({
                     />
                   );
                 }
-              } else {
-                input = (
-                  <Input
-                    variant="default"
-                    name={label}
-                    placeholder={label}
-                    value={fields[label]}
-                    onChange={e => { change(label, e.target.value); onClearError?.(label); }}
-                  />
-                );
-              }
+              }              
               return (
                 <div key={label}>
                   <p className={`mb-1 ${textStyles.default}`}>{label}</p>

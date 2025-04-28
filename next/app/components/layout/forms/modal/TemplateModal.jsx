@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { getCookie } from '@/app/services/cookies';
 import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
-import MilestoneListBox from '@/app/components/ui/listbox/MilestoneListBox';
+import { MilestoneListBox } from '@/app/components/ui/listbox';
 import saveTemplate from '@/app/services/api/templates/saveTemplate';
 import getEnseignementUnits from '@/app/services/api/enseignementUnit/getEnseignementUnits';
 import getTemplateMilestones from '@/app/services/api/templates/id/milestone/getTemplateMilestones';
@@ -74,7 +74,7 @@ export default function TemplateModal({ isOpen, initialData = {}, onClose, onSav
       value: currentMilestones,
       render: () => (
         <MilestoneListBox
-          initial={currentMilestones}
+          items={currentMilestones}
           onChange={setCurrentMilestones}
         />
       )

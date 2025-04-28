@@ -7,7 +7,7 @@ import getPromotions from '@/app/services/api/promotions/getPromotions';
 import saveUser from '@/app/services/api/users/saveUser';
 import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
 import ComboBox from '@/app/components/ui/combobox/ComboBox';
-import ListBox from '@/app/components/ui/listbox/ListBox';
+import { PromotionListBox } from '@/app/components/ui/listbox';
 
 const roleOptions = [
   { id: 'administrator', name: 'Administrateur' },
@@ -51,20 +51,13 @@ export default function UserModal({ isOpen, initialData = {}, onClose, onSave })
     {
       label: 'Promotions',
       value: promotions,
-      render: (_, onChange) => (
-        <ListBox
-          items={promotions}
-          onChange={v => { setPromotions(v); onChange(v); }}
-          renderAdd={({ addItem }) => (
-            <ComboBox
-              placeholder="Ajouter promotion"
-              options={promotionsOptions.map(mapPromotionOption)}
-              onSelect={addItem}
-              maxVisible={4}
-            />
-          )}
-        />
-      )
+      render: () => (
+       <PromotionListBox
+           items={promotions}
+           onChange={setPromotions}
+           promotionOptions={promotionsOptions.map(mapPromotionOption)}
+         />
+       )
     }
   ];
 

@@ -1,32 +1,35 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import Card from '@/app/components/ui/Card';
-import { DashIcon, PencilIcon } from '@primer/octicons-react';
+import React, { useState } from 'react';
 import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
 import { listboxStyles, textStyles } from '@/app/styles/tailwindStyles';
 
-export default function MilestoneListBox({ initial = [], onChange }) {
-  const [items, setItems] = useState([]);
+import ListBoxProvider from './ListBoxProvider';
+import ListBoxArea from './ListBoxArea';
+import useListBox from './useListBox';
+
+export default function MilestoneListBox({ items, onChange }) {
+  return (
+    <div className={`flex flex-col space-y-2 ${listboxStyles.default}`}>
+      <ListBoxProvider items={items} onChange={onChange}>
+        <MilestoneInner />
+      </ListBoxProvider>
+    </div>
+  );
+}
+
+function MilestoneInner() {
+  const { addItem, updateItem } = useListBox();
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
+  const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
-  const [editingKey, setEditingKey] = useState(null);
-  const nextKey = useRef(1);
 
-  useEffect(() => {
-    const seeded = initial.map(item => ({
-      ...item,
-      localKey: nextKey.current++,
-    }));
-    setItems(seeded);
-  }, [initial]);
-
-  const resetForm = () => {
+  const reset = () => {
     setTitle('');
     setDate('');
-    setEditingKey(null);
+    setEditingId(null);
     setError('');
   };
 
@@ -38,116 +41,52 @@ export default function MilestoneListBox({ initial = [], onChange }) {
     return true;
   };
 
-  const saveMilestone = () => {
+  const save = () => {
     if (!validate()) return;
-    const [day, month, year] = date.split('-');
-    const milestoneData = {
-      Title: title.trim(),
-      Date: `${year}-${month}-${day}`,
-    };
+    const [d, m, y] = date.split('-');
+    const data = { Title: title.trim(), Date: `${y}-${m}-${d}` };
 
-    const updated = editingKey != null
-      ? items.map(item =>
-          item.localKey === editingKey
-            ? { ...item, ...milestoneData }
-            : item
-        )
-      : [
-          ...items,
-          { localKey: nextKey.current++, ...milestoneData }
-        ];
-
-    setItems(updated);
-    onChange(updated);
-    resetForm();
-  };
-
-  const removeMilestone = key => {
-    const updated = items.filter(item => item.localKey !== key);
-    setItems(updated);
-    onChange(updated);
-    if (editingKey === key) resetForm();
-  };
-
-  const startEditing = item => {
-    setEditingKey(item.localKey);
-    setTitle(item.Title);
-    const [year, month, day] = item.Date.split('-');
-    setDate(`${day}-${month}-${year}`);
-    setError('');
+    if (editingId) {
+      updateItem(editingId, data);
+    } else {
+      addItem({ id: `local-${Date.now()}`, ...data });
+    }
+    reset();
   };
 
   return (
-    <div className={`flex flex-col space-y-2 ${listboxStyles.default}`}>
-      <div className="flex flex-col bg-white border border-gray-200 rounded-[12.5px] overflow-hidden">
-        <div className="max-h-[160px] overflow-y-auto">
-          {items.length === 0 ? (
-            <Card variant="empty_list">
-              <p className="text-center text-gray-600">Aucun élément sélectionné.</p>
-            </Card>
-          ) : (
-            items
-              .slice()
-              .sort((a, b) => a.Title.localeCompare(b.Title))
-              .map(item => (
-                <div
-                  key={item.localKey}
-                  className="flex items-center justify-between px-4 py-2"
-                >
-                  <div className="flex flex-col">
-                    <span className="font-medium">{item.Title}</span>
-                    <span className="text-sm text-gray-500">{item.Date}</span>
-                  </div>
-                  <div className="space-x-1">
-                    <Button
-                      type="button"
-                      onClick={() => startEditing(item)}
-                      variant="action_icon"
-                    >
-                      <PencilIcon size={16} />
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => removeMilestone(item.localKey)}
-                      variant="action_icon_warn"
-                    >
-                      <DashIcon size={16} />
-                    </Button>
-                  </div>
-                </div>
-              ))
-          )}
-        </div>
-      </div>
+    <>
+      <ListBoxArea
+        renderChip={(item) => (
+          <div className="flex flex-col">
+            <span className="font-medium">{item.Title}</span>
+            <span className="text-sm text-gray-500">{item.Date}</span>
+          </div>
+        )}
+        onEdit={(item) => {
+          setEditingId(item.id);
+          setTitle(item.Title);
+          const [y, m, d] = item.Date.split('-');
+          setDate(`${d}-${m}-${y}`);
+        }}
+      />
 
-      <div className="space-y-2">
-        <Input
-          variant="default"
-          placeholder="Nom milestone"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-        />
-        <Input
-          variant="default"
-          placeholder="JJ-MM-AAAA"
-          value={date}
-          onChange={e => setDate(e.target.value)}
-        />
+      <div className="space-y-2 pt-2">
+        <Input variant="default" placeholder="Nom milestone" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Input variant="default" placeholder="JJ-MM-AAAA" value={date} onChange={(e) => setDate(e.target.value)} />
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         <div className="flex justify-center space-x-2">
-          <Button type="button" variant="default" onClick={saveMilestone}>
-            <p className={textStyles.defaultWhite}>
-              {editingKey != null ? 'Mettre à jour' : 'Ajouter milestone'}
-            </p>
+          <Button type="button" variant="default" onClick={save}>
+            <p className={textStyles.defaultWhite}>{editingId ? 'Mettre à jour' : 'Ajouter'}</p>
           </Button>
-          {editingKey != null && (
-            <Button type="button" variant="default" onClick={resetForm}>
+          {editingId && (
+            <Button type="button" variant="default" onClick={reset}>
               <p className={textStyles.defaultWhite}>Annuler</p>
             </Button>
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
