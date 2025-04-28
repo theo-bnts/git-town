@@ -14,8 +14,8 @@ import EnseignementUnitModal from '@/app/components/layout/forms/modal/Enseignem
 
 const columns = [
   { key: 'initialism', title: 'Sigle', sortable: true },
-  { key: 'name',        title: 'Nom',   sortable: true },
-  { key: 'actions',     title: 'Action(s)', sortable: false },
+  { key: 'name', title: 'Nom', sortable: true },
+  { key: 'actions', title: 'Action(s)', sortable: false },
 ];
 
 const mapUnitToRow = (unit) => ({
@@ -25,12 +25,12 @@ const mapUnitToRow = (unit) => ({
 });
 
 export default function EnseignementUnitPanel() {
-  const [authToken, setAuthToken]     = useState('');
-  const [units, setUnits]             = useState([]);
-  const [modalOpen, setModalOpen]     = useState(false);
+  const [authToken, setAuthToken] = useState('');
+  const [units, setUnits] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState(null);
-  const [confirmOpen, setConfirmOpen]       = useState(false);
-  const [unitToDelete, setUnitToDelete]     = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [unitToDelete, setUnitToDelete] = useState(null);
 
   useEffect(() => {
     (async () => {
