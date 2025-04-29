@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export default function TableSkeleton({ cols = 4, rows = 8 }) {
+export default function TableSkeleton({ cols, rows}) {
   return (
     <div className="animate-pulse w-full">
       {Array.from({ length: rows }).map((_, r) => (

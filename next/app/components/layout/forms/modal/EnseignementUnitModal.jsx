@@ -12,7 +12,7 @@ import Button from '@/app/components/ui/Button';
 import ConfirmCard from '@/app/components/ui/ConfirmCard';
 import EnseignementUnitModal from '@/app/components/layout/forms/modal/EnseignementUnitModal';
 import useFetchWithSkeleton from '@/app/hooks/useFetchWithSkeleton';
-import TableSkeleton from '@/app/components/ui/skeleton/TableSkeleton';
+import TableSkeleton from '@/app/components/layout/table/TableSkeleton';
 
 const columns = [
   { key: 'initialism', title: 'Sigle', sortable: true },
@@ -107,7 +107,6 @@ export default function EnseignementUnitPanel() {
 
   return (
     <>
-      {/* 🎯 Skeleton *seulement* pendant le fetch des unités */}
       {loading ? (
         <TableSkeleton cols={columns.length} />
       ) : error ? (

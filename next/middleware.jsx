@@ -1,50 +1,50 @@
 // middleware.js
+
 import { NextResponse } from "next/server";
 import { userRoute } from "@/app/services/routes";
+import { encodeUserInfo } from "@/app/services/auth";
 
 export async function middleware(request) {
-  const token = request.cookies.get("token")?.value;
-  const userId = request.cookies.get("userId")?.value;
-  console.log("token", token);
-  console.log("userId", userId);
+  const tokenValue = request.cookies.get("token")?.value;
+  const userIdValue = request.cookies.get("userId")?.value;
 
-  if (token && userId) {
-    console.log("userRoute(userId)", userRoute(userId));
+  if (tokenValue && userIdValue) {
     try {
-      console.log("fetching user data");
-      const apiResponse = await fetch(
-        userRoute(userId),
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      
-      const rateLimitHeaders = {
-        'x-ratelimit-limit': apiResponse.headers.get('x-ratelimit-limit'),
-        'x-ratelimit-remaining': apiResponse.headers.get('x-ratelimit-remaining'),
-        'x-ratelimit-reset': apiResponse.headers.get('x-ratelimit-reset')
-      };
-      console.log("rateLimitHeaders", rateLimitHeaders);
-      console.log("user data fetched");
+      const apiResponse = await fetch(userRoute(userIdValue), {
+        method: "GET",
+        headers: { Authorization: `Bearer ${tokenValue}` },
+      });
 
       if (apiResponse.ok) {
-
         const userData = await apiResponse.json();
+
+        const serializedUserInfo = encodeUserInfo({
+          fullName: userData.FullName,
+          role: userData.Role.Keyword,
+        });
+
+        const nextResponse = NextResponse.next();
+        nextResponse.cookies.set("userInfo", serializedUserInfo, {
+          httpOnly: true,
+          path: "/",
+          sameSite: "lax",
+        });
 
         if (!userData.GitHubId) {
           if (
             request.nextUrl.pathname === "/login/authorize" &&
             request.nextUrl.searchParams.get("code")
           ) {
-            return NextResponse.next();
+            return nextResponse;
           } else if (request.nextUrl.pathname !== "/login/link") {
             return NextResponse.redirect(new URL("/login/link", request.url));
           }
         } else {
           if (!userData.GitHubOrganizationMember) {
             if (request.nextUrl.pathname !== "/login/authorize") {
-              return NextResponse.redirect(new URL("/login/authorize", request.url));
+              return NextResponse.redirect(
+                new URL("/login/authorize", request.url)
+              );
             }
           } else {
             if (request.nextUrl.pathname.startsWith("/login")) {
@@ -52,29 +52,41 @@ export async function middleware(request) {
             }
           }
         }
+
+        return nextResponse;
       } else {
-        const response = NextResponse.redirect(new URL("/login", request.url));
-        response.cookies.delete("token", { path: "/" });
-        response.cookies.delete("userId", { path: "/" });
-        return response;
+        const redirectResponse = NextResponse.redirect(
+          new URL("/login", request.url)
+        );
+        ["token", "userId", "userInfo"].forEach((cookieName) => {
+          redirectResponse.cookies.delete(cookieName, { path: "/" });
+        });
+        return redirectResponse;
       }
-    } catch (error) {
-      const response = NextResponse.redirect(new URL("/login", request.url));
-      response.cookies.delete("token", { path: "/" });
-      response.cookies.delete("userId", { path: "/" });
-      return response;
+    } catch (fetchError) {
+      const errorRedirectResponse = NextResponse.redirect(
+        new URL("/login", request.url)
+      );
+      ["token", "userId", "userInfo"].forEach((cookieName) => {
+        errorRedirectResponse.cookies.delete(cookieName, { path: "/" });
+      });
+      return errorRedirectResponse;
     }
   } else if (request.nextUrl.pathname !== "/login") {
-    console.log("redirecting to login");
-    const response = NextResponse.redirect(new URL("/login", request.url));
-    response.cookies.delete("token", { path: "/" });
-    response.cookies.delete("userId", { path: "/" });
-    return response;
+    const loginRedirectResponse = NextResponse.redirect(
+      new URL("/login", request.url)
+    );
+    ["token", "userId", "userInfo"].forEach((cookieName) => {
+      loginRedirectResponse.cookies.delete(cookieName, { path: "/" });
+    });
+    return loginRedirectResponse;
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!api/cookies|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!api/cookies|_next/static|_next/image|favicon.ico).*)",
+  ],
 };

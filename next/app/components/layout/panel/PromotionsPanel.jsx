@@ -39,7 +39,6 @@ export default function PromotionsPanel() {
   const [confirmOpen, setConfirmOpen]       = useState(false);
   const [promotionToDelete, setPromotionToDelete] = useState(null);
 
-  // Récupération du token
   useEffect(() => {
     (async () => {
       const token = await getCookie('token');
@@ -47,7 +46,6 @@ export default function PromotionsPanel() {
     })();
   }, []);
 
-  // Générateur d'actions
   const renderActions = useCallback((item) => [
     {
       icon: <PencilIcon size={16} />,
@@ -72,7 +70,6 @@ export default function PromotionsPanel() {
     },
   ], []);
 
-  // Chargement des données avec skeleton
   const refreshPromotions = useCallback(() => {
     if (!authToken) return;
     setLoading(true);

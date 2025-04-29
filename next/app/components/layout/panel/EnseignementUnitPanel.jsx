@@ -25,15 +25,14 @@ const mapUnitToRow = (unit) => ({
 });
 
 export default function EnseignementUnitPanel() {
-  const [authToken, setAuthToken]       = useState('');
-  const [units, setUnits]               = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [modalOpen, setModalOpen]       = useState(false);
+  const [authToken, setAuthToken] = useState('');
+  const [units, setUnits] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState(null);
-  const [confirmOpen, setConfirmOpen]   = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [unitToDelete, setUnitToDelete] = useState(null);
 
-  // Récupération du token au montage
   useEffect(() => {
     (async () => {
       const t = await getCookie('token');
@@ -41,17 +40,16 @@ export default function EnseignementUnitPanel() {
     })();
   }, []);
 
-  // Déclaration avant usage dans refreshUnits :
   const renderActions = (row) => [
     {
       icon: <PencilIcon size={16} />,
       onClick: () => {
         setSelectedUnit({
-          Id:         row.raw.Id,
+          Id: row.raw.Id,
           Initialism: row.raw.Initialism,
-          Name:       row.raw.Name,
-          createdAt:  row.raw.CreatedAt,
-          updatedAt:  row.raw.UpdatedAt,
+          Name: row.raw.Name,
+          createdAt: row.raw.CreatedAt,
+          updatedAt: row.raw.UpdatedAt,
         });
         setModalOpen(true);
       },
@@ -65,7 +63,6 @@ export default function EnseignementUnitPanel() {
     },
   ];
 
-  // Chargement manuel des unités + gestion du loading
   const refreshUnits = useCallback(() => {
     if (!authToken) return;
     setLoading(true);
@@ -87,7 +84,6 @@ export default function EnseignementUnitPanel() {
     refreshUnits();
   }, [refreshUnits]);
 
-  // Contenu de la barre d’outils
   const toolbarContents = (
     <Button
       variant="default_sq"
@@ -100,7 +96,6 @@ export default function EnseignementUnitPanel() {
     </Button>
   );
 
-  // Suppression confirmée
   const handleConfirmDelete = async () => {
     if (!unitToDelete || !authToken) return;
     try {
@@ -117,7 +112,6 @@ export default function EnseignementUnitPanel() {
     setUnitToDelete(null);
   };
 
-  // On remonte vers <Table /> les placeholders skeleton ou les vraies données
   return (
     <>
       <Table

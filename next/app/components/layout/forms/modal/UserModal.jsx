@@ -52,12 +52,12 @@ export default function UserModal({ isOpen, initialData = {}, onClose, onSave })
       label: 'Promotions',
       value: promotions,
       render: () => (
-       <PromotionListBox
-           items={promotions}
-           onChange={setPromotions}
-           promotionOptions={promotionsOptions.map(mapPromotionOption)}
-         />
-       )
+        <PromotionListBox
+            items={promotions}
+            onChange={setPromotions}
+            promotionOptions={promotionsOptions.map(mapPromotionOption)}
+        />
+      )
     }
   ];
 

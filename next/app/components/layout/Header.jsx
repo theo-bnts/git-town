@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { SignOutIcon, ThreeBarsIcon } from "@primer/octicons-react";
 import { useRouter } from "next/navigation";
@@ -46,7 +46,8 @@ export default function Header({
       await removeCookie("token");
       await removeCookie("userId");
       await removeCookie("tokenId");
-
+      await removeCookie("userInfo");
+      
       router.replace("/login");
     } catch (error) {
       console.error("Erreur lors de la déconnexion", error);
