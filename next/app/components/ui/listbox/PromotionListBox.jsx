@@ -21,9 +21,9 @@ function PromotionAdder({ options, placeholder }) {
 }
 
 export default function PromotionListBox({ 
-  items, 
-  onChange, 
-  promotionOptions = [], 
+  items,
+  onChange,
+  promotionOptions = [],
   placeholder = 'Ajouter promotion' }) {
 
   return (

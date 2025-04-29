@@ -14,8 +14,8 @@ import EnseignementUnitModal from '@/app/components/layout/forms/modal/Enseignem
 
 const columns = [
   { key: 'initialism', title: 'Sigle', sortable: true },
-  { key: 'name', title: 'Nom', sortable: true },
-  { key: 'actions', title: 'Action(s)', sortable: false },
+  { key: 'name',       title: 'Nom',   sortable: true },
+  { key: 'actions',    title: 'Action(s)', sortable: false },
 ];
 
 const mapUnitToRow = (unit) => ({
@@ -25,46 +25,33 @@ const mapUnitToRow = (unit) => ({
 });
 
 export default function EnseignementUnitPanel() {
-  const [authToken, setAuthToken] = useState('');
-  const [units, setUnits] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [authToken, setAuthToken]       = useState('');
+  const [units, setUnits]               = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [modalOpen, setModalOpen]       = useState(false);
   const [selectedUnit, setSelectedUnit] = useState(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen]   = useState(false);
   const [unitToDelete, setUnitToDelete] = useState(null);
 
+  // Récupération du token au montage
   useEffect(() => {
     (async () => {
-      const token = await getCookie('token');
-      setAuthToken(token);
+      const t = await getCookie('token');
+      setAuthToken(t);
     })();
   }, []);
 
-  const refreshUnits = useCallback(() => {
-    if (!authToken) return;
-    getEnseignementUnits(authToken)
-      .then((data) => {
-        const mapped = data.map(mapUnitToRow);
-        const withActions = mapped.map((row) => ({
-          ...row,
-          actions: renderActions(row),
-        }));
-        setUnits(withActions);
-      })
-      .catch((err) => alert(`Erreur de chargement : ${err.message}`));
-  }, [authToken]);
-
-  useEffect(() => { refreshUnits(); }, [refreshUnits]);
-
+  // Déclaration avant usage dans refreshUnits :
   const renderActions = (row) => [
     {
       icon: <PencilIcon size={16} />,
       onClick: () => {
         setSelectedUnit({
-          Id: row.raw.Id,
+          Id:         row.raw.Id,
           Initialism: row.raw.Initialism,
-          Name: row.raw.Name,
-          createdAt: row.raw.CreatedAt,
-          updatedAt: row.raw.UpdatedAt,
+          Name:       row.raw.Name,
+          createdAt:  row.raw.CreatedAt,
+          updatedAt:  row.raw.UpdatedAt,
         });
         setModalOpen(true);
       },
@@ -78,37 +65,68 @@ export default function EnseignementUnitPanel() {
     },
   ];
 
+  // Chargement manuel des unités + gestion du loading
+  const refreshUnits = useCallback(() => {
+    if (!authToken) return;
+    setLoading(true);
+    getEnseignementUnits(authToken)
+      .then((data) => {
+        const withActions = data
+          .map(mapUnitToRow)
+          .map(row => ({
+            ...row,
+            actions: renderActions(row),
+          }));
+        setUnits(withActions);
+      })
+      .catch((err) => alert(`Erreur de chargement : ${err.message}`))
+      .finally(() => setLoading(false));
+  }, [authToken]);
+
+  useEffect(() => {
+    refreshUnits();
+  }, [refreshUnits]);
+
+  // Contenu de la barre d’outils
   const toolbarContents = (
-    <Button variant="default_sq" onClick={() => {
-      setSelectedUnit(null);
-      setModalOpen(true);
-    }}>
+    <Button
+      variant="default_sq"
+      onClick={() => {
+        setSelectedUnit(null);
+        setModalOpen(true);
+      }}
+    >
       <PlusIcon size={24} className="text-white" />
     </Button>
   );
 
+  // Suppression confirmée
   const handleConfirmDelete = async () => {
     if (!unitToDelete || !authToken) return;
     try {
       await deleteEnseignementUnit(unitToDelete.raw.Id, authToken);
       refreshUnits();
     } catch (err) {
-      alert(`Erreur lors de la suppression : ${err.message}`);
+      alert(`Erreur lors de la suppression : ${err.message}`);
     }
     setConfirmOpen(false);
     setUnitToDelete(null);
   };
-
   const handleCancelDelete = () => {
     setConfirmOpen(false);
     setUnitToDelete(null);
   };
 
+  // On remonte vers <Table /> les placeholders skeleton ou les vraies données
   return (
     <>
       <Table
         columns={columns}
-        data={units}
+        data={
+          loading
+            ? Array.from({ length: 3 }).map((_, i) => ({ skeleton: true, key: `skele-${i}` }))
+            : units
+        }
         toolbarContents={toolbarContents}
       />
 
@@ -131,7 +149,10 @@ export default function EnseignementUnitPanel() {
       {confirmOpen && (
         <ConfirmCard
           message={
-            <>Voulez‑vous vraiment supprimer <strong>{unitToDelete?.raw.Initialism}</strong> ?</>
+            <>
+              Voulez-vous vraiment supprimer{' '}
+              <strong>{unitToDelete?.raw.Initialism}</strong> ?
+            </>
           }
           onConfirm={handleConfirmDelete}
           onCancel={handleCancelDelete}

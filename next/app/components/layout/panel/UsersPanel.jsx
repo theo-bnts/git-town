@@ -1,4 +1,3 @@
-// /app/components/layout/panel/UsersPanel.jsx
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -16,125 +15,114 @@ import getUsers from '@/app/services/api/users/getUsers';
 import getUserPromotions from '@/app/services/api/users/getUserPromotions';
 import { getCookie } from '@/app/services/cookies';
 
+import Table from '@/app/components/layout/table/Table';
 import Button from '@/app/components/ui/Button';
 import ConfirmCard from '@/app/components/ui/ConfirmCard';
-import ImportUserModal from '../forms/modal/ImportUserModal';
-import Table from '@/app/components/layout/table/Table';
+import ImportUserModal from '@/app/components/layout/forms/modal/ImportUserModal';
 import UserModal from '@/app/components/layout/forms/modal/UserModal';
 
 const columns = [
-  { key: 'name', title: 'Nom', sortable: true },
-  { key: 'email', title: 'Adresse e-mail universitaire', sortable: true },
-  { key: 'role', title: 'Rôle', sortable: true },
-  { key: 'promotions', title: 'Promotion(s)', sortable: true },
-  { key: 'actions', title: 'Action(s)', sortable: false },
+  { key: 'name',       title: 'Nom',                        sortable: true },
+  { key: 'email',      title: 'Adresse e-mail universitaire', sortable: true },
+  { key: 'role',       title: 'Rôle',                       sortable: true },
+  { key: 'promotions', title: 'Promotion(s)',              sortable: true },
+  { key: 'actions',    title: 'Action(s)',                  sortable: false},
 ];
 
 const mapPromotion = (promo) => {
   if (promo.Diploma && promo.PromotionLevel) {
     const value = `${promo.Diploma.Initialism} ${promo.PromotionLevel.Initialism} - ${promo.Year}`;
-    return {
-      id: promo.Id,
-      value,
-      full: {
-        Diploma: { Initialism: promo.Diploma.Initialism },
-        PromotionLevel: { Initialism: promo.PromotionLevel.Initialism },
-        Year: promo.Year
-      }
-    };
+    return { id: promo.Id, value, full: promo };
   }
-  return { id: promo.Id, value: '', full: {} };
+  return { id: promo.Id, value: '', full: promo };
 };
 
 const mapUser = async (user, token) => {
   const rawPromotions = await getUserPromotions(user.Id, token);
   const promotionsDisplay = Array.isArray(rawPromotions)
     ? rawPromotions
-        .map(promo => (promo.Diploma && promo.PromotionLevel)
-          ? `${promo.Diploma.Initialism} ${promo.PromotionLevel.Initialism} - ${promo.Year}`
-          : '')
-        .filter((str) => str !== '')
-        .sort((a, b) => a.localeCompare(b))
-        .join(', ')
-    : '';
+        .map(mapPromotion)
+        .sort((a, b) => a.value.localeCompare(b.value))
+    : [];
   return {
     raw: user,
-    rawPromotions,
     name: user.FullName,
     email: user.EmailAddress,
-    role: user.Role ? user.Role.Name : 'N/A',
-    promotions: promotionsDisplay,
+    role: user.Role?.Name || 'N/A',
+    promotions: promotionsDisplay.map(p => p.value),
+    rawPromotions: promotionsDisplay
   };
 };
 
 const fetchUsers = async (token) => {
   const users = await getUsers(token);
-  const transformed = await Promise.all(users.map(user => mapUser(user, token)));
-  return transformed;
+  return Promise.all(users.map(u => mapUser(u, token)));
 };
 
 export default function UsersPanel() {
-  const [authToken, setAuthToken] = useState('');
-  const [users, setUsers] = useState([]);
+  const [authToken, setAuthToken]     = useState('');
+  const [users, setUsers]             = useState([]);
+  const [loading, setLoading]         = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
 
-  const updateActions = (user) => [
+  // Récupération du token
+  useEffect(() => {
+    (async () => {
+      const t = await getCookie('token');
+      setAuthToken(t);
+    })();
+  }, []);
+
+  const updateActions = useCallback((user) => [
     {
       icon: <PencilIcon size={16} />,
       onClick: () => {
         setSelectedUser({
           Id: user.raw.Id,
-          nom: user.raw.FullName,
-          email: user.raw.EmailAddress,
-          role: user.raw.Role,
-          promotions: Array.isArray(user.rawPromotions)
-            ? user.rawPromotions.map(mapPromotion)
-            : [],
+          nom: user.name,
+          email: user.email,
+          role: user.role,
+          promotions: user.rawPromotions,
           createdAt: user.raw.CreatedAt,
-          updatedAt: user.raw.UpdatedAt,
+          updatedAt: user.raw.UpdatedAt
         });
         setUserModalOpen(true);
-      },
+      }
     },
     {
-      icon: <DuplicateIcon size={16} />,
-      onClick: () => console.log(`Duplicate ${user.raw.FullName}`),
+      icon: <DuplicateIcon size={16} />, onClick: () => {}
     },
     {
-      icon: <MarkGithubIcon size={16} />,
-      onClick: () => console.log(`Github ${user.raw.FullName}`),
+      icon: <MarkGithubIcon size={16} />, onClick: () => {}
     },
     {
       icon: <TrashIcon size={16} />,
       onClick: () => {
         setUserToDelete(user);
         setConfirmOpen(true);
-      },
-    },
-  ];
-
-  useEffect(() => {
-    (async () => {
-      const token = await getCookie('token');
-      setAuthToken(token);
-    })();
-  }, []);
-
-  const refreshUsers = useCallback(() => {
-    if (authToken) {
-      fetchUsers(authToken).then((data) => {
-        const updated = data.map((user) => ({
-          ...user,
-          actions: updateActions(user),
-        }));
-        setUsers(updated);
-      });
+      }
     }
-  }, [authToken]);
+  ], []);
+
+  // Chargement des utilisateurs + skeleton
+  const refreshUsers = useCallback(() => {
+    if (!authToken) return;
+    setLoading(true);
+    fetchUsers(authToken)
+      .then(data => {
+        const withActions = data.map(u => ({
+          ...u,
+          actions: updateActions(u)
+        }));
+        setUsers(withActions);
+      })
+      .catch(err => alert(`Erreur de chargement : ${err.message}`))
+      .finally(() => setLoading(false));
+  }, [authToken, updateActions]);
 
   useEffect(() => {
     refreshUsers();
@@ -152,18 +140,16 @@ export default function UsersPanel() {
   );
 
   const handleConfirmDelete = async () => {
-    if (userToDelete && authToken) {
-      try {
-        await deleteUser(userToDelete.raw.Id, authToken);
-        refreshUsers();
-      } catch (error) {
-        alert(`Erreur lors de la suppression : ${error.message}`);
-      }
+    if (!userToDelete || !authToken) return;
+    try {
+      await deleteUser(userToDelete.raw.Id, authToken);
+      refreshUsers();
+    } catch (err) {
+      alert(`Erreur lors de la suppression : ${err.message}`);
     }
     setConfirmOpen(false);
     setUserToDelete(null);
   };
-
   const handleCancelDelete = () => {
     setConfirmOpen(false);
     setUserToDelete(null);
@@ -173,10 +159,14 @@ export default function UsersPanel() {
     <>
       <Table
         columns={columns}
-        data={users}
+        data={
+          loading
+            ? Array.from({ length: 3 }).map((_, i) => ({ skeleton: true, key: i }))
+            : users
+        }
         toolbarContents={toolbarContents}
-        onModelUpdated={refreshUsers}
       />
+
       {userModalOpen && (
         <UserModal
           isOpen={userModalOpen}
@@ -192,6 +182,7 @@ export default function UsersPanel() {
           }}
         />
       )}
+
       {importModalOpen && (
         <ImportUserModal
           isOpen={importModalOpen}
@@ -202,11 +193,12 @@ export default function UsersPanel() {
           }}
         />
       )}
+
       {confirmOpen && (
         <ConfirmCard
           message={
             <span>
-              Voulez-vous vraiment supprimer <strong>{userToDelete?.raw.FullName}</strong> ?
+              Voulez-vous vraiment supprimer <strong>{userToDelete?.name}</strong> ?
             </span>
           }
           onConfirm={handleConfirmDelete}

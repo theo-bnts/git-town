@@ -7,9 +7,12 @@ import React from 'react';
 import { buttonStyles, spinnerStyles } from '@/app/styles/tailwindStyles';
 
 export default function Button({ variant, loading, children, ...props }) {
-  const appliedStyle = loading
-    ? `${buttonStyles[variant]} opacity-70 cursor-not-allowed relative`
-    : buttonStyles[variant];
+const base = buttonStyles[variant];
+const appliedStyle = [
+  base,
+  'relative',
+  loading && 'opacity-70 cursor-not-allowed'
+].filter(Boolean).join(' ');
 
   return (
     <button className={appliedStyle} disabled={loading || props.disabled} {...props}>
