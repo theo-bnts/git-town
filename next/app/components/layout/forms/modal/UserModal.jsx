@@ -71,10 +71,10 @@ export default function UserModal({ isOpen, initialData = {}, onClose, onSave })
 
   const validate = v => {
     const e = {};
-    if (!v.Nom?.trim()) e.Nom   = 'Le nom est obligatoire.';
+    if (!v.Nom?.trim()) e.Nom = 'Le nom est obligatoire.';
     if (!v.Email?.trim()) e.Email = "L'email est obligatoire.";
     else if (!isEmailValid(v.Email)) e.Email = "Format d'email invalide.";
-    if (!v.Rôle?.id) e.Rôle  = 'Veuillez sélectionner un rôle.';
+    if (!v.Rôle?.id) e.Rôle = 'Veuillez sélectionner un rôle.';
     return e;
   };
 
@@ -95,20 +95,17 @@ export default function UserModal({ isOpen, initialData = {}, onClose, onSave })
       .map(p => p.id)
       .sort();
 
-    // Build payload only with changed fields
     const payload = {};
     if (v.Nom.trim() !== initialData.FullName) payload.FullName = v.Nom.trim();
     if (v.Email.trim() !== initialData.EmailAddress) payload.EmailAddress = v.Email.trim();
     if (v.Rôle.id !== initialData.Role?.Keyword) payload.Role = { Keyword: v.Rôle.id };
     if (JSON.stringify(origIds) !== JSON.stringify(newIds)) payload.Promotions = newIds;
 
-    // If editing and no changes, just close
     if (initialData.Id && Object.keys(payload).length === 0) {
       onClose();
       return;
     }
 
-    // Submit
     try {
       await saveUser(initialData.Id || null, payload, token);
       onSave();

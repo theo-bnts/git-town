@@ -19,11 +19,11 @@ export default function CrudPanel({
 }) {
   const { data, loading, refresh, remove } = useCrudData({ fetchFn, deleteFn, mapToRow });
 
-  const [isModalOpen, setIsModalOpen]   = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [itemToDelete, setItemToDelete]   = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const actionsFactory = (row) => [
     {

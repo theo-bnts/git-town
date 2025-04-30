@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 
 export default function useFetchWithSkeleton(fetcher) {
-  const [data, setData]    = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError]   = useState(null);
+  const [error, setError] = useState(null);
 
   const run = useCallback(async () => {
     if (typeof fetcher !== 'function') return;

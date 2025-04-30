@@ -96,7 +96,7 @@ export default function Header({
               </li>
             );
           })}
-        </ul>        
+        </ul>
         )}
       </div>
     </Card>

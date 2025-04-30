@@ -21,7 +21,7 @@ export default function PromotionModal({
   onSave,
 }) {
   const token = useAuthToken();
-  const [errors, setErrors]     = useState({});
+  const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
 
   const fields = useMemo(() => [
@@ -98,7 +98,7 @@ export default function PromotionModal({
       metadata={{
         createdAt: initialData.CreatedAt,
         updatedAt: initialData.UpdatedAt,
-      }}      
+      }}
       fields={fields}
       errors={errors}
       apiError={apiError}
