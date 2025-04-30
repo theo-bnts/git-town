@@ -79,4 +79,26 @@ export default class Diploma {
       row.name,
     );
   }
+
+  static async all() {
+    const rows = await DatabasePool.EnvironmentInstance.query(
+      /* sql */ `
+        SELECT
+          id,
+          created_at,
+          updated_at,
+          initialism,
+          name
+        FROM public.diploma
+      `,
+    );
+
+    return rows.map((row) => new this(
+      row.id,
+      row.created_at,
+      row.updated_at,
+      row.initialism,
+      row.name,
+    ));
+  }
 }
