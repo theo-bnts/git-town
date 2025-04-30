@@ -10,7 +10,7 @@ import { API_ERRORS } from "@/app/services/errorCodes";
  */
 export function handleApiError(res, data) {
   const status = res.status;
-  const key    = data.error;
+  const key = data.error;
 
   if (key && API_ERRORS[status]?.[key]) {
     throw new Error(API_ERRORS[status][key]);
@@ -18,6 +18,7 @@ export function handleApiError(res, data) {
 
   const defaultMsg = API_ERRORS[status]?.default;
   if (defaultMsg) {
+    console.log(data);
     const suffix = key ? ` : ${key}` : '';
     throw new Error(defaultMsg + suffix);
   }

@@ -5,9 +5,9 @@ import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
 import { listboxStyles, textStyles } from '@/app/styles/tailwindStyles';
 
-import ListBoxProvider from './ListBoxProvider';
-import ListBoxArea from './ListBoxArea';
-import useListBox from './useListBox';
+import ListBoxProvider from '@/app/components/ui/listbox/ListBoxProvider';
+import ListBoxArea from '@/app/components/ui/listbox/ListBoxArea';
+import useListBox from '@/app/components/ui/listbox/useListBox';
 
 export default function MilestoneListBox({ items, onChange }) {
   return (

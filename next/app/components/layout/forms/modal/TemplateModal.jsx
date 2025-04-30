@@ -1,180 +1,176 @@
 'use client';
-
-import React, { useEffect, useState } from 'react';
-import { getCookie } from '@/app/services/cookies';
-import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
-import { MilestoneListBox } from '@/app/components/ui/listbox';
-import saveTemplate from '@/app/services/api/templates/saveTemplate';
+import { useMemo, useState, useEffect } from 'react';
+import useAuthToken from '@/app/hooks/useAuthToken';
 import getEnseignementUnits from '@/app/services/api/enseignementUnit/getEnseignementUnits';
 import getTemplateMilestones from '@/app/services/api/templates/id/milestone/getTemplateMilestones';
+import saveTemplate from '@/app/services/api/templates/saveTemplate';
 import saveTemplateMilestone from '@/app/services/api/templates/id/milestone/saveTemplateMilestone';
 import deleteTemplateMilestone from '@/app/services/api/templates/id/milestone/id/deleteTemplateMilestone';
+import { MilestoneListBox } from '@/app/components/ui/listbox';
+import FormModal from '@/app/components/ui/modal/FormModal';
 
-export default function TemplateModal({ isOpen, initialData = {}, onClose, onSave }) {
-  const [authToken, setAuthToken] = useState('');
+export default function TemplateModal({
+  isOpen,
+  initialData = {},
+  onClose,
+  onSave,
+}) {
+  const token = useAuthToken();
+
   const [unitOptions, setUnitOptions] = useState([]);
-  const [selectedUnit, setSelectedUnit] = useState(null);
   const [originalMilestones, setOriginalMilestones] = useState([]);
   const [currentMilestones, setCurrentMilestones] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
 
   useEffect(() => {
-    (async () => {
-      const token = await getCookie('token');
-      setAuthToken(token);
-    })();
-  }, []);
+    if (isOpen && token) {
+      getEnseignementUnits(token).then(units =>
+        setUnitOptions(
+          units.map(u => ({ id: u.Id, value: u.Initialism, full: u }))
+        )
+      );
+    }
+  }, [isOpen, token]);
 
   useEffect(() => {
-    if (!isOpen || !authToken) return;
-    getEnseignementUnits(authToken).then(units => {
-      const options = units.map(unit => ({ id: unit.Id, value: unit.Initialism, full: unit }));
-      setUnitOptions(options);
-      if (initialData.EnseignementUnit?.Id) {
-        setSelectedUnit(
-          options.find(option => option.id === initialData.EnseignementUnit.Id) || null
-        );
-      }
-    });
-  }, [isOpen, authToken, initialData]);
-
-  useEffect(() => {
-    if (!isOpen || !authToken || !initialData.Id) {
+    if (isOpen && token && initialData.Id) {
+      getTemplateMilestones(initialData.Id, token).then(list => {
+        const norm = list.map(m => ({
+          id:  m.Id,
+          Title: m.Title,
+          Date: m.Date,
+          value: `${m.Title} – ${m.Date}`,
+        }));
+        setOriginalMilestones(norm);
+        setCurrentMilestones(norm);
+      });
+    } else if (isOpen) {
       setOriginalMilestones([]);
       setCurrentMilestones([]);
-      return;
     }
-    getTemplateMilestones(initialData.Id, authToken)
-      .then(list => {
-        setOriginalMilestones(list);
-        setCurrentMilestones(
-          list.map(item => ({
-            ...item,
-            id: item.Id,
-            Title: item.Title,
-            Date: item.Date,
-            value: `${item.Title} – ${item.Date}`,
-          }))
-        );
-      })
-      .catch(() => {
-        setOriginalMilestones([]);
-        setCurrentMilestones([]);
-      });
-  }, [isOpen, authToken, initialData.Id]);
+  }, [isOpen, token, initialData.Id]);
 
-  const fields = [
-    { label: 'UE', 
-      value: selectedUnit,
-      options: unitOptions 
-    },
-    { label: 'Année',  
-      value: initialData.Year?.toString() || '' },
+  const fields = useMemo(() => [
     {
-      label: 'Milestones',
+      name: 'UE',
+      options: unitOptions,
+      value: unitOptions.find(o => o.id === initialData.EnseignementUnit?.Id) || null,
+    },
+    {
+      name: 'Année',
+      value: initialData.Year?.toString() || '',
+    },
+    {
+      name: 'Milestones',
       value: currentMilestones,
-      render: () => (
+      render: (value, onChange) => (
         <MilestoneListBox
-          items={currentMilestones}
-          onChange={setCurrentMilestones}
+          items={value}
+          onChange={newItems => onChange(newItems)}
         />
-      )
-    }
-  ];
+      ),
+    },
+  ], [initialData, unitOptions, currentMilestones]);
 
-  const validate = values => {
-    const errors = {};
-    if (!values.UE?.id) errors.UE = 'Sélection de l’unité obligatoire.';
-    const yearNum = parseInt(values['Année'], 10);
-    if (!values['Année']) {
-      errors['Année'] = 'Champ requis.';
-    } else if (isNaN(yearNum) || yearNum < 2000 || yearNum > 2099) {
-      errors['Année'] = 'Année doit être entre 2000 et 2099.';
-    }
-    return errors;
+  const validate = v => {
+    const e = {};
+    if (!v.UE?.id) e.UE = 'Sélectionnez une UE.';
+    if (!v.Année) e.Année = 'L’année est requise.';
+    else if (!/^\d{4}$/.test(v.Année)) e.Année = 'Année invalide.';
+    return e;
   };
 
-  const handleSubmit = async values => {
-    const errors = validate(values);
-    if (Object.keys(errors).length) {
-      alert(Object.values(errors).join('\n'));
+  const handleSubmit = async v => {
+    const validationErrors = validate(v);
+    if (Object.keys(validationErrors).length) {
+      setErrors(validationErrors);
       return;
     }
+    setErrors({});
 
-    const templateData = {
-      EnseignementUnit: { Id: values.UE.id },
-      Year: parseInt(values['Année'], 10),
-    };
-
-    const isUpdating = Boolean(initialData.Id);
-    if (isUpdating) {
-      if (initialData.EnseignementUnit?.Id === templateData.EnseignementUnit.Id) {
-        delete templateData.EnseignementUnit;
+    let tplId = initialData.Id;
+    if (!tplId) {
+      const tplData = {
+        EnseignementUnit: { Id: v.UE.id },
+        Year: parseInt(v.Année, 10),
+      };
+      const created = await saveTemplate(null, tplData, token);
+      tplId = created.Id;
+    } else {
+      const patch = {};
+      if (v.UE.id !== initialData.EnseignementUnit?.Id) {
+        patch.EnseignementUnit = { Id: v.UE.id };
       }
-      if (initialData.Year === templateData.Year) {
-        delete templateData.Year;
+      if (parseInt(v.Année, 10) !== initialData.Year) {
+        patch.Year = parseInt(v.Année, 10);
+      }
+      if (Object.keys(patch).length) {
+        await saveTemplate(tplId, patch, token);
       }
     }
 
-    let templateId = initialData.Id;
-    if (!isUpdating) {
-      const created = await saveTemplate(null, templateData, authToken);
-      templateId = created.Id;
-    } else if (Object.keys(templateData).length) {
-      await saveTemplate(templateId, templateData, authToken);
-    }
-
-    const keptIds = new Set(
-      currentMilestones
-        .filter(milestone => milestone.Id != null)
-        .map(milestone => milestone.Id)
+    const allMs = Array.isArray(v.Milestones) ? v.Milestones : [];
+    const kept = allMs.filter(m => originalMilestones.some(o => o.id === m.id));
+    const added = allMs.filter(m => !originalMilestones.some(o => o.id === m.id));
+    const removed = originalMilestones.filter(o =>
+      !allMs.some(m => m.id === o.id)
     );
 
-    const milestonesToDelete = originalMilestones.filter(originalMilestone => !keptIds.has(originalMilestone.Id));
-    const milestonesToAdd    = currentMilestones.filter(milestone => milestone.Id == null);
-    const milestonesToPatch  = currentMilestones.filter(milestone => {
-      if (milestone.Id == null) return false;
-      const originalMilestone = originalMilestones.find(o => o.Id === milestone.Id);
-      return originalMilestone && (originalMilestone.Title !== milestone.Title || originalMilestone.Date !== milestone.Date);
-    });
+    await Promise.all(
+      removed.map(m => deleteTemplateMilestone(tplId, m.id, token))
+    );
 
-    await Promise.all([
-      ...milestonesToDelete.map(originalMilestone =>
-        deleteTemplateMilestone(templateId, originalMilestone.Id, authToken)
-      ),
-      ...milestonesToAdd.map(newItem =>
-        saveTemplateMilestone(templateId, null, { Title: newItem.Title, Date: newItem.Date }, authToken)
-      ),
-      ...milestonesToPatch.map(updated =>
-        saveTemplateMilestone(
-          templateId,
-          updated.Id,
-          {
-            ...(originalMilestones.find(o => o.Id === updated.Id).Title !== updated.Title && { Title: updated.Title }),
-            ...(originalMilestones.find(o => o.Id === updated.Id).Date  !== updated.Date  && { Date:  updated.Date })
-          },
-          authToken
-        )
-      )
-    ]);
+    await Promise.all(
+      added.map(m => {
+        let title, date;
+        if (m.Title && m.Date) {
+          ({ Title: title, Date: date } = m);
+        } else {
+          [ title = '', date = '' ] = typeof m.value === 'string'
+            ? m.value.split(' – ')
+            : [];
+        }
+        return saveTemplateMilestone(
+          tplId,
+          null,
+          { Title: title.trim(), Date: date.trim() },
+          token
+        );
+      })
+    );
+
+    await Promise.all(
+      kept.map(m => {
+        const orig = originalMilestones.find(o => o.id === m.id);
+        const diff = {};
+        if (orig.Title !== m.Title) diff.Title = m.Title;
+        if (orig.Date  !== m.Date)  diff.Date  = m.Date;
+        return Object.keys(diff).length
+          ? saveTemplateMilestone(tplId, m.id, diff, token)
+          : Promise.resolve();
+      })
+    );
 
     onSave();
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <DynamicModal
-      key={`template-${selectedUnit?.id || 'none'}-${isOpen}`}
-      title="Édition"
-      fields={fields}
+    <FormModal
+      formKey={`${initialData.Id || 'new'}-${isOpen}`}
       isOpen={isOpen}
-      onClose={onClose}
-      onSubmit={handleSubmit}
+      title={initialData.Id ? 'Modifier le template' : 'Nouveau template'}
       metadata={{
         createdAt: initialData.CreatedAt,
-        updatedAt: initialData.UpdatedAt
+        updatedAt: initialData.UpdatedAt,
       }}
+      fields={fields}
+      errors={errors}
+      apiError={apiError}
+      onClearApiError={() => setApiError('')}
+      onClose={onClose}
+      onSubmit={handleSubmit}
     />
   );
 }

@@ -1,106 +1,139 @@
 'use client';
-
-import React, { useState, useEffect } from 'react';
-import { isEmailValid } from '@/app/services/validators';
-import { getCookie } from '@/app/services/cookies';
+import { useMemo, useState, useEffect } from 'react';
+import useAuthToken from '@/app/hooks/useAuthToken';
 import getPromotions from '@/app/services/api/promotions/getPromotions';
 import saveUser from '@/app/services/api/users/saveUser';
-import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
-import ComboBox from '@/app/components/ui/combobox/ComboBox';
+import { isEmailValid } from '@/app/services/validators';
 import { PromotionListBox } from '@/app/components/ui/listbox';
+import FormModal from '@/app/components/ui/modal/FormModal';
 
 const roleOptions = [
-  { id: 'administrator', name: 'Administrateur' },
-  { id: 'teacher', name: 'Enseignant' },
-  { id: 'student', name: 'Étudiant' }
+  { id: 'administrator', value: 'Administrateur' },
+  { id: 'teacher', value: 'Enseignant' },
+  { id: 'student', value: 'Étudiant' },
 ];
-const transformedRoleOptions = roleOptions.map(r => ({ id: r.id, value: r.name }));
-const mapRoleNameToId = { administrateur: 'administrator', enseignant: 'teacher', étudiant: 'student' };
 
-const getInitialRole = d => {
-  if (!d.role) return null;
-  if (typeof d.role === 'string') return d.role;
-  if (d.role.Keyword || d.role.id) return d.role.Keyword || d.role.id;
-  if (d.role.Name) return mapRoleNameToId[d.role.Name.toLowerCase()] || null;
-  return null;
-};
-
-const mapPromotionOption = p => ({
-  id: p.Id,
-  value: `${p.Diploma.Initialism} ${p.PromotionLevel.Initialism} - ${p.Year}`,
-  full: { Diploma: { Initialism: p.Diploma.Initialism }, PromotionLevel: { Initialism: p.PromotionLevel.Initialism }, Year: p.Year }
-});
-const transformInitialPromotions = ps => ps.map(p => ({ id: p.id, value: p.value, full: p.full }));
-
-export default function UserModal({ isOpen, initialData = {}, onClose, onSave }) {
+export default function UserModal({
+  isOpen,
+  initialData = {},
+  onClose,
+  onSave,
+}) {
+  const token = useAuthToken();
+  const [promoOpts, setPromoOpts] = useState([]);
+  const [selectedPromos, setSelectedPromos] = useState([]);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
-  const [promotionsOptions, setPromotionsOptions] = useState([]);
-  const [authToken, setAuthToken] = useState('');
-  const initialRoleId = getInitialRole(initialData);
-  const initialRole = initialRoleId ? transformedRoleOptions.find(r => r.id === initialRoleId) : null;
-  const [promotions, setPromotions] = useState(transformInitialPromotions(initialData.promotions || []));
 
-  useEffect(() => { (async () => setAuthToken(await getCookie('token')))(); }, []);
-  useEffect(() => { if (isOpen && authToken) getPromotions(authToken).then(setPromotionsOptions); }, [isOpen, authToken]);
-
-  const fields = [
-    { label: 'Nom', value: initialData.nom || '' },
-    { label: 'Email', value: initialData.email || '' },
-    { label: 'Rôle', value: initialRole, options: transformedRoleOptions },
-    {
-      label: 'Promotions',
-      value: promotions,
-      render: () => (
-        <PromotionListBox
-            items={promotions}
-            onChange={setPromotions}
-            promotionOptions={promotionsOptions.map(mapPromotionOption)}
-        />
-      )
+  useEffect(() => {
+    if (isOpen && token) {
+      getPromotions(token).then(arr => {
+        const opts = arr.map(p => ({
+          id: p.Id,
+          value: `${p.Diploma.Initialism} ${p.PromotionLevel.Initialism} - ${p.Year}`,
+          full: p,
+        }));
+        setPromoOpts(opts);
+      });
     }
-  ];
+  }, [isOpen, token]);
+
+  useEffect(() => {
+    if (isOpen && promoOpts.length) {
+      const initialValues = Array.isArray(initialData.promotions) ? initialData.promotions : [];
+      const matched = promoOpts.filter(opt => initialValues.includes(opt.value));
+      setSelectedPromos(matched);
+    }
+  }, [isOpen, promoOpts, initialData.promotions]);
+
+  const initialRole = useMemo(
+    () => roleOptions.find(r => r.value === initialData.Role?.Name) || null,
+    [initialData.Role]
+  );
+
+  const fields = useMemo(() => [
+    { name: 'Nom', value: initialData.FullName || '' },
+    { name: 'Email', value: initialData.EmailAddress || '' },
+    {
+      name: 'Rôle',
+      options: roleOptions,
+      value: initialRole,
+    },
+    {
+      name: 'Promotions',
+      value: selectedPromos,
+      render: (value, onChange) => (
+        <PromotionListBox
+          items={value}
+          promotionOptions={promoOpts}
+          onChange={onChange}
+        />
+      ),
+    },
+  ], [initialData, initialRole, promoOpts, selectedPromos]);
 
   const validate = v => {
     const e = {};
     if (!v.Nom?.trim()) e.Nom = 'Le nom est obligatoire.';
     if (!v.Email?.trim()) e.Email = "L'email est obligatoire.";
-    else if (!isEmailValid(v.Email)) e.Email = "L'email n'est pas valide.";
+    else if (!isEmailValid(v.Email)) e.Email = "Format d'email invalide.";
     if (!v.Rôle?.id) e.Rôle = 'Veuillez sélectionner un rôle.';
     return e;
   };
 
-  const diffUser = (o, m) => {
-    const d = {};
-    if ((o.FullName || o.nom || '').trim() !== m.FullName.trim()) d.FullName = m.FullName.trim();
-    if ((o.EmailAddress || o.email || '').trim() !== m.EmailAddress.trim()) d.EmailAddress = m.EmailAddress.trim();
-    if ((o.role?.Keyword || '') !== (m.Role?.Keyword || '')) d.Role = { Keyword: m.Role.Keyword };
-    if (JSON.stringify(o.promotions || []) !== JSON.stringify(m.Promotions || [])) d.Promotions = m.Promotions;
-    return d;
-  };
-
   const handleSubmit = async v => {
     const e = validate(v);
-    if (Object.keys(e).length) { setErrors(e); return; }
-    setErrors({}); setApiError('');
-    const roleKw = v.Rôle.id || v.Rôle;
-    const mod = { EmailAddress: v.Email.trim(), FullName: v.Nom.trim(), Role: { Keyword: roleKw }, Promotions: promotions.map(p => p.id) };
-    const diff = diffUser(initialData, { ...mod, Promotions: mod.Promotions });
-    if (!Object.keys(diff).length) { onClose(); return; }
-    try { await saveUser(initialData.Id, diff, authToken); onSave(); onClose(); } catch (err) { setApiError(err.message); }
+    if (Object.keys(e).length) {
+      setErrors(e);
+      return;
+    }
+    setErrors({});
+
+    const promos = Array.isArray(v.Promotions) ? v.Promotions : selectedPromos;
+    const payload = {};
+    if (v.Nom.trim() !== initialData.FullName) payload.FullName = v.Nom.trim();
+    if (v.Email.trim() !== initialData.EmailAddress) payload.EmailAddress = v.Email.trim();
+    if (v.Rôle.id !== initialData.Role?.Keyword) payload.Role = { Keyword: v.Rôle.id };
+
+    const origIds = (Array.isArray(initialData.promotions) ? initialData.promotions : [])
+      .map(val => promoOpts.find(opt => opt.value === val)?.id)
+      .filter(id => id != null)
+      .sort();
+    const newIds = promos.map(p => p.id).sort();
+
+    if (JSON.stringify(origIds) !== JSON.stringify(newIds)) {
+      payload.Promotions = newIds;
+    }
+
+    if (initialData.Id && Object.keys(payload).length === 0) {
+      onClose();
+      return;
+    }
+
+    try {
+      await saveUser(initialData.Id || null, payload, token);
+      onSave();
+      onClose();
+    } catch (err) {
+      setApiError(err.message);
+    }
   };
 
   return (
-    <DynamicModal
-      metadata={{ createdAt: initialData.createdAt, updatedAt: initialData.updatedAt }}
+    <FormModal
+      formKey={`${initialData.Id || 'new'}-${isOpen}`}
+      isOpen={isOpen}
+      title={initialData.Id ? 'Modifier l’utilisateur' : 'Nouvel utilisateur'}
+      metadata={{
+        createdAt: initialData.CreatedAt,
+        updatedAt: initialData.UpdatedAt,
+      }}      
+      fields={fields}
       errors={errors}
       apiError={apiError}
-      clearApiError={() => setApiError('')}
-      fields={fields}
-      isOpen={isOpen}
+      onClearApiError={() => setApiError('')}
       onClose={onClose}
       onSubmit={handleSubmit}
-      onClearError={l => setErrors(p => ({ ...p, [l]: '' }))}
     />
   );
 }

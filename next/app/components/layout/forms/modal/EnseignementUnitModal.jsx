@@ -1,152 +1,86 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { PencilIcon, TrashIcon, PlusIcon } from '@primer/octicons-react';
+import { useMemo, useState } from 'react';
+import useAuthToken from '@/app/hooks/useAuthToken';
+import saveEnseignementUnit from '@/app/services/api/enseignementUnit/saveEnseignementUnit';
+import FormModal from '@/app/components/ui/modal/FormModal';
 
-import { getCookie } from '@/app/services/cookies';
-import getEnseignementUnits from '@/app/services/api/enseignementUnit/getEnseignementUnits';
-import deleteEnseignementUnit from '@/app/services/api/enseignementUnit/id/deleteEnseignementUnit';
+export default function EnseignementUnitModal({
+  isOpen,
+  initialData = {},
+  onClose,
+  onSave,
+}) {
+  const token = useAuthToken();
+  const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
 
-import Table from '@/app/components/layout/table/Table';
-import Button from '@/app/components/ui/Button';
-import ConfirmCard from '@/app/components/ui/ConfirmCard';
-import EnseignementUnitModal from '@/app/components/layout/forms/modal/EnseignementUnitModal';
-import useFetchWithSkeleton from '@/app/hooks/useFetchWithSkeleton';
-import TableSkeleton from '@/app/components/layout/table/TableSkeleton';
-
-const columns = [
-  { key: 'initialism', title: 'Sigle', sortable: true },
-  { key: 'name', title: 'Nom', sortable: true },
-  { key: 'actions', title: 'Action(s)', sortable: false },
-];
-
-const mapUnitToRow = (unit) => ({
-  raw: unit,
-  initialism: unit.Initialism,
-  name: unit.Name,
-});
-
-export default function EnseignementUnitPanel() {
-  const [authToken, setAuthToken] = useState('');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedUnit, setSelectedUnit] = useState(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [unitToDelete, setUnitToDelete] = useState(null);
-
-  // 1️⃣ Récupération du token
-  useEffect(() => {
-    (async () => {
-      const token = await getCookie('token');
-      setAuthToken(token);
-    })();
-  }, []);
-
-  // 2️⃣ Fetch uniquement si authToken est prêt
-  const { data, loading, error, refetch } = useFetchWithSkeleton(
-    authToken ? () => getEnseignementUnits(authToken) : null
+  const fields = useMemo(
+    () => [
+      { name: 'Sigle', value: initialData.Initialism || '' },
+      { name: 'Nom', value: initialData.Name || '' },
+    ],
+    [initialData]
   );
 
-  const rawUnits = data || [];
-
-  // 3️⃣ Déclarez renderActions avant son usage
-  const renderActions = (row) => [
-    {
-      icon: <PencilIcon size={16} />,
-      onClick: () => {
-        setSelectedUnit({
-          Id: row.raw.Id,
-          Initialism: row.raw.Initialism,
-          Name: row.raw.Name,
-          createdAt: row.raw.CreatedAt,
-          updatedAt: row.raw.UpdatedAt,
-        });
-        setModalOpen(true);
-      },
-    },
-    {
-      icon: <TrashIcon size={16} />,
-      onClick: () => {
-        setUnitToDelete(row);
-        setConfirmOpen(true);
-      },
-    },
-  ];
-
-  const units = rawUnits
-    .map(mapUnitToRow)
-    .map((row) => ({ ...row, actions: renderActions(row) }));
-
-  const toolbarContents = (
-    <Button
-      variant="default_sq"
-      onClick={() => {
-        setSelectedUnit(null);
-        setModalOpen(true);
-      }}
-    >
-      <PlusIcon size={24} className="text-white" />
-    </Button>
-  );
-
-  const handleConfirmDelete = async () => {
-    if (!unitToDelete || !authToken) return;
-    try {
-      await deleteEnseignementUnit(unitToDelete.raw.Id, authToken);
-      refetch();
-    } catch (err) {
-      alert(`Erreur lors de la suppression : ${err.message}`);
-    }
-    setConfirmOpen(false);
-    setUnitToDelete(null);
+  const validate = (v) => {
+    const e = {};
+    if (!v.Sigle) e.Sigle = 'Le sigle est obligatoire.';
+    if (!v.Nom) e.Nom = 'Le nom est obligatoire.';
+    return e;
   };
 
-  const handleCancelDelete = () => {
-    setConfirmOpen(false);
-    setUnitToDelete(null);
+  const handleSubmit = async (v) => {
+    const e = validate(v);
+    if (Object.keys(e).length) {
+      setErrors(e);
+      return;
+    }
+    setErrors({});
+
+    let payload;
+    if (initialData.Id) {
+      payload = {};
+      if (v.Sigle !== initialData.Initialism) { 
+        payload.Initialism = v.Sigle;
+      }
+
+      if (v.Nom !== initialData.Name) {
+        payload.Name = v.Nom;
+      }
+
+      if (Object.keys(payload).length === 0) {
+        onClose();
+        return;
+      }
+    } else {
+      payload = { Initialism: v.Sigle, Name: v.Nom };
+    }
+
+    try {
+      await saveEnseignementUnit(initialData.Id || null, payload, token);
+      onSave();
+      onClose();
+    } catch (err) {
+      setApiError(err.message);
+    }
   };
 
   return (
-    <>
-      {loading ? (
-        <TableSkeleton cols={columns.length} />
-      ) : error ? (
-        <p className="text-red-600">Erreur de chargement : {error}</p>
-      ) : (
-        <Table
-          columns={columns}
-          data={units}
-          toolbarContents={toolbarContents}
-        />
-      )}
-
-      {modalOpen && (
-        <EnseignementUnitModal
-          isOpen={modalOpen}
-          initialData={selectedUnit || {}}
-          onClose={() => {
-            setModalOpen(false);
-            setSelectedUnit(null);
-          }}
-          onSave={() => {
-            refetch();
-            setModalOpen(false);
-            setSelectedUnit(null);
-          }}
-        />
-      )}
-
-      {confirmOpen && (
-        <ConfirmCard
-          message={
-            <>
-              Voulez-vous vraiment supprimer{' '}
-              <strong>{unitToDelete?.raw.Initialism}</strong> ?
-            </>
-          }
-          onConfirm={handleConfirmDelete}
-          onCancel={handleCancelDelete}
-        />
-      )}
-    </>
+    <FormModal
+      formKey={`${initialData.Id || 'new'}-${isOpen}`}
+      isOpen={isOpen}
+      title={initialData.Id ? 'Modifier l’UE' : 'Nouvelle UE'}
+      metadata={{
+        createdAt: initialData.CreatedAt,
+        updatedAt: initialData.UpdatedAt,
+      }}
+      fields={fields}
+      errors={errors}
+      apiError={apiError}
+      onClearApiError={() => setApiError('')}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+    />
   );
 }

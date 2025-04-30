@@ -87,13 +87,11 @@ export default function DynamicModal({
               let input;
 
               if (typeof render === 'function') {
-                // cas d'un renderer custom
                 input = render(fields[label], v => {
                   change(label, v);
                   onClearError?.(label);
                 });
               } else if (options) {
-                // cas d'un champ à options : multi (array) ou single
                 if (Array.isArray(f.value)) {
                   const AddPanel = () => {
                     const { addItem } = useListBox();
@@ -132,7 +130,6 @@ export default function DynamicModal({
                   );
                 }
               } else {
-                // ← **fallback** pour un champ texte classique
                 input = (
                   <Input
                     variant="default"
