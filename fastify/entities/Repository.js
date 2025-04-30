@@ -90,14 +90,14 @@ export default class Repository {
     this.UpdatedAt = row.updated_at;
   }
 
-  toStudentJSON() {
+  toJSON() {
     return {
-      id: this.Id,
-      createdAt: this.CreatedAt,
-      updatedAt: this.UpdatedAt,
-      archivedAt: this.ArchivedAt,
-      template: this.Template,
-      promotion: this.Promotion,
+      Id: this.Id,
+      CreatedAt: this.CreatedAt,
+      UpdatedAt: this.UpdatedAt,
+      ArchivedAt: this.ArchivedAt,
+      Template: this.Template,
+      Promotion: this.Promotion,
     };
   }
 

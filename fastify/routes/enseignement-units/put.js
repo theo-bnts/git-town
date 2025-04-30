@@ -43,6 +43,10 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'DUPLICATE_INITIALISM' };
       }
 
+      if (await EnseignementUnit.isNameInserted(name)) {
+        throw { statusCode: 409, error: 'DUPLICATE_NAME' };
+      }
+
       const enseignementUnit = new EnseignementUnit(null, null, null, initialism, name);
 
       await enseignementUnit.insert();

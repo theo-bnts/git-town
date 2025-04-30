@@ -84,6 +84,19 @@ export default class EnseignementUnit {
     return row.count === 1n;
   }
 
+  static async isNameInserted(name) {
+    const [row] = await DatabasePool.EnvironmentInstance.query(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.enseignement_unit
+        WHERE name = $1::text
+      `,
+      [name],
+    );
+
+    return row.count === 1n;
+  }
+
   static async fromId(id) {
     const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `

@@ -14,5 +14,5 @@ INSERT INTO public.promotion_level (id, created_at, updated_at, initialism, name
   ('badb0636-db18-4d24-84c2-72569e918818'::uuid, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'M2', 'Master 2');
 
 INSERT INTO public.enseignement_unit (id, created_at, updated_at, initialism, name) VALUES
-  ('a4f37644-6081-461b-a8d9-219c0e64cf44'::uuid, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'PRO_05', 'Étude de cas SI'),
+  ('a4f37644-6081-461b-a8d9-219c0e64cf44'::uuid, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'PRO_05', 'Étude de cas Systèmes d''Information'),
   ('0cb6aff3-9db5-40a5-a548-08af8cd7b3f0'::uuid, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'PRO_03', 'Étude de cas thématique');
