@@ -59,7 +59,7 @@ export default async function route(app) {
 
       await Promise.all(
         userRepositories.map(async (userRepository) => {
-          const repository = await Repository.fromId(userRepository.Id);
+          const repository = await Repository.fromId(userRepository.Repository.Id);
 
           if (repository.Promotion.Id === promotion.Id) {
             throw { statusCode: 409, error: 'HAS_USER_REPOSITORY' };
