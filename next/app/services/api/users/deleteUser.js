@@ -1,6 +1,5 @@
 import { userRoute } from '@/app/services/routes';
 import { handleApiError } from '@/app/services/errorHandler';
-import deleteUserPromotions from '@/app/services/api/users/deleteUserPromotions';
 
 /**
  * Supprime un utilisateur
@@ -13,41 +12,27 @@ import deleteUserPromotions from '@/app/services/api/users/deleteUserPromotions'
  */
 export default async function deleteUser(userId, token) {
   const url = userRoute(userId);
-  let res = await fetch(url, {
+  const res = await fetch(url, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
-  let text = await res.text();
-  let data = text ? JSON.parse(text) : {};
+  
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : {};
   
   if (!res.ok) {
-    if (data.error === 'HAS_PROMOTIONS') {
-      try {
-        await deleteUserPromotions(userId, token);
-      } catch (err) {
-        return Promise.reject(
-          new Error(
-            'Impossible de supprimer les liens de promotions: ' 
-            + err.message
-          )
-        );
-      }
-      res = await fetch(url, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      text = await res.text();
-      data = text ? JSON.parse(text) : {};
-      if (!res.ok) {
-        return Promise.reject(handleApiError(res, data));
-      }
-      return data;
+    if (data.error === 'HAS_REPOSITORIES') {
+      return Promise.reject(
+        new Error(
+          "Impossible de supprimer l'utilisateur car il possède encore des dépôts associés. " +
+          "Veuillez d'abord supprimer ces associations."
+        )
+      );
     }
     return Promise.reject(handleApiError(res, data));
   }
+  
   return data;
 }
