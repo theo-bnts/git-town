@@ -43,8 +43,8 @@ export default function PromotionModal({
   const validate = v => {
     const e = {};
     if (!v.Diplôme?.id) e.Diplôme = 'Veuillez sélectionner un diplôme.';
-    if (!v.Niveau?.id)  e.Niveau  = 'Veuillez sélectionner un niveau.';
-    if (!v.Année)       e.Année   = "L'année est obligatoire.";
+    if (!v.Niveau?.id) e.Niveau = 'Veuillez sélectionner un niveau.';
+    if (!v.Année) e.Année = "L'année est obligatoire.";
     else if (!/^\d{4}$/.test(v.Année)) e.Année = "L'année doit être un nombre à 4 chiffres.";
     return e;
   };
@@ -74,9 +74,9 @@ export default function PromotionModal({
       }
     } else {
       payload = {
-        Diploma:        { Initialism: v.Diplôme.id },
+        Diploma: { Initialism: v.Diplôme.id },
         PromotionLevel: { Initialism: v.Niveau.id },
-        Year:            year,
+        Year: year,
       };
     }
 

@@ -13,12 +13,10 @@ const roleOptions = [
   { id: 'student', value: 'Étudiant' },
 ];
 
-export default function UserModal({
-  isOpen,
-  initialData = {},
-  onClose,
-  onSave,
-}) {
+const formatLabel = p =>
+  `${p.Diploma.Initialism} ${p.PromotionLevel.Initialism} - ${p.Year}`;
+
+export default function UserModal({ isOpen, initialData = {}, onClose, onSave }) {
   const token = useAuthToken();
   const [promoOpts, setPromoOpts] = useState([]);
   const [selectedPromos, setSelectedPromos] = useState([]);
@@ -30,7 +28,7 @@ export default function UserModal({
       getPromotions(token).then(arr => {
         const opts = arr.map(p => ({
           id: p.Id,
-          value: `${p.Diploma.Initialism} ${p.PromotionLevel.Initialism} - ${p.Year}`,
+          value: formatLabel(p).replace('–', '-'),
           full: p,
         }));
         setPromoOpts(opts);
@@ -40,8 +38,10 @@ export default function UserModal({
 
   useEffect(() => {
     if (isOpen && promoOpts.length) {
-      const initialValues = Array.isArray(initialData.promotions) ? initialData.promotions : [];
-      const matched = promoOpts.filter(opt => initialValues.includes(opt.value));
+      const initialLabels = Array.isArray(initialData.promotions)
+        ? initialData.promotions.map(str => str.replace('–', '-'))
+        : [];
+      const matched = promoOpts.filter(opt => initialLabels.includes(opt.value));
       setSelectedPromos(matched);
     }
   }, [isOpen, promoOpts, initialData.promotions]);
@@ -54,13 +54,9 @@ export default function UserModal({
   const fields = useMemo(() => [
     { name: 'Nom', value: initialData.FullName || '' },
     { name: 'Email', value: initialData.EmailAddress || '' },
+    { name: 'Rôle', options: roleOptions, value: initialRole },
     {
-      name: 'Rôle',
-      options: roleOptions,
-      value: initialRole,
-    },
-    {
-      name: 'Promotions',
+      name: 'Promotions', 
       value: selectedPromos,
       render: (value, onChange) => (
         <PromotionListBox
@@ -74,10 +70,10 @@ export default function UserModal({
 
   const validate = v => {
     const e = {};
-    if (!v.Nom?.trim()) e.Nom = 'Le nom est obligatoire.';
+    if (!v.Nom?.trim()) e.Nom   = 'Le nom est obligatoire.';
     if (!v.Email?.trim()) e.Email = "L'email est obligatoire.";
     else if (!isEmailValid(v.Email)) e.Email = "Format d'email invalide.";
-    if (!v.Rôle?.id) e.Rôle = 'Veuillez sélectionner un rôle.';
+    if (!v.Rôle?.id) e.Rôle  = 'Veuillez sélectionner un rôle.';
     return e;
   };
 
@@ -89,27 +85,29 @@ export default function UserModal({
     }
     setErrors({});
 
-    const promos = Array.isArray(v.Promotions) ? v.Promotions : selectedPromos;
+    const origIds = (Array.isArray(initialData.promotions) ? initialData.promotions : [])
+      .map(str => str.replace('–', '-'))
+      .map(label => promoOpts.find(opt => opt.value === label)?.id)
+      .filter(Boolean)
+      .sort();
+    const newIds = (Array.isArray(v.Promotions) ? v.Promotions : selectedPromos)
+      .map(p => p.id)
+      .sort();
+
+    // Build payload only with changed fields
     const payload = {};
     if (v.Nom.trim() !== initialData.FullName) payload.FullName = v.Nom.trim();
     if (v.Email.trim() !== initialData.EmailAddress) payload.EmailAddress = v.Email.trim();
     if (v.Rôle.id !== initialData.Role?.Keyword) payload.Role = { Keyword: v.Rôle.id };
+    if (JSON.stringify(origIds) !== JSON.stringify(newIds)) payload.Promotions = newIds;
 
-    const origIds = (Array.isArray(initialData.promotions) ? initialData.promotions : [])
-      .map(val => promoOpts.find(opt => opt.value === val)?.id)
-      .filter(id => id != null)
-      .sort();
-    const newIds = promos.map(p => p.id).sort();
-
-    if (JSON.stringify(origIds) !== JSON.stringify(newIds)) {
-      payload.Promotions = newIds;
-    }
-
+    // If editing and no changes, just close
     if (initialData.Id && Object.keys(payload).length === 0) {
       onClose();
       return;
     }
 
+    // Submit
     try {
       await saveUser(initialData.Id || null, payload, token);
       onSave();
@@ -124,10 +122,7 @@ export default function UserModal({
       formKey={`${initialData.Id || 'new'}-${isOpen}`}
       isOpen={isOpen}
       title={initialData.Id ? 'Modifier l’utilisateur' : 'Nouvel utilisateur'}
-      metadata={{
-        createdAt: initialData.CreatedAt,
-        updatedAt: initialData.UpdatedAt,
-      }}      
+      metadata={{ createdAt: initialData.CreatedAt, updatedAt: initialData.UpdatedAt }}
       fields={fields}
       errors={errors}
       apiError={apiError}
