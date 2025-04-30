@@ -36,7 +36,6 @@ export default class Diploma {
     const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
-          id,
           created_at,
           updated_at,
           initialism,
@@ -63,7 +62,6 @@ export default class Diploma {
           id,
           created_at,
           updated_at,
-          initialism,
           name
         FROM public.diploma
         WHERE initialism = $1::text
@@ -75,7 +73,7 @@ export default class Diploma {
       row.id,
       row.created_at,
       row.updated_at,
-      row.initialism,
+      initialism,
       row.name,
     );
   }

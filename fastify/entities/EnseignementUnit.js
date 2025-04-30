@@ -101,7 +101,6 @@ export default class EnseignementUnit {
     const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
-          id,
           created_at,
           updated_at,
           initialism,

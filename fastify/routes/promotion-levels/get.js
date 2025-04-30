@@ -1,5 +1,4 @@
 import AuthorizationMiddleware from '../../entities/tools/Middleware/AuthorizationMiddleware.js';
-import Role from '../../entities/Role.js';
 import PromotionLevel from '../../entities/PromotionLevel.js';
 
 export default async function route(app) {

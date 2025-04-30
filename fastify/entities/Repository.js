@@ -178,7 +178,6 @@ export default class Repository {
           repository.created_at,
           repository.updated_at,
           repository.archived_at,
-          repository.template_id,
           repository.promotion_id,
           repository.comment
         FROM public.repository

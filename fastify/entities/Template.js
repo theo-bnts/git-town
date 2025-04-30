@@ -109,7 +109,6 @@ export default class Template {
     const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
-          id,
           created_at,
           updated_at,
           enseignement_unit_id,
@@ -123,7 +122,7 @@ export default class Template {
     const enseignementUnit = await EnseignementUnit.fromId(row.enseignement_unit_id);
 
     return new this(
-      row.id,
+      id,
       row.created_at,
       row.updated_at,
       enseignementUnit,

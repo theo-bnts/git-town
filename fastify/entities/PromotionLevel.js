@@ -36,7 +36,6 @@ export default class PromotionLevel {
     const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
-          id,
           created_at,
           updated_at,
           initialism,
@@ -63,7 +62,6 @@ export default class PromotionLevel {
           id,
           created_at,
           updated_at,
-          initialism,
           name
         FROM public.promotion_level
         WHERE initialism = $1::text
@@ -75,7 +73,7 @@ export default class PromotionLevel {
       row.id,
       row.created_at,
       row.updated_at,
-      row.initialism,
+      initialism,
       row.name,
     );
   }

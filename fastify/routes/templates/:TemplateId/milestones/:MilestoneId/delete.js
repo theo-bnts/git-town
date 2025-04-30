@@ -64,10 +64,14 @@ export default async function route(app) {
               .hasSame(DateTime.fromJSDate(milestone.Date), 'day')
           ));
 
-          return GitHubApp.EnvironmentInstance.Milestones.remove(
-            repository.Id,
-            concernedGitHubMilestone.Number,
-          );
+          if (concernedGitHubMilestone !== undefined) {
+            return GitHubApp.EnvironmentInstance.Milestones.remove(
+              repository.Id,
+              concernedGitHubMilestone.Number,
+            );
+          }
+
+          return Promise.resolve();
         }),
       );
 

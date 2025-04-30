@@ -116,9 +116,17 @@ export default async function route(app) {
               .hasSame(DateTime.fromJSDate(oldDate), 'day')
           ));
 
-          return GitHubApp.EnvironmentInstance.Milestones.update(
+          if (concernedGitHubMilestone !== undefined) {
+            return GitHubApp.EnvironmentInstance.Milestones.update(
+              repository.Id,
+              concernedGitHubMilestone.Number,
+              milestone.Title,
+              milestone.Date,
+            );
+          }
+
+          return GitHubApp.EnvironmentInstance.Milestones.add(
             repository.Id,
-            concernedGitHubMilestone.Number,
             milestone.Title,
             milestone.Date,
           );

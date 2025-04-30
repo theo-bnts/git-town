@@ -98,7 +98,6 @@ export default class Token {
     const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
-          id,
           created_at,
           updated_at,
           user_id,
@@ -112,7 +111,7 @@ export default class Token {
     const user = await User.fromId(row.user_id);
 
     return new this(
-      row.id,
+      id,
       row.created_at,
       row.updated_at,
       user,
