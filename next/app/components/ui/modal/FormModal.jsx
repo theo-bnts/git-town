@@ -33,9 +33,11 @@ export default function FormModal({
       fields.reduce((acc, { name, value }) => ({ ...acc, [name]: value }), {});
   
     const [values, setValues] = useState(initValues());
+    const [isSubmitting, setIsSubmitting] = useState(false);
   
     useEffect(() => {
       if (isOpen) setValues(initValues());
+      setIsSubmitting(false);
     }, [isOpen, fields]);
   
     const change = (name, value) => {
@@ -60,9 +62,14 @@ export default function FormModal({
   
             <form
               className="space-y-4"
-              onSubmit={e => {
-                e.preventDefault();
-                onSubmit(values);
+              onSubmit={async e => {
+                  e.preventDefault();
+                  setIsSubmitting(true);
+                  try {
+                    await onSubmit(values);
+                  } finally {
+                    setIsSubmitting(false);
+                  }
               }}
             >
               {fields.map(({ name, options, render }) => (
@@ -104,8 +111,14 @@ export default function FormModal({
               ))}
   
               <div className="flex justify-center pt-2">
-                <Button variant="default" type="submit">
-                  <span className={textStyles.defaultWhite}>Enregistrer</span>
+              <Button
+                variant="default"
+                type="submit"
+                loading={isSubmitting}
+                >
+                  <span className={textStyles.defaultWhite}>
+                    {isSubmitting ? 'Enregistrement' : 'Enregistrer'}
+                  </span>
                 </Button>
               </div>
             </form>

@@ -1,18 +1,28 @@
-// app/services/auth.js
+function base64UrlEncode(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  for (const b of bytes) binary += String.fromCharCode(b);
+  const b64 = btoa(binary);
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
 
-import { Buffer } from "buffer";
+function base64UrlDecode(b64url) {
+  let b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+  b64 += '='.repeat((4 - (b64.length % 4)) % 4);
+  const binary = atob(b64);
+  const bytes = new Uint8Array([...binary].map(ch => ch.charCodeAt(0)));
+  return new TextDecoder().decode(bytes);
+}
 
 export function encodeUserInfo({ fullName, role }) {
-  const jsonString = JSON.stringify({ fullName, role });
-  return Buffer.from(jsonString, "utf8").toString("base64url");
+  const json = JSON.stringify({ fullName, role });
+  return base64UrlEncode(json);
 }
 
 export function decodeUserInfo(rawBase64Url) {
-  if (!rawBase64Url) {
-    return null;
-  }
+  if (!rawBase64Url) return null;
   try {
-    const jsonString = Buffer.from(rawBase64Url, "base64url").toString("utf8");
+    const jsonString = base64UrlDecode(rawBase64Url);
     return JSON.parse(jsonString);
   } catch {
     return null;

@@ -1,4 +1,5 @@
 'use client';
+
 import { useMemo, useState } from 'react';
 import useAuthToken from '@/app/hooks/useAuthToken';
 import savePromotions from '@/app/services/api/promotions/savePromotions';
