@@ -103,7 +103,6 @@ export default class Promotion {
     const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
-          id,
           created_at,
           updated_at,
           diploma_id,
@@ -119,7 +118,7 @@ export default class Promotion {
     const promotionLevel = await PromotionLevel.fromId(row.promotion_level_id);
 
     return new this(
-      row.id,
+      id,
       row.created_at,
       row.updated_at,
       diploma,
