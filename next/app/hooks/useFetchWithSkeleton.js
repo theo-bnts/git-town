@@ -1,4 +1,3 @@
-// app/hooks/useFetchWithSkeleton.js
 import { useState, useEffect, useCallback } from 'react';
 
 export default function useFetchWithSkeleton(fetcher) {

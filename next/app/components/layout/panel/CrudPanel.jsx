@@ -7,7 +7,6 @@ import Table from '@/app/components/layout/table/Table';
 import ConfirmCard from '@/app/components/ui/ConfirmCard';
 import Button from '@/app/components/ui/Button';
 import useCrudData from '@/app/hooks/useCrudData';
-import useAuthToken from '@/app/hooks/useAuthToken';
 
 export default function CrudPanel({
   columns,
