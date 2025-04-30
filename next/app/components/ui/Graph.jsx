@@ -6,7 +6,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   Legend, PieChart, Pie, Cell 
 } from 'recharts';
-import { cardStyles, textStyles, buttonStyles } from '@/app/styles/tailwindStyles';
+import { textStyles, buttonStyles } from '@/app/styles/tailwindStyles';
 
 export default function Graph({ 
   title, 
@@ -17,7 +17,7 @@ export default function Graph({
     color: 'var(--accent-color)', 
     name: 'Valeur' 
   }],
-  type = 'area', // 'area', 'line', 'bar', 'pie'
+  type = 'area',
   height = 300,
   gridLines = true,
   className = '',
@@ -30,8 +30,8 @@ export default function Graph({
   // Vérifier si le graphique a des données
   if (!data || data.length === 0) {
     return (
-      <div className={`${cardStyles.default} ${className}`}>
-        <h3 className={`${textStyles.bold} mb-4`}>{title}</h3>
+      <div className={className}>
+        {title && <h3 className={`${textStyles.bold} mb-4`}>{title}</h3>}
         <div className="flex items-center justify-center h-[200px]">
           <p className={textStyles.hint}>{emptyMessage}</p>
         </div>
@@ -43,17 +43,6 @@ export default function Graph({
   const commonProps = {
     data,
     margin: { top: 10, right: 30, left: 0, bottom: 5 }
-  };
-  
-  // Style pour le tooltip
-  const tooltipStyle = {
-    contentStyle: {
-      backgroundColor: 'var(--primary-color)',
-      border: '1px solid var(--accent-color)',
-      borderRadius: '12.5px',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.15)'
-    },
-    itemStyle: { color: 'var(--secondary-color)' }
   };
   
   // Configuration des axes
@@ -80,7 +69,7 @@ export default function Graph({
         opacity={0.3} 
       />
     ),
-    tooltip: <Tooltip {...tooltipStyle} />,
+    tooltip: <Tooltip />,
     legend: showLegend && <Legend />
   };
   
@@ -230,11 +219,13 @@ export default function Graph({
   );
 
   return (
-    <div className={`${cardStyles.default} ${className}`}>
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-        <h3 className={textStyles.bold}>{title}</h3>
-        {typeSelector}
-      </div>
+    <div className={className}>
+      {(title || showTypeSelector) && (
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
+          {title && <h3 className={textStyles.bold}>{title}</h3>}
+          {typeSelector}
+        </div>
+      )}
       <div style={{ height: `${height}px` }}>
         {renderChart()}
       </div>
