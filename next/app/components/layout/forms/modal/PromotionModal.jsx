@@ -1,169 +1,110 @@
-// /app/components/layout/forms/modal/PromotionModal.jsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { getCookie } from '@/app/services/cookies';
-import DynamicModal from '@/app/components/layout/forms/modal/DynamicModal';
+import { useMemo, useState } from 'react';
+import useAuthToken from '@/app/hooks/useAuthToken';
 import savePromotions from '@/app/services/api/promotions/savePromotions';
+import FormModal from '@/app/components/ui/modal/FormModal';
 
 const diplomaOptions = [
-  { id: 'MIAGE', name: 'MIAGE' }
+  { id: 'MIAGE', value: 'MIAGE' },
 ];
-const transformedDiplomaOptions = diplomaOptions.map(d => ({
-  id: d.id,
-  value: d.name
-}));
 
 const levelOptions = [
-  { id: 'M1', name: 'M1' },
-  { id: 'M2', name: 'M2' }
+  { id: 'M1', value: 'M1' },
+  { id: 'M2', value: 'M2' },
 ];
-const transformedLevelOptions = levelOptions.map(l => ({
-  id: l.id,
-  value: l.name
-}));
 
-export default function PromotionModal({ 
-  isOpen, 
-  initialData = {}, 
-  onClose, 
-  onSave, 
+export default function PromotionModal({
+  isOpen,
+  initialData = {},
+  onClose,
+  onSave,
 }) {
-  const [initialPromotion, setInitialPromotion] = useState(initialData);
+  const token = useAuthToken();
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
-  const [authToken, setAuthToken] = useState('');
 
-  const initialDiploma = initialData.Diploma && initialData.Diploma.Initialism
-    ? transformedDiplomaOptions.find(opt => opt.id === initialData.Diploma.Initialism)
-    : null;
-  const initialLevel = initialData.PromotionLevel && initialData.PromotionLevel.Initialism
-    ? transformedLevelOptions.find(opt => opt.id === initialData.PromotionLevel.Initialism)
-    : null;
+  const fields = useMemo(() => [
+    {
+      name: 'Diplôme',
+      options: diplomaOptions,
+      value: diplomaOptions.find(o => o.id === initialData.Diploma?.Initialism) || null,
+    },
+    {
+      name: 'Niveau',
+      options: levelOptions,
+      value: levelOptions.find(o => o.id === initialData.PromotionLevel?.Initialism) || null,
+    },
+    {
+      name: 'Année',
+      value: initialData.Year?.toString() || '',
+    },
+  ], [initialData]);
 
-  const fields = [
-    { label: "Diplôme", value: initialDiploma, options: transformedDiplomaOptions },
-    { label: "Niveau", value: initialLevel, options: transformedLevelOptions },
-    { label: "Année", value: initialData.Year || "" }
-  ];
-
-  useEffect(() => {
-    (async () => {
-      const token = await getCookie('token');
-      setAuthToken(token);
-    })();
-  }, []);
-
-  const validateFields = (fieldsValues) => {
-    let newErrors = {};
-    if (!fieldsValues["Diplôme"] || !fieldsValues["Diplôme"].id) {
-      newErrors["Diplôme"] = "Veuillez sélectionner un diplôme.";
-    }
-    if (!fieldsValues["Niveau"] || !fieldsValues["Niveau"].id) {
-      newErrors["Niveau"] = "Veuillez sélectionner un niveau.";
-    }
-    if (!fieldsValues["Année"]) {
-      newErrors["Année"] = "L'année est obligatoire.";
-    } else {
-      const yearVal = parseInt(fieldsValues["Année"], 10);
-      if (isNaN(yearVal)) {
-        newErrors["Année"] = "L'année doit être un nombre valide.";
-      } else if (yearVal < 2000 || yearVal > 2099) {
-        newErrors["Année"] = "L'année doit être comprise entre 2000 et 2099.";
-      }
-    }
-    return newErrors;
+  const validate = v => {
+    const e = {};
+    if (!v.Diplôme?.id) e.Diplôme = 'Veuillez sélectionner un diplôme.';
+    if (!v.Niveau?.id) e.Niveau = 'Veuillez sélectionner un niveau.';
+    if (!v.Année) e.Année = "L'année est obligatoire.";
+    else if (!/^\d{4}$/.test(v.Année)) e.Année = "L'année doit être un nombre à 4 chiffres.";
+    return e;
   };
 
-  const diffPromotion = (original, modified) => {
-    const diff = {};
-    const initialDiploma = (original.Diploma && original.Diploma.Initialism) || "";
-    if (initialDiploma.trim() !== modified.Diploma.Initialism.trim()) {
-      diff.Diploma = { Initialism: modified.Diploma.Initialism.trim() };
-    }
-    const initialLevel = (original.PromotionLevel && original.PromotionLevel.Initialism) || "";
-    if (initialLevel.trim() !== modified.PromotionLevel.Initialism.trim()) {
-      diff.PromotionLevel = { Initialism: modified.PromotionLevel.Initialism.trim() };
-    }
-    if (original.Year !== modified.Year) {
-      diff.Year = modified.Year;
-    }
-    return diff;
-  };
-
-  const handleSubmit = async (fieldsValues) => {
-    const newErrors = validateFields(fieldsValues);
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
+  const handleSubmit = async v => {
+    const e = validate(v);
+    if (Object.keys(e).length) { setErrors(e); return; }
     setErrors({});
-    setApiError('');
 
-    const selectedDiploma = fieldsValues["Diplôme"];
-    const selectedLevel = fieldsValues["Niveau"];
-    const yearVal = parseInt(fieldsValues["Année"], 10);
+    const year = parseInt(v.Année, 10);
+    let payload;
 
-    const modifiedPromotion = {
-      Diploma: { Initialism: selectedDiploma.id },
-      PromotionLevel: { Initialism: selectedLevel.id },
-      Year: yearVal
-    };
-
-    if (initialData && initialData.Id) {
-      const differences = diffPromotion(initialPromotion, modifiedPromotion);
-
-      if (Object.keys(differences).length === 0) {
+    if (initialData.Id) {
+      payload = {};
+      if (v.Diplôme.id !== initialData.Diploma.Initialism) {
+        payload.Diploma = { Initialism: v.Diplôme.id };
+      }
+      if (v.Niveau.id !== initialData.PromotionLevel.Initialism) {
+        payload.PromotionLevel = { Initialism: v.Niveau.id };
+      }
+      if (year !== initialData.Year) {
+        payload.Year = year;
+      }
+      if (Object.keys(payload).length === 0) {
         onClose();
         return;
       }
-      try {
-        await savePromotions(initialPromotion.Id, differences, authToken);
-        onSave();
-        onClose();
-      } catch (error) {
-        setApiError(error.message);
-      }
     } else {
-      try {
-        await savePromotions(null, modifiedPromotion, authToken);
-        onSave();
-        onClose();
-      } catch (error) {
-        setApiError(error.message);
-      }
+      payload = {
+        Diploma: { Initialism: v.Diplôme.id },
+        PromotionLevel: { Initialism: v.Niveau.id },
+        Year: year,
+      };
+    }
+
+    try {
+      await savePromotions(initialData.Id || null, payload, token);
+      onSave();
+      onClose();
+    } catch (err) {
+      setApiError(err.message);
     }
   };
 
-  const handleClose = () => {
-    setErrors({});
-    setApiError('');
-    onClose();
-  };
-
-  const clearApiError = () => {
-    setApiError('');
-  };
-
-  const clearError = (label) => {
-    setErrors(prev => ({ ...prev, [label]: "" }));
-    if (apiError) setApiError('');
-  };
-
   return (
-    <DynamicModal 
-      metadata={{ 
-        createdAt: initialData.createdAt, 
-        updatedAt: initialData.updatedAt 
+    <FormModal
+      formKey={`${initialData.Id || 'new'}-${isOpen}`}
+      isOpen={isOpen}
+      title={initialData.Id ? 'Modifier la promotion' : 'Nouvelle promotion'}
+      metadata={{
+        createdAt: initialData.CreatedAt,
+        updatedAt: initialData.UpdatedAt,
       }}
+      fields={fields}
       errors={errors}
       apiError={apiError}
-      clearApiError={clearApiError}
-      fields={fields} 
-      isOpen={isOpen}
-      onClose={handleClose} 
+      onClearApiError={() => setApiError('')}
+      onClose={onClose}
       onSubmit={handleSubmit}
-      onClearError={clearError}
     />
   );
 }

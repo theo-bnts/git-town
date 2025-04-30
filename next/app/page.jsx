@@ -1,28 +1,16 @@
 // app/page.jsx
 
-import React from 'react';
-import { cookies } from 'next/headers';
-import getUser from '@/app/services/api/users/id/getUser';
-import PanelManager from '@/app/components/layout/PanelManager';
-
-async function getCookieValue(key) {
-  const cookieStore = await cookies();
-  return cookieStore.get(key)?.value;
-}
+import React from "react";
+import { cookies } from "next/headers";
+import PanelManager from "@/app/components/layout/PanelManager";
+import { decodeUserInfo } from "@/app/services/auth";
 
 export default async function HomePage() {
-  const token = await getCookieValue("token");
-  const userId = await getCookieValue("userId");
+  const cookieStore = await cookies();
+  const rawUserInfo = cookieStore.get("userInfo")?.value;
 
-  let fullName = null;
-  if (token && userId) {
-    try {
-      const userData = await getUser(userId, token);
-      fullName = userData.FullName;
-    } catch (error) {
-      console.error("Erreur lors de la récupération de l'utilisateur", error);
-    }
-  }
+  const decodedInfo = decodeUserInfo(rawUserInfo) ?? {};
+  const { fullName = null, role = null } = decodedInfo;
 
-  return <PanelManager fullName={fullName} />;
+  return <PanelManager fullName={fullName} role={role} />;
 }

@@ -5,18 +5,22 @@ import { API_ERRORS } from "@/app/services/errorCodes";
  * Gestion des erreurs API
  * 
  * @param {Response} res - La réponse de l'API
- * @param {object} data - Les données de la réponse
- * @returns {object} - L'erreur
+ * @param {object} data - Le JSON retourné par l’API
+ * @throws {Error} - Avec le message construit
  */
 export function handleApiError(res, data) {
   const status = res.status;
+  const key = data.error;
 
-  if (data.error && API_ERRORS[status] && API_ERRORS[status][data.error]) {
-    throw new Error(API_ERRORS[status][data.error]);
+  if (key && API_ERRORS[status]?.[key]) {
+    throw new Error(API_ERRORS[status][key]);
   }
-  
-  if (API_ERRORS[status] && API_ERRORS[status].default) {
-    throw new Error(API_ERRORS[status].default);
+
+  const defaultMsg = API_ERRORS[status]?.default;
+  if (defaultMsg) {
+    console.log(data);
+    const suffix = key ? ` : ${key}` : '';
+    throw new Error(defaultMsg + suffix);
   }
 
   throw new Error(`Oups, une erreur s'est produite (code ${status}).`);

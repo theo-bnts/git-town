@@ -21,10 +21,10 @@ export default function LinkOrgForm({ router }) {
 
   useEffect(() => {
     async function fetchCookies() {
-      const uid = await getCookie('userId');
-      const tok = await getCookie('token');
-      setUserId(uid);
-      setToken(tok);
+      const userId = await getCookie('userId');
+      const token = await getCookie('token');
+      setUserId(userId);
+      setToken(token);
     }
     fetchCookies();
   }, []);
