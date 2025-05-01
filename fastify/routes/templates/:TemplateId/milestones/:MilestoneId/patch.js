@@ -66,7 +66,6 @@ export default async function route(app) {
       const milestone = await Milestone.fromId(milestoneId);
 
       const oldTitle = milestone.Title;
-      const oldDate = milestone.Date;
 
       if (title) {
         if (title === milestone.Title) {
