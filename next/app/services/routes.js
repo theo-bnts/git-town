@@ -43,3 +43,21 @@ export const delTokenRoute = (userId, tokenId) =>
 
 export const deleteUserPromotionRoute = (userId, userPromotionId) =>
   `${API_BASE_URL}/users/${userId}/promotions/${userPromotionId}`;
+
+export const enseignementUnitsRoute = () =>
+  `${API_BASE_URL}/enseignement-units`;
+
+export const enseignementUnitRoute = (unitId) =>
+  `${API_BASE_URL}/enseignement-units/${unitId}`;
+
+export const templatesRoute = () =>
+  `${API_BASE_URL}/templates`;
+
+export const templateRoute = (templateId) =>
+  `${API_BASE_URL}/templates/${templateId}`;
+
+export const templateMilestonesRoute = (tplId) =>
+  `${API_BASE_URL}/templates/${tplId}/milestones`;
+
+export const templateMilestoneRoute  = (tplId, msId) =>
+  `${API_BASE_URL}/templates/${tplId}/milestones/${msId}`;

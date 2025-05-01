@@ -1,8 +1,10 @@
 import AuthorizationMiddleware from '../../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import ParametersMiddleware from '../../../../../entities/tools/Middleware/ParametersMiddleware.js';
 import Promotion from '../../../../../entities/Promotion.js';
+import Repository from '../../../../../entities/Repository.js';
 import User from '../../../../../entities/User.js';
 import UserPromotion from '../../../../../entities/UserPromotion.js';
+import UserRepository from '../../../../../entities/UserRepository.js';
 
 export default async function route(app) {
   app.route({
@@ -52,6 +54,18 @@ export default async function route(app) {
       if (user.Role.Keyword !== 'student') {
         throw { statusCode: 409, error: 'NOT_STUDENT_ROLE' };
       }
+
+      const userRepositories = await UserRepository.fromUser(user);
+
+      await Promise.all(
+        userRepositories.map(async (userRepository) => {
+          const repository = await Repository.fromId(userRepository.Id);
+
+          if (repository.Promotion.Id === promotion.Id) {
+            throw { statusCode: 409, error: 'HAS_USER_REPOSITORY' };
+          }
+        }),
+      );
 
       const userPromotion = await UserPromotion.fromUserAndPromotion(user, promotion);
 

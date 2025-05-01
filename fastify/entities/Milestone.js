@@ -121,7 +121,6 @@ export default class Milestone {
     const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
         SELECT
-          id,
           created_at,
           updated_at,
           template_id,

@@ -93,7 +93,6 @@ export default class UserPromotion {
           id,
           created_at,
           updated_at,
-          user_id,
           promotion_id
         FROM public.user_promotion
         WHERE user_id = $1::uuid

@@ -90,14 +90,14 @@ export default class Repository {
     this.UpdatedAt = row.updated_at;
   }
 
-  toStudentJSON() {
+  toJSON() {
     return {
-      id: this.Id,
-      createdAt: this.CreatedAt,
-      updatedAt: this.UpdatedAt,
-      archivedAt: this.ArchivedAt,
-      template: this.Template,
-      promotion: this.Promotion,
+      Id: this.Id,
+      CreatedAt: this.CreatedAt,
+      UpdatedAt: this.UpdatedAt,
+      ArchivedAt: this.ArchivedAt,
+      Template: this.Template,
+      Promotion: this.Promotion,
     };
   }
 
@@ -178,7 +178,6 @@ export default class Repository {
           repository.created_at,
           repository.updated_at,
           repository.archived_at,
-          repository.template_id,
           repository.promotion_id,
           repository.comment
         FROM public.repository

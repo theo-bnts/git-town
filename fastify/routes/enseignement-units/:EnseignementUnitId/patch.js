@@ -70,6 +70,10 @@ export default async function route(app) {
           throw { statusCode: 409, error: 'SAME_NAME' };
         }
 
+        if (await EnseignementUnit.isNameInserted(name)) {
+          throw { statusCode: 409, error: 'DUPLICATE_NAME' };
+        }
+
         enseignementUnit.Name = name;
       }
 

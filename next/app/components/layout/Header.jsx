@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { SignOutIcon, ThreeBarsIcon } from "@primer/octicons-react";
 import { useRouter } from "next/navigation";
@@ -46,7 +46,8 @@ export default function Header({
       await removeCookie("token");
       await removeCookie("userId");
       await removeCookie("tokenId");
-
+      await removeCookie("userInfo");
+      
       router.replace("/login");
     } catch (error) {
       console.error("Erreur lors de la déconnexion", error);
@@ -71,7 +72,7 @@ export default function Header({
 
           <div className="flex items-center space-x-4">
             <p className={`${textStyles.bold} text-xl`}>{displayName}</p>
-            <Button variant="action_sq_warn" onClick={handleSignOut}>
+            <Button variant="action_icon_warn" onClick={handleSignOut}>
               <SignOutIcon size={24} />
             </Button>
           </div>
@@ -95,7 +96,7 @@ export default function Header({
               </li>
             );
           })}
-        </ul>        
+        </ul>
         )}
       </div>
     </Card>

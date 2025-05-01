@@ -14,6 +14,7 @@ export const API_ERRORS = {
   403: {
     INSUFFICIENT_PERMISSIONS: "(403) : Permissions insuffisantes.",
     USER_ID_MISMATCH: "(403) : L’identifiant utilisateur ne correspond pas.",
+    SELF_ROLE: "(403) : Modification de votre propre rôle non autorisée.",
     default: "(403) : Accès refusé.",
   },
   404: {
@@ -34,7 +35,12 @@ export const API_ERRORS = {
     DUPLICATE_GITHUB_ID: "(409) : GitHub ID déjà utilisé.",
     NOT_STUDENT_ROLE : "(409) : Le rôle n’est pas étudiant.",
     SAME_DIPLOMA_INITIALISM: "(409) : Même Diplôme selectionné.",
+    DUPLICATE_INITIALISM: "(409) : Sigle déjà utilisé.",
     DUPLICATE: "(409) : Configuration déjà existante.",
+    SAME_TITLE: "(409) : Même titre déjà utilisé.",
+    DUPLICATE_TITLE: "(409) : Titre déjà utilisé.",
+    DATE_OUT_OF_RANGE: "(409) : Date hors des contraintes.",
+    YEAR_UNEDITABLE_WHILE_LINKED_TO_REPOSITORIES: "(409) : Année non modifiable car liée à des dépôts.",
     default: "(409) : Conflit de requête.",
   },
   429: {
