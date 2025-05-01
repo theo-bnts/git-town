@@ -61,3 +61,6 @@ export const templateMilestonesRoute = (tplId) =>
 
 export const templateMilestoneRoute  = (tplId, msId) =>
   `${API_BASE_URL}/templates/${tplId}/milestones/${msId}`;
+
+export const repositoryStatisticsRoute = (repositoryId) =>
+  `${API_BASE_URL}/repositories/${repositoryId}/statistics`;

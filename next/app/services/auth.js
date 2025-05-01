@@ -1,3 +1,5 @@
+import { getCookie } from '@/app/services/cookies';
+
 function base64UrlEncode(str) {
   const bytes = new TextEncoder().encode(str);
   let binary = '';
@@ -27,4 +29,20 @@ export function decodeUserInfo(rawBase64Url) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Effectue un fetch en ajoutant automatiquement le token d'authentification.
+ * @param {string} url
+ * @param {object} [options]
+ * @returns {Promise<Response>}
+ */
+export async function fetchWithAuth(url, options = {}) {
+  // Récupère le token depuis les cookies (adapté à ton projet)
+  const token = await getCookie('token');
+  const headers = {
+    ...(options.headers || {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+  return fetch(url, { ...options, headers });
 }
