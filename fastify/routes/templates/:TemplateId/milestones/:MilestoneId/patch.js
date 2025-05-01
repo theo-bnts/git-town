@@ -111,9 +111,6 @@ export default async function route(app) {
 
           const concernedGitHubMilestone = gitHubMilestones.find((gitHubMilestone) => (
             gitHubMilestone.Title === oldTitle
-            && DateTime
-              .fromJSDate(gitHubMilestone.Date)
-              .hasSame(DateTime.fromJSDate(oldDate), 'day')
           ));
 
           if (concernedGitHubMilestone !== undefined) {
