@@ -7,5 +7,7 @@ export const expectedShape = {
         Counts: true,
       },
     },
+    Languages: true,
   },
+  Users: true,
 };

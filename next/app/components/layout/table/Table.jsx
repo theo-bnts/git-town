@@ -142,16 +142,18 @@ export default function Table({ columns, data, toolbarContents }) {
 
   return (
     <>
-      <TableToolbar>
-        <div className="flex flex-col gap-4 md:flex-row md:items-center">
-          <div className="flex items-center gap-4">
-            {toolbarContents}
+      {toolbarContents !== null && (
+        <TableToolbar>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+            <div className="flex items-center gap-4">
+              {toolbarContents}
+            </div>
+            <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {filterComboboxes}
+            </div>
           </div>
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filterComboboxes}
-          </div>
-        </div>
-      </TableToolbar>
+        </TableToolbar>
+      )}
   
       <div ref={containerRef} className="overflow-x-auto overflow-y-auto w-full h-full">
         <table>

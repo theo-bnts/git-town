@@ -7,12 +7,13 @@ import UsersPanel from '@/app/components/layout/panel/UsersPanel';
 import PromotionPanel from '@/app/components/layout/panel/PromotionsPanel';
 import EnseignementUnitPanel from '@/app/components/layout/panel/EnseignementUnitPanel';
 import TemplatePanel from '@/app/components/layout/panel/TemplatePanel';
+import RepositoryPanel from './panel/RepositoryPanel';
 
 export default function PanelManager({ fullName, role }) {
   const navbarItems = [
     { label: "Utilisateurs", component: UsersPanel },
     { label: "Promotions", component: PromotionPanel },
-    { label: "Dépots", component: () => <div>Future Dépots Panel</div> },
+    { label: "Dépots", component: RepositoryPanel },
     { label: "Modèles", component: TemplatePanel },
     { label: "UE", component: EnseignementUnitPanel },
   ];
