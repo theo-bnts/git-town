@@ -60,7 +60,7 @@ export default function RepositoryPanel() {
   return (
     <div className="flex flex-col items-center justify-center h-full">
       <Button variant="default" onClick={handleOpen}>
-        Voir les statistiques du dépôt test
+        Voir les statistiques du dépôt {repositoryId}
       </Button>
       <RepositoryStatsModal
         isOpen={modalOpen}
