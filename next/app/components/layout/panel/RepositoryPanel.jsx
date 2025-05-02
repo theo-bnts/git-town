@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Button from '@/app/components/ui/Button';
+
+import RepositoryStatsModal from '@/app/components/ui/modal/statistics/RepositoryStatsModal';
+
 import { fetchRepositoryStatistics } from '@/app/services/api/repositories/fetchRepositoryStatistics';
-import RepositoryStatsModal from '@/app/components/ui/modal/RepositoryStatsModals';
 
 export default function RepositoryPanel() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -23,7 +25,10 @@ export default function RepositoryPanel() {
       let retry = true;
       let lastData = null;
       while (retry && tries < maxRetries && !cancelled) {
-        const res = await fetchRepositoryStatistics(repositoryId, { retryDelay: 0, maxRetries: 1 });
+        const res = await fetchRepositoryStatistics(
+          repositoryId, 
+          { retryDelay: 0, maxRetries: 1 }
+        );
         setStats(res.data);
         setLoading(res.loading);
         lastData = res.data;
