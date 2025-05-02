@@ -15,8 +15,8 @@ export default function RepositoryPanel() {
   useEffect(() => {
     let cancelled = false;
     let tries = 0;
-    const maxRetries = Number(process.env.NEXT_PUBLIC_MAX_RETRIES ?? 6);
-    const retryDelay = Number(process.env.NEXT_PUBLIC_RETRY_DELAY ?? 2000);
+    const maxRetries = Number(process.env.NEXT_PUBLIC_MAX_RETRIES);
+    const retryDelay = Number(process.env.NEXT_PUBLIC_RETRY_DELAY);
 
     async function loadStats() {
       setLoading(true);

@@ -6,8 +6,8 @@ import { hasAllProperties } from '@/app/utils/objectUtils';
 export async function fetchRepositoryStatistics(
   repositoryId,
   { 
-    retryDelay = Number(process.env.NEXT_PUBLIC_MAX_DELAY ?? 2000), 
-    maxRetries = Number(process.env.NEXT_PUBLIC_MAX_RETRIES ?? 6), 
+    retryDelay = Number(process.env.NEXT_PUBLIC_MAX_DELAY), 
+    maxRetries = Number(process.env.NEXT_PUBLIC_MAX_RETRIES), 
     signal 
   } = {},
 ) {
