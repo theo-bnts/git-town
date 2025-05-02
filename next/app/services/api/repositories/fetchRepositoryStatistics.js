@@ -1,9 +1,15 @@
 import { fetchWithAuth } from '@/app/services/auth';
 import { repositoryStatisticsRoute } from '@/app/services/routes';
+import { expectedShape } from './expectedRepositoryStatisticsShape';
+import { hasAllProperties } from '@/app/utils/objectUtils';
 
 export async function fetchRepositoryStatistics(
   repositoryId,
-  { retryDelay = 20000, maxRetries = 5, signal } = {},
+  { 
+    retryDelay = Number(process.env.NEXT_PUBLIC_MAX_DELAY ?? 2000), 
+    maxRetries = Number(process.env.NEXT_PUBLIC_MAX_RETRIES ?? 6), 
+    signal 
+  } = {},
 ) {
   let retries = 0;
 
@@ -13,15 +19,7 @@ export async function fetchRepositoryStatistics(
     if (!res.ok) throw new Error('Erreur lors de la récupération des statistiques');
     const data = await res.json();
 
-    const hasUndefined = (obj) => {
-      if (obj === undefined) return true;
-      if (obj && typeof obj === 'object') {
-        return Object.values(obj).some(hasUndefined);
-      }
-      return false;
-    };
-
-    if (hasUndefined(data)) {
+    if (!hasAllProperties(data, expectedShape)) {
       if (retries < maxRetries) {
         retries++;
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
