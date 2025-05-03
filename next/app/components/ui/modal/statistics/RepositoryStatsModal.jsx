@@ -20,6 +20,34 @@ export default function RepositoryStatsModal({ isOpen, onClose, stats, loading }
     user => user.Commits?.Weekly?.Counts?.some(count => count > 0)
   );
 
+  // Fonction pour calculer le total des commits d'un utilisateur
+  const calculateUserTotals = (user) => {
+    if (!user || !user.Commits?.Weekly?.Counts) {
+      return { totalCommits: 0, addedLines: 0, deletedLines: 0 };
+    }
+    
+    // Calcul du total des commits
+    const totalCommits = user.Commits.Weekly.Counts.reduce((sum, count) => sum + count, 0);
+    
+    // Calcul des lignes ajoutées/supprimées - vérification des 2 structures possibles
+    let addedLines = 0;
+    let deletedLines = 0;
+    
+    // Cas 1: Total directement disponible
+    if (user.Lines?.Total) {
+      addedLines = user.Lines.Total.Additions || 0;
+      deletedLines = user.Lines.Total.Deletions || 0;
+    } 
+    // Cas 2: Calcul à partir des données hebdomadaires (comme dans ContributionsTable)
+    else if (user.Lines?.Weekly?.Counts) {
+      const lineCounts = user.Lines.Weekly.Counts;
+      addedLines = lineCounts.reduce((sum, week) => sum + (week.Additions || 0), 0);
+      deletedLines = lineCounts.reduce((sum, week) => sum + (week.Deletions || 0), 0);
+    }
+    
+    return { totalCommits, addedLines, deletedLines };
+  };
+
   return (
     <div className="fixed inset-0 bg-[var(--popup-color)] flex items-center justify-center z-50 overflow-hidden">
       <div className="w-full h-full overflow-y-auto py-6 lg:py-8">
@@ -96,7 +124,7 @@ export default function RepositoryStatsModal({ isOpen, onClose, stats, loading }
               <div className="w-full xl:col-span-1">
                 <Card variant="default" className="p-3 lg:p-4 w-full h-full">
                   <div className="space-y-3 lg:space-y-4">
-                    <h3 className="text-lg font-bold leading-none">Commits par utilisateur</h3>
+                    <h3 className="text-lg font-bold leading-none">Contributions par utilisateur</h3>
                     
                     {!hasUserCommits ? (
                       <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
@@ -104,19 +132,41 @@ export default function RepositoryStatsModal({ isOpen, onClose, stats, loading }
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 gap-4">
-                        {stats.Users && stats.Users.map((user, index) => (
-                          <div key={user.User?.Id || index} className="bg-gray-50 p-3 rounded-lg overflow-hidden">
-                            <p className="text-sm font-medium mb-2">
-                              {user.User?.FullName || `Utilisateur ${index + 1}`}
-                            </p>
-                            <CommitsGraph 
-                              commits={user.Commits} 
-                              loading={false}
-                              hideTitle={true}
-                              height={180}
-                            />
-                          </div>
-                        ))}
+                        {stats.Users && stats.Users.map((user, index) => {
+                          const { totalCommits, addedLines, deletedLines } = calculateUserTotals(user);
+                          
+                          return (
+                            <div key={user.User?.Id || index} className="bg-gray-50 p-3 rounded-lg overflow-hidden">
+                              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-1">
+                                <p className="text-sm font-medium">
+                                  {user.User?.FullName || `Utilisateur ${index + 1}`}
+                                </p>
+                                <div className="flex flex-wrap items-center gap-2 text-xs">
+                                  <span className="px-2 py-0.5 bg-gray-200 rounded-full text-gray-700 font-mono">
+                                    {totalCommits} commits
+                                  </span>
+                                  {addedLines > 0 && (
+                                    <span className="px-2 py-0.5 bg-green-100 rounded-full text-green-700 font-mono">
+                                      {addedLines} ++
+                                    </span>
+                                  )}
+                                  {deletedLines > 0 && (
+                                    <span className="px-2 py-0.5 bg-red-100 rounded-full text-red-700 font-mono">
+                                      {deletedLines} --
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <CommitsGraph 
+                                commits={user.Commits} 
+                                loading={false}
+                                hideTitle={true}
+                                height={180}
+                                showLegend={true}
+                              />
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

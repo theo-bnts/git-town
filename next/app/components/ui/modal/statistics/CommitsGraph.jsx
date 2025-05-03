@@ -53,7 +53,7 @@ export default function CommitsGraph({
             }]}
             type="area"
             height={height}
-            showLegend={false}
+            showLegend={true}
             showTypeSelector={!hideTitle}
             emptyMessage={loading ? "Chargement des données..." : "Aucune donnée à afficher"}
           />
