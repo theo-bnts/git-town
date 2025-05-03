@@ -76,15 +76,15 @@ export default function RepositoryStatsModal({ isOpen, onClose, stats, loading }
             </div>
           )}
 
-          {stats && (
+          {!loading && stats && (
             <div className="space-y-6">
               <LanguagesSection languages={stats.Global?.Languages} />
-              <CommitsGraph commits={stats.Global?.Commits} loading={loading} />
+              <CommitsGraph commits={stats.Global?.Commits} loading={false} />
               <ContributionsTable users={stats.Users} />
             </div>
           )}
 
-          {!stats && !loading && (
+          {!loading && !stats && (
             <div className="text-center text-gray-500">
               Aucune donnée à afficher.
             </div>
