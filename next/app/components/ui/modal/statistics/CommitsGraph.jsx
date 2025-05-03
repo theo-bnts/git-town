@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import Graph from '@/app/components/ui/Graph';
+import { textStyles } from '@/app/styles/tailwindStyles';
 
 /**
  * Affiche un graphique des commits par semaine
@@ -9,8 +10,17 @@ import Graph from '@/app/components/ui/Graph';
  * @param {Object} props - Propriétés du composant
  * @param {Object} props.commits - Données de commits
  * @param {boolean} props.loading - État de chargement
+ * @param {string} props.title - Titre du graphique
+ * @param {boolean} props.hideTitle - Si le titre doit être caché
+ * @param {number} props.height - Hauteur du graphique
  */
-export default function CommitsGraph({ commits, loading }) {
+export default function CommitsGraph({ 
+  commits, 
+  loading,
+  title = "Commits par semaine",
+  hideTitle = false,
+  height = 260 
+}) {
   const weeklyData = useMemo(() => {
     if (!commits?.Weekly?.Counts) return [];
     
@@ -24,29 +34,30 @@ export default function CommitsGraph({ commits, loading }) {
     }));
   }, [commits]);
 
+  const hasData = weeklyData && weeklyData.length > 0 && weeklyData.some(item => item.commits > 0);
+
   return (
-    <div className="overflow-x-auto">
-      <div className="min-w-[500px]">
-        <Graph
-          title="Nombre de commits par semaine"
-          data={weeklyData}
-          xAxisKey="semaine"
-          series={[
-            {
+    <div className="overflow-x-auto w-full">
+      <div className={`w-full ${!hasData ? 'h-36 flex items-center justify-center' : ''}`}>
+        {!hasData && !loading ? (
+          <p className="text-gray-500 text-center">Aucune donnée à afficher</p>
+        ) : (
+          <Graph
+            title={!hideTitle ? title : ""}
+            data={weeklyData}
+            xAxisKey="semaine"
+            series={[{
               dataKey: 'commits',
               color: 'var(--accent-color)',
               name: 'Commits',
-            },
-          ]}
-          type="area"
-          height={260}
-          showLegend={false}
-          showTypeSelector={true}
-          emptyMessage={loading 
-            ? "Chargement des données..." 
-            : "Aucune donnée à afficher"
-          }
-        />
+            }]}
+            type="area"
+            height={height}
+            showLegend={false}
+            showTypeSelector={!hideTitle}
+            emptyMessage={loading ? "Chargement des données..." : "Aucune donnée à afficher"}
+          />
+        )}
       </div>
     </div>
   );

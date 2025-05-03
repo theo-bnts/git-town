@@ -5,7 +5,7 @@ import Card from '@/app/components/ui/Card';
 import { textStyles } from '@/app/styles/tailwindStyles';
 
 /**
- * Affiche une infobulle avec un message personnalisable
+ * Affiche une infobulle avec un message personnalisable et responsive
  * 
  * @param {Object} props - Propriétés du composant
  * @param {boolean} props.show - Si l'infobulle doit être affichée
@@ -19,17 +19,18 @@ export default function InfoTooltip({
   text,
   children,
   position = "top-8 left-0",
-  width = "w-80",
   variant = "success" 
 }) {
   if (!show) return null;
   
   const content = text || children;
-  
+
   return (
-    <div className={`absolute ${position} z-50 ${width}`}>
-      <Card variant={variant}>
-        <p className={textStyles.defaultWhite}>
+    <div className={`absolute z-50 ${position} 
+      w-60 sm:w-72 md:w-80 lg:w-96
+      max-w-[95vw] sm:max-w-[80vw]`}>
+      <Card variant={variant} className="p-3">
+        <p className={`${textStyles.defaultWhite} text-sm sm:text-base`}>
           {content}
         </p>
       </Card>
