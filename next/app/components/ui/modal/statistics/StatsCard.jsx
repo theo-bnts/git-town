@@ -62,6 +62,7 @@ export default function StatsCard({ stats, onClose }) {
             loading={false}
             title="Commits de l'équipe par semaine"
             height={220}
+            showTypeSelector={true}
           />
         </div>
         

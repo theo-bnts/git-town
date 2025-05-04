@@ -66,9 +66,9 @@ export default function RepositoryStatsModal({
                 </div>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 2xl:grid-cols-3 gap-4 2xl:gap-6">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 xl:gap-6">
                 {retry && (
-                  <div className="col-span-1 2xl:col-span-3 bg-yellow-50 
+                  <div className="col-span-1 xl:col-span-2 bg-yellow-50 
                   border-l-4 border-yellow-400 p-4">
                     <div className="flex">
                       <div className="flex-shrink-0">
@@ -84,11 +84,11 @@ export default function RepositoryStatsModal({
                   </div>
                 )}
 
-                <div className="w-full 2xl:col-span-2">
+                <div className="w-full">
                   <StatsCard stats={stats} onClose={onClose} isPartial={retry} />
                 </div>
 
-                <div className="w-full 2xl:col-span-1">
+                <div className="w-full">
                   <UserContributionsCard 
                     users={stats.Users} 
                     hasUserCommits={hasUserCommits} 

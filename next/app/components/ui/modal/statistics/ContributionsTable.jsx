@@ -14,7 +14,7 @@ const calculateRatio = (additions, deletions) => {
   if (deletions === 0) {
     return additions > 0 ? "∞" : 0;
   }
-  return Math.round((additions / deletions) * 100) / 100;
+  return Math.round((additions / deletions) * 10) / 10;
 };
 
 /**

@@ -36,17 +36,19 @@ export default function UserContributionCard({ user, calculateUserTotals, index 
           )}
           {(addedLines > 0 || deletedLines > 0) && (
             <span className="px-2 py-0.5 bg-blue-100 rounded-full text-blue-700 font-mono">
-              {ratio === Infinity ? "∞" : ratio} ratio
+              {ratio === Infinity ? "∞" : ratio.toFixed(1)} ratio
             </span>
           )}
         </div>
       </div>
       <CommitsGraph 
         commits={user.Commits} 
+        lines={user.Lines}
         loading={false}
         hideTitle={true}
         height={180}
         showLegend={true}
+        showLinesData={true}
       />
     </div>
   );

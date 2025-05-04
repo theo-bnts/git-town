@@ -23,11 +23,11 @@ export default function Graph({
   className = '',
   showLegend = true,
   emptyMessage = 'Aucune donnée disponible',
-  showTypeSelector = false
+  showTypeSelector = false,
+  multipleYAxis = false
 }) {
   const [chartType, setChartType] = useState(type);
   
-  // Vérifier si le graphique a des données
   if (!data || data.length === 0) {
     return (
       <div className={className}>
@@ -39,13 +39,18 @@ export default function Graph({
     );
   }
   
-  // Configuration commune pour tous les graphiques
   const commonProps = {
     data,
     margin: { top: 10, right: 30, left: 0, bottom: 5 }
   };
+
+  const hasMultipleYAxis = multipleYAxis && series.some(s => s.yAxisId === 'right');
+
+  const normalizedSeries = series.map(s => ({
+    ...s,
+    yAxisId: s.yAxisId || 'left'
+  }));
   
-  // Configuration des axes
   const axisProps = {
     xAxis: (
       <XAxis 
@@ -55,8 +60,25 @@ export default function Graph({
         tickLine={{ stroke: 'var(--hint-color)' }}
       />
     ),
-    yAxis: (
+    yAxis: hasMultipleYAxis ? [
       <YAxis 
+        key="left"
+        yAxisId="left"
+        tick={{ fill: 'var(--secondary-color)' }}
+        axisLine={{ stroke: 'var(--hint-color)' }}
+        tickLine={{ stroke: 'var(--hint-color)' }}
+      />,
+      <YAxis 
+        key="right"
+        yAxisId="right"
+        orientation="right"
+        tick={{ fill: 'var(--secondary-color)' }}
+        axisLine={{ stroke: 'var(--hint-color)' }}
+        tickLine={{ stroke: 'var(--hint-color)' }}
+      />
+    ] : (
+      <YAxis 
+        yAxisId="left"
         tick={{ fill: 'var(--secondary-color)' }}
         axisLine={{ stroke: 'var(--hint-color)' }}
         tickLine={{ stroke: 'var(--hint-color)' }}
@@ -73,7 +95,6 @@ export default function Graph({
     legend: showLegend && <Legend />
   };
   
-  // Fonction pour rendre le graphique en fonction du type choisi
   const renderChart = () => {
     switch(chartType) {
       case 'area':
@@ -82,10 +103,10 @@ export default function Graph({
             <AreaChart {...commonProps}>
               {axisProps.grid}
               {axisProps.xAxis}
-              {axisProps.yAxis}
+              {hasMultipleYAxis ? axisProps.yAxis : axisProps.yAxis}
               {axisProps.tooltip}
               {axisProps.legend}
-              {series.map((s, index) => (
+              {normalizedSeries.map((s, index) => (
                 <Area
                   key={`area-${index}`}
                   type="monotone"
@@ -95,6 +116,7 @@ export default function Graph({
                   fill={s.color}
                   fillOpacity={0.2}
                   strokeWidth={2}
+                  yAxisId={s.yAxisId}
                   dot={{
                     r: 4,
                     fill: 'var(--primary-color)',
@@ -119,10 +141,10 @@ export default function Graph({
             <LineChart {...commonProps}>
               {axisProps.grid}
               {axisProps.xAxis}
-              {axisProps.yAxis}
+              {hasMultipleYAxis ? axisProps.yAxis : axisProps.yAxis}
               {axisProps.tooltip}
               {axisProps.legend}
-              {series.map((s, index) => (
+              {normalizedSeries.map((s, index) => (
                 <Line
                   key={`line-${index}`}
                   type="monotone"
@@ -130,6 +152,7 @@ export default function Graph({
                   name={s.name}
                   stroke={s.color}
                   strokeWidth={2}
+                  yAxisId={s.yAxisId}
                   dot={{
                     r: 4,
                     fill: 'var(--primary-color)',
@@ -154,15 +177,16 @@ export default function Graph({
             <BarChart {...commonProps}>
               {axisProps.grid}
               {axisProps.xAxis}
-              {axisProps.yAxis}
+              {hasMultipleYAxis ? axisProps.yAxis : axisProps.yAxis}
               {axisProps.tooltip}
               {axisProps.legend}
-              {series.map((s, index) => (
+              {normalizedSeries.map((s, index) => (
                 <Bar
                   key={`bar-${index}`}
                   dataKey={s.dataKey}
                   name={s.name}
                   fill={s.color}
+                  yAxisId={s.yAxisId}
                   radius={[4, 4, 0, 0]}
                 />
               ))}
@@ -177,7 +201,7 @@ export default function Graph({
               <Pie
                 data={data}
                 nameKey={xAxisKey}
-                dataKey={series[0].dataKey}
+                dataKey={normalizedSeries[0].dataKey}
                 cx="50%"
                 cy="50%"
                 outerRadius={80}
@@ -186,7 +210,7 @@ export default function Graph({
                 {data.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={series[Math.min(index, series.length - 1)].color} 
+                    fill={normalizedSeries[Math.min(index, normalizedSeries.length - 1)].color} 
                   />
                 ))}
               </Pie>
@@ -201,7 +225,6 @@ export default function Graph({
     }
   };
   
-  // Sélecteur de type de graphique
   const typeSelector = showTypeSelector && (
     <div className="flex flex-wrap gap-2 mb-4">
       {['area', 'line', 'bar', 'pie'].map(t => (
