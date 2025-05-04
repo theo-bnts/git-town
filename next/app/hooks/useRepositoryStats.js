@@ -49,5 +49,33 @@ export function useRepositoryStats(stats) {
     return { totalCommits, addedLines, deletedLines, ratio };
   }, []);
 
-  return { hasUserCommits, calculateUserTotals };
+  const calculateTeamTotals = useCallback(() => {
+    if (!stats?.Global) {
+      return { totalCommits: 0, totalPullRequests: 0, addedLines: 0, deletedLines: 0 };
+    }
+    
+    const commitsArray = stats.Global.Commits?.Weekly?.Counts || [];
+    const totalCommits = commitsArray.reduce((sum, count) => sum + (Number.isFinite(count) ? count : 0), 0);
+    
+    const totalPullRequests = (stats.Global.PullRequests?.Open || 0) + 
+                              (stats.Global.PullRequests?.Closed || 0);
+    
+    let addedLines = 0;
+    let deletedLines = 0;
+    
+    const linesCounts = stats.Global.Lines?.Weekly?.Counts || [];
+    addedLines = linesCounts.reduce((sum, week) => sum + (week.Additions || 0), 0);
+    deletedLines = linesCounts.reduce((sum, week) => sum + (week.Deletions || 0), 0);
+    
+    return { totalCommits, totalPullRequests, addedLines, deletedLines };
+  }, [stats]);
+
+  const calculateContributorTotals = useCallback((contributor) => {
+    if (contributor === stats?.Global) {
+      return calculateTeamTotals();
+    }
+    return calculateUserTotals(contributor);
+  }, [calculateUserTotals, calculateTeamTotals, stats]);
+
+  return { hasUserCommits, calculateUserTotals, calculateTeamTotals, calculateContributorTotals };
 }

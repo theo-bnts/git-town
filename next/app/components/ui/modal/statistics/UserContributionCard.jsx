@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { CommitsGraph } from '@/app/components/ui/modal/statistics';
-import { formatRatio } from '@/app/utils/calculateRatio';
+import Tag from '@/app/components/ui/Tag';
+import { calculateDelta } from '@/app/utils/calculateDelta';
 
 /**
  * Carte affichant les contributions d'un utilisateur individuel
@@ -12,45 +13,44 @@ import { formatRatio } from '@/app/utils/calculateRatio';
  * @param {number} props.index - Index de l'utilisateur dans la liste
  */
 export default function UserContributionCard({ user, calculateUserTotals, index }) {
-  const { totalCommits, addedLines, deletedLines, ratio } = calculateUserTotals(user);
+  const { totalCommits, totalPullRequests, addedLines, deletedLines } = calculateUserTotals(user);
+  
+  const delta = calculateDelta(addedLines, deletedLines);
   
   return (
-    <div className="bg-gray-50 p-3 rounded-lg overflow-hidden">
-      <div className="flex flex-col sm:flex-row 
-      justify-between items-start sm:items-center mb-2 gap-1">
-        <p className="text-sm font-medium">
-          {user.User?.FullName || `Utilisateur ${index + 1}`}
-        </p>
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="px-2 py-0.5 bg-gray-200 rounded-full text-gray-700 font-mono">
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="text-lg font-medium">{user.User.FullName}</h3>
+          <p className="text-sm text-gray-500">{user.User.EmailAddress}</p>
+        </div>
+        
+        <div className="flex flex-wrap gap-2 justify-end">
+          <Tag variant="default">
             {totalCommits} commits
-          </span>
-          {addedLines > 0 && (
-            <span className="px-2 py-0.5 bg-green-100 rounded-full text-green-700 font-mono">
-              {addedLines} ++
-            </span>
-          )}
-          {deletedLines > 0 && (
-            <span className="px-2 py-0.5 bg-red-100 rounded-full text-red-700 font-mono">
-              {deletedLines} --
-            </span>
-          )}
-          {(addedLines > 0 || deletedLines > 0) && (
-            <span className="px-2 py-0.5 bg-blue-100 rounded-full text-blue-700 font-mono">
-              {formatRatio(ratio)} ratio
-            </span>
-          )}
+          </Tag>
+          <Tag variant="success">
+            +{addedLines}
+          </Tag>
+          <Tag variant="danger">
+            -{deletedLines}
+          </Tag>
+          <Tag variant="selected">
+            Δ {delta.toFixed(1)}
+          </Tag>
         </div>
       </div>
-      <CommitsGraph 
-        commits={user.Commits} 
-        lines={user.Lines}
-        loading={false}
-        hideTitle={true}
-        height={180}
-        showLegend={true}
-        showLinesData={true}
-      />
+      
+      <div className="mt-4">
+        <CommitsGraph
+          commits={user.Commits}
+          lines={user.Lines}
+          title={`Commits de ${user.User.FullName}`}
+          height={200}
+          showLegend={true}
+          hideTitle={true}
+        />
+      </div>
     </div>
   );
 }

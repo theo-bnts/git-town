@@ -6,10 +6,11 @@ import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import { 
   InfoTooltip, 
-  LanguagesSection, 
-  CommitsGraph, 
-  ContributionsTable 
+  LanguagesSection,
+  ContributionsTable,
+  ContributionCard
 } from '@/app/components/ui/modal/statistics';
+import { useRepositoryStats } from '@/app/hooks/useRepositoryStats';
 
 const cacheInfoText = "Ces données peuvent venir du cache pour que votre expérience ne soit pas ralentie. Les données peuvent présenter un retard jusqu'à une heure.";
 
@@ -21,6 +22,13 @@ const cacheInfoText = "Ces données peuvent venir du cache pour que votre expér
  */
 export default function StatsCard({ stats, onClose }) {
   const [showInfo, setShowInfo] = useState(false);
+  const { calculateUserTotals } = useRepositoryStats(stats);
+
+  const hasCompleteData = stats?.Global && 
+                         stats?.Global.Commits && 
+                         stats?.Global.Lines && 
+                         stats?.Global.Lines.Weekly && 
+                         stats?.Global.Lines.Weekly.Counts;
   
   return (
     <Card variant="default" className="p-3 lg:p-4 w-full h-full">
@@ -57,13 +65,18 @@ export default function StatsCard({ stats, onClose }) {
         <LanguagesSection languages={stats.Global?.Languages} />
         
         <div className="w-full overflow-x-hidden">
-          <CommitsGraph 
-            commits={stats.Global?.Commits} 
-            loading={false}
-            title="Commits de l'équipe par semaine"
-            height={220}
-            showTypeSelector={true}
-          />
+          {hasCompleteData ? (
+            <ContributionCard
+              contributor={stats.Global}
+              isTeam={true}
+              calculateUserTotals={calculateUserTotals}
+              stats={stats}
+            />
+          ) : (
+            <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+              Chargement des statistiques d'équipe...
+            </div>
+          )}
         </div>
         
         <div className="w-full overflow-x-hidden">

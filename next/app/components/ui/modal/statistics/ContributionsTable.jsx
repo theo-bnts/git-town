@@ -3,7 +3,8 @@
 import React, { useMemo } from 'react';
 import { textStyles } from '@/app/styles/tailwindStyles';
 import Table from '@/app/components/layout/table/Table';
-import { calculateRatio, formatRatio } from '@/app/utils/calculateRatio';
+import { calculateDelta } from '@/app/utils/calculateDelta';
+import Tag from '@/app/components/ui/Tag';
 
 /**
  * Affiche un tableau des contributions par utilisateur
@@ -20,7 +21,21 @@ export default function ContributionsTable({ users = [] }) {
       { key: 'commits', title: 'Commits', sortable: true },
       { key: 'additions', title: '++', sortable: true },
       { key: 'deletions', title: '--', sortable: true },
-      { key: 'ratio', title: 'Ratio', sortable: true },
+      { 
+        key: 'delta', 
+        title: 'Delta', 
+        sortable: true,
+        render: (value) => {
+          const numValue = parseFloat(value);
+          const formattedValue = isNaN(numValue) ? '0.0' : numValue.toFixed(1);
+          
+          return (
+            <Tag variant={numValue > 0 ? "success" : numValue < 0 ? "danger" : "default"}>
+              Δ {formattedValue}
+            </Tag>
+          );
+        }
+      },
     ];
     
     const userData = users.map(userStat => {
@@ -28,7 +43,9 @@ export default function ContributionsTable({ users = [] }) {
       const lines = userStat.Lines?.Weekly?.Counts || [];
       const additions = lines.reduce((sum, l) => sum + (l.Additions || 0), 0);
       const deletions = lines.reduce((sum, l) => sum + (l.Deletions || 0), 0);
-      const ratio = calculateRatio(additions, deletions);
+      
+      let delta = calculateDelta(additions, deletions);
+      delta = parseFloat(delta.toFixed(1));
 
       return {
         name: user.FullName || '',
@@ -37,7 +54,7 @@ export default function ContributionsTable({ users = [] }) {
         commits: userStat.Commits?.Weekly?.Counts?.reduce((sum, c) => sum + c, 0) ?? 0,
         additions,
         deletions,
-        ratio: formatRatio(ratio),
+        delta,
       };
     });
 
@@ -47,6 +64,9 @@ export default function ContributionsTable({ users = [] }) {
       const totalAdditions = data.reduce((sum, d) => sum + (d.additions || 0), 0);
       const totalDeletions = data.reduce((sum, d) => sum + (d.deletions || 0), 0);
       
+      let totalDelta = calculateDelta(totalAdditions, totalDeletions);
+      totalDelta = parseFloat(totalDelta.toFixed(1));
+      
       data.push({
         name: <span className="font-bold">Équipe complète</span>,
         merges: data.reduce((sum, d) => sum + (d.merges || 0), 0),
@@ -54,7 +74,7 @@ export default function ContributionsTable({ users = [] }) {
         commits: data.reduce((sum, d) => sum + (d.commits || 0), 0),
         additions: totalAdditions,
         deletions: totalDeletions,
-        ratio: formatRatio(calculateRatio(totalAdditions, totalDeletions)),
+        delta: totalDelta,
       });
     }
     

@@ -76,6 +76,7 @@ export default function Graph({
         tick={{ fill: 'var(--secondary-color)' }}
         axisLine={{ stroke: 'var(--hint-color)' }}
         tickLine={{ stroke: 'var(--hint-color)' }}
+        domain={[-1, 1]}
       />
     ] : (
       <YAxis 

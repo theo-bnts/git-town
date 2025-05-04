@@ -10,6 +10,8 @@
   --accent-color: hsl(187, 47%, 33%);     /* #2A727E 100% */
   --accent-color-hover: hsl(187, 55%, 37%);/* #2A8692 100% */
   --selected-color: hsl(240, 77%, 61%);   /* #5656E4 100% */
+  --selected-color-light: rgba(86, 86, 228, 0.15);
+  --selected-color-dark: hsl(240, 77%, 61%);
   --warn-color: hsl(344, 100%, 41%);      /* #D20038 100% */
   --warn-color-hover: hsl(344, 100%, 45%);/* #E6003D 100% */
   --hint-color: hsl(0, 0%, 53%);          /* #888888 100% */

@@ -59,4 +59,14 @@ const listboxStyles = {
   default: `border-[1px] border-[var(--accent-color)] p-2 rounded-[12.5px] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]`,
 };
 
-export { buttonStyles, cardStyles, comboboxStyles, inputStyles, listboxStyles, spinnerStyles, textStyles };
+const tagStyles = {
+  default: 'px-2 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-800',
+  success: 'px-2 py-1 text-xs font-medium rounded-md bg-green-100 text-green-800',
+  warning: 'px-2 py-1 text-xs font-medium rounded-md bg-yellow-100 text-yellow-800',
+  danger: 'px-2 py-1 text-xs font-medium rounded-md bg-red-100 text-red-800',
+  info: 'px-2 py-1 text-xs font-medium rounded-md bg-blue-100 text-blue-800',
+  accent: 'px-2 py-1 text-xs font-medium rounded-md bg-[var(--accent-color-light)] text-[var(--accent-color-dark)]',
+  selected: 'px-2 py-1 text-xs font-medium rounded-md bg-[rgba(86,86,228,0.15)] text-[var(--selected-color)]',
+};
+
+export { buttonStyles, cardStyles, comboboxStyles, inputStyles, listboxStyles, spinnerStyles, textStyles, tagStyles };
