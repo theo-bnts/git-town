@@ -37,6 +37,13 @@ export function useRepositoryStats(stats) {
    * @param {Object} user - Données de l'utilisateur
    * @returns {Object} Statistiques calculées (commits, lignes, ratio)
    */
+  const calculateRatio = (added, deleted) => {
+    if (deleted === 0) {
+      return added > 0 ? Infinity : 0;
+    }
+    return Math.round((added / deleted) * 100) / 100;
+  };
+
   const calculateUserTotals = useCallback((user) => {
     if (!user || !user.Commits?.Weekly?.Counts) {
       return { totalCommits: 0, addedLines: 0, deletedLines: 0, ratio: 0 };
@@ -53,13 +60,6 @@ export function useRepositoryStats(stats) {
     
     return { totalCommits, addedLines, deletedLines, ratio };
   }, []);
-
-  const calculateRatio = (added, deleted) => {
-    if (deleted === 0) {
-      return added > 0 ? Infinity : 0;
-    }
-    return Math.round((added / deleted) * 100) / 100;
-  };
 
   return { hasUserCommits, calculateUserTotals };
 }

@@ -18,7 +18,10 @@ export function hasAllProperties(obj, shape) {
     if (shape === true) return obj !== undefined;
     if (shape === false) return true;
     if (obj === undefined || obj === null) return false;
-    if (Array.isArray(obj)) return obj !== undefined;
+    if (Array.isArray(obj)) {
+        if (!Array.isArray(shape)) return false;
+        return obj.every(item => hasAllProperties(item, shape[0]));
+    }
     if (typeof shape !== 'object' || typeof obj !== 'object') return false;
     
     return Object.entries(shape).every(([key, subShape]) => {
