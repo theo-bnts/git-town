@@ -7,6 +7,19 @@ import { textStyles } from '@/app/styles/tailwindStyles';
 import Table from '@/app/components/layout/table/Table';
 
 /**
+ * Calcule le ratio entre les lignes ajoutées et supprimées
+ * @param {number} additions - Nombre de lignes ajoutées
+ * @param {number} deletions - Nombre de lignes supprimées
+ * @returns {number|string} - Ratio calculé ou "∞" pour l'infini
+ */
+const calculateRatio = (additions, deletions) => {
+  if (deletions === 0) {
+    return additions > 0 ? "∞" : 0;
+  }
+  return Math.round((additions / deletions) * 100) / 100;
+};
+
+/**
  * Affiche un tableau des contributions par utilisateur
  * 
  * @param {Object} props - Propriétés du composant
@@ -21,6 +34,7 @@ export default function ContributionsTable({ users = [] }) {
       { key: 'commits', title: 'Commits', sortable: true },
       { key: 'additions', title: '++', sortable: true },
       { key: 'deletions', title: '--', sortable: true },
+      { key: 'ratio', title: 'Ratio', sortable: true }, // Nouvelle colonne ratio
     ];
     
     const userData = users.map(userStat => {
@@ -28,6 +42,7 @@ export default function ContributionsTable({ users = [] }) {
       const lines = userStat.Lines?.Weekly?.Counts || [];
       const additions = lines.reduce((sum, l) => sum + (l.Additions || 0), 0);
       const deletions = lines.reduce((sum, l) => sum + (l.Deletions || 0), 0);
+      const ratio = calculateRatio(additions, deletions); // Calcul du ratio
 
       return {
         name: user.FullName || '',
@@ -36,18 +51,24 @@ export default function ContributionsTable({ users = [] }) {
         commits: userStat.Commits?.Weekly?.Counts?.reduce((sum, c) => sum + c, 0) ?? 0,
         additions,
         deletions,
+        ratio, // Ajout du ratio aux données
       };
     });
 
     let data = [...userData];
+    
     if (data.length > 0) {
+      const totalAdditions = data.reduce((sum, d) => sum + (d.additions || 0), 0);
+      const totalDeletions = data.reduce((sum, d) => sum + (d.deletions || 0), 0);
+      
       data.push({
         name: <span className="font-bold">Équipe complète</span>,
         merges: data.reduce((sum, d) => sum + (d.merges || 0), 0),
         prs: data.reduce((sum, d) => sum + (d.prs || 0), 0),
         commits: data.reduce((sum, d) => sum + (d.commits || 0), 0),
-        additions: data.reduce((sum, d) => sum + (d.additions || 0), 0),
-        deletions: data.reduce((sum, d) => sum + (d.deletions || 0), 0),
+        additions: totalAdditions,
+        deletions: totalDeletions,
+        ratio: calculateRatio(totalAdditions, totalDeletions), // Ratio pour l'équipe complète
       });
     }
     

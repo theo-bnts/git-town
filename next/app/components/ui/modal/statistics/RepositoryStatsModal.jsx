@@ -2,6 +2,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { AlertIcon } from '@primer/octicons-react'; // Ajout de l'import pour AlertIcon
 import { useRepositoryStats } from '@/app/hooks/useRepositoryStats';
 import Card from '@/app/components/ui/Card';
 import { 
@@ -56,7 +57,7 @@ export default function RepositoryStatsModal({
       {loading ? (
         <LoadingCard />
       ) : (
-        <div className="w-full h-full overflow-y-auto py-6 lg:py-8">
+        <div className="w-full h-full overflow-y-auto py-6">
           <div className="w-full max-w-[95vw] 2xl:max-w-[75vw] mx-auto px-2 lg:px-4">
             {!stats ? (
               <Card variant="default" className="p-4 mx-auto max-w-md">
@@ -70,9 +71,7 @@ export default function RepositoryStatsModal({
                   <div className="col-span-1 2xl:col-span-3 bg-yellow-50 border-l-4 border-yellow-400 p-4">
                     <div className="flex">
                       <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
+                        <AlertIcon className="text-yellow-400" size={20} />
                       </div>
                       <div className="ml-3">
                         <p className="text-sm text-yellow-700">
