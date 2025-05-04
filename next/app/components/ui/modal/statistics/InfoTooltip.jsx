@@ -1,9 +1,7 @@
 'use client';
 
 import React from 'react';
-
 import Card from '@/app/components/ui/Card';
-
 import { textStyles } from '@/app/styles/tailwindStyles';
 
 /**

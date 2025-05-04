@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-
 import { textStyles } from '@/app/styles/tailwindStyles';
 
 /**
