@@ -23,7 +23,7 @@ export default function RepositoryStatsModal({ isOpen, onClose, stats, loading }
   // Fonction pour calculer le total des commits d'un utilisateur
   const calculateUserTotals = (user) => {
     if (!user || !user.Commits?.Weekly?.Counts) {
-      return { totalCommits: 0, addedLines: 0, deletedLines: 0 };
+      return { totalCommits: 0, addedLines: 0, deletedLines: 0, ratio: 0 };
     }
     
     // Calcul du total des commits
@@ -45,7 +45,10 @@ export default function RepositoryStatsModal({ isOpen, onClose, stats, loading }
       deletedLines = lineCounts.reduce((sum, week) => sum + (week.Deletions || 0), 0);
     }
     
-    return { totalCommits, addedLines, deletedLines };
+    // Calcul du ratio (éviter la division par zéro)
+    const ratio = deletedLines > 0 ? parseFloat((addedLines / deletedLines).toFixed(2)) : addedLines > 0 ? Infinity : 0;
+    
+    return { totalCommits, addedLines, deletedLines, ratio };
   };
 
   return (
@@ -61,9 +64,9 @@ export default function RepositoryStatsModal({ isOpen, onClose, stats, loading }
           </Card>
         </div>
       ) : (
-        // Conteneur pour le reste du contenu - structure inchangée
         <div className="w-full h-full overflow-y-auto py-6 lg:py-8">
-          <div className="w-full max-w-[95vw] xl:max-w-[75vw] mx-auto px-2 lg:px-4">
+          {/* Changement de xl à 2xl pour la largeur maximale */}
+          <div className="w-full max-w-[95vw] 2xl:max-w-[75vw] mx-auto px-2 lg:px-4">
             {!stats ? (
               <Card variant="default" className="p-4 mx-auto max-w-md">
                 <div className="text-center text-gray-500">
@@ -71,10 +74,10 @@ export default function RepositoryStatsModal({ isOpen, onClose, stats, loading }
                 </div>
               </Card>
             ) : (
-              // Grille avec les cards - inchangée
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 xl:gap-6">
+              // Modification du breakpoint de xl à 2xl pour le changement de disposition
+              <div className="grid grid-cols-1 2xl:grid-cols-3 gap-4 2xl:gap-6">
                 {/* Card A - Statistiques - 2/3 de l'espace */}
-                <div className="w-full xl:col-span-2">
+                <div className="w-full 2xl:col-span-2">
                   <Card variant="default" className="p-3 lg:p-4 w-full h-full">
                     <div className="space-y-4 lg:space-y-6">
                       {/* En-tête */}
@@ -126,7 +129,7 @@ export default function RepositoryStatsModal({ isOpen, onClose, stats, loading }
                 </div>
 
                 {/* Card B - Commits par utilisateur - 1/3 de l'espace */}
-                <div className="w-full xl:col-span-1">
+                <div className="w-full 2xl:col-span-1">
                   <Card variant="default" className="p-3 lg:p-4 w-full h-full">
                     <div className="space-y-3 lg:space-y-4">
                       <h3 className="text-lg font-bold leading-none">Contributions par utilisateur</h3>
@@ -138,7 +141,7 @@ export default function RepositoryStatsModal({ isOpen, onClose, stats, loading }
                       ) : (
                         <div className="grid grid-cols-1 gap-4">
                           {stats.Users && stats.Users.map((user, index) => {
-                            const { totalCommits, addedLines, deletedLines } = calculateUserTotals(user);
+                            const { totalCommits, addedLines, deletedLines, ratio } = calculateUserTotals(user);
                             
                             return (
                               <div key={user.User?.Id || index} className="bg-gray-50 p-3 rounded-lg overflow-hidden">
@@ -158,6 +161,12 @@ export default function RepositoryStatsModal({ isOpen, onClose, stats, loading }
                                     {deletedLines > 0 && (
                                       <span className="px-2 py-0.5 bg-red-100 rounded-full text-red-700 font-mono">
                                         {deletedLines} --
+                                      </span>
+                                    )}
+                                    {/* Nouveau badge pour le ratio */}
+                                    {(addedLines > 0 || deletedLines > 0) && (
+                                      <span className="px-2 py-0.5 bg-blue-100 rounded-full text-blue-700 font-mono">
+                                        {ratio === Infinity ? "∞" : ratio} ratio
                                       </span>
                                     )}
                                   </div>
