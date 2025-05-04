@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
+
 import Card from '@/app/components/ui/Card';
-import UserContributionCard from './UserContributionCard';
+import { UserContributionCard } from '@/app/components/ui/modal/statistics';
 
 /**
  * Carte regroupant les contributions individuelles des utilisateurs

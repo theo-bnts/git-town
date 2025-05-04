@@ -1,11 +1,16 @@
 'use client';
 
 import React from 'react';
-import Card from '@/app/components/ui/Card';
-import LoadingCard from './LoadingCard';
-import StatsCard from './StatsCard';
-import UserContributionsCard from './UserContributionsCard';
+
 import { useRepositoryStats } from '@/app/hooks/useRepositoryStats';
+
+import Card from '@/app/components/ui/Card';
+
+import { 
+  LoadingCard, 
+  StatsCard, 
+  UserContributionsCard 
+} from '@/app/components/ui/modal/statistics';
 
 /**
  * Modal affichant les statistiques détaillées d'un dépôt
@@ -21,7 +26,10 @@ export default function RepositoryStatsModal({ isOpen, onClose, stats, loading }
   const { hasUserCommits, calculateUserTotals } = useRepositoryStats(stats);
 
   return (
-    <div className="fixed inset-0 bg-[var(--popup-color)] flex items-center justify-center z-50 overflow-hidden">
+    <div className="
+      fixed inset-0 bg-[var(--popup-color)] 
+      flex items-center justify-center 
+      z-50 overflow-hidden">
       {loading ? (
         <LoadingCard />
       ) : (

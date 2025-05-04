@@ -1,13 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
+
 import { XIcon, InfoIcon } from '@primer/octicons-react';
+
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
-import InfoTooltip from './InfoTooltip';
-import LanguagesSection from './LanguagesSection';
-import CommitsGraph from './CommitsGraph';
-import ContributionsTable from './ContributionsTable';
+import { 
+  InfoTooltip, 
+  LanguagesSection, 
+  CommitsGraph, 
+  ContributionsTable 
+} from '@/app/components/ui/modal/statistics';
 
 const cacheInfoText = "Ces données peuvent venir du cache pour que votre expérience ne soit pas ralentie. Les données peuvent présenter un retard jusqu'à une heure.";
 

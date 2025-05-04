@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useMemo } from 'react';
+
 import { textStyles } from '@/app/styles/tailwindStyles';
+
 import Table from '@/app/components/layout/table/Table';
 
 /**

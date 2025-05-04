@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import CommitsGraph from './CommitsGraph';
+
+import { CommitsGraph } from '@/app/components/ui/modal/statistics';
 
 /**
  * Carte affichant les contributions d'un utilisateur individuel

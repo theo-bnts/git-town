@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useCallback } from 'react';
 
 /**
@@ -7,7 +9,9 @@ import { useMemo, useCallback } from 'react';
  */
 export function useRepositoryStats(stats) {
   const hasUserCommits = useMemo(() => 
-    stats?.Users?.some(user => user.Commits?.Weekly?.Counts?.some(count => count > 0)),
+    Boolean(stats?.Users?.some(user => 
+      user.Commits?.Weekly?.Counts?.some(count => count > 0)
+    )),
     [stats]
   );
 
@@ -41,9 +45,12 @@ export function useRepositoryStats(stats) {
     }
     
     // Calcul du ratio (éviter la division par zéro)
-    const ratio = deletedLines > 0 
-      ? parseFloat((addedLines / deletedLines).toFixed(2)) 
-      : addedLines > 0 ? Infinity : 0;
+    let ratio = 0;
+    if (deletedLines > 0) {
+      ratio = parseFloat((addedLines / deletedLines).toFixed(2));
+    } else if (addedLines > 0) {
+      ratio = Infinity;
+    }
     
     return { totalCommits, addedLines, deletedLines, ratio };
   }, []);
