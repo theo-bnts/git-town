@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-
 import { textStyles } from '@/app/styles/tailwindStyles';
-
 import Table from '@/app/components/layout/table/Table';
 
 /**
@@ -34,7 +32,7 @@ export default function ContributionsTable({ users = [] }) {
       { key: 'commits', title: 'Commits', sortable: true },
       { key: 'additions', title: '++', sortable: true },
       { key: 'deletions', title: '--', sortable: true },
-      { key: 'ratio', title: 'Ratio', sortable: true }, // Nouvelle colonne ratio
+      { key: 'ratio', title: 'Ratio', sortable: true },
     ];
     
     const userData = users.map(userStat => {
@@ -42,7 +40,7 @@ export default function ContributionsTable({ users = [] }) {
       const lines = userStat.Lines?.Weekly?.Counts || [];
       const additions = lines.reduce((sum, l) => sum + (l.Additions || 0), 0);
       const deletions = lines.reduce((sum, l) => sum + (l.Deletions || 0), 0);
-      const ratio = calculateRatio(additions, deletions); // Calcul du ratio
+      const ratio = calculateRatio(additions, deletions);
 
       return {
         name: user.FullName || '',
@@ -51,7 +49,7 @@ export default function ContributionsTable({ users = [] }) {
         commits: userStat.Commits?.Weekly?.Counts?.reduce((sum, c) => sum + c, 0) ?? 0,
         additions,
         deletions,
-        ratio, // Ajout du ratio aux données
+        ratio,
       };
     });
 
@@ -68,7 +66,7 @@ export default function ContributionsTable({ users = [] }) {
         commits: data.reduce((sum, d) => sum + (d.commits || 0), 0),
         additions: totalAdditions,
         deletions: totalDeletions,
-        ratio: calculateRatio(totalAdditions, totalDeletions), // Ratio pour l'équipe complète
+        ratio: calculateRatio(totalAdditions, totalDeletions),
       });
     }
     

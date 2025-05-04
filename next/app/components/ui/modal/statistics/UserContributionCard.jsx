@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-
 import { CommitsGraph } from '@/app/components/ui/modal/statistics';
 
 /**
@@ -16,7 +15,8 @@ export default function UserContributionCard({ user, calculateUserTotals, index 
   
   return (
     <div className="bg-gray-50 p-3 rounded-lg overflow-hidden">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-1">
+      <div className="flex flex-col sm:flex-row 
+      justify-between items-start sm:items-center mb-2 gap-1">
         <p className="text-sm font-medium">
           {user.User?.FullName || `Utilisateur ${index + 1}`}
         </p>
