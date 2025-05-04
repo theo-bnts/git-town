@@ -3,19 +3,7 @@
 import React, { useMemo } from 'react';
 import { textStyles } from '@/app/styles/tailwindStyles';
 import Table from '@/app/components/layout/table/Table';
-
-/**
- * Calcule le ratio entre les lignes ajoutées et supprimées
- * @param {number} additions - Nombre de lignes ajoutées
- * @param {number} deletions - Nombre de lignes supprimées
- * @returns {number|string} - Ratio calculé ou "∞" pour l'infini
- */
-const calculateRatio = (additions, deletions) => {
-  if (deletions === 0) {
-    return additions > 0 ? "∞" : 0;
-  }
-  return Math.round((additions / deletions) * 10) / 10;
-};
+import { calculateRatio, formatRatio } from '@/app/utils/calculateRatio';
 
 /**
  * Affiche un tableau des contributions par utilisateur
@@ -49,7 +37,7 @@ export default function ContributionsTable({ users = [] }) {
         commits: userStat.Commits?.Weekly?.Counts?.reduce((sum, c) => sum + c, 0) ?? 0,
         additions,
         deletions,
-        ratio,
+        ratio: formatRatio(ratio),
       };
     });
 
@@ -66,7 +54,7 @@ export default function ContributionsTable({ users = [] }) {
         commits: data.reduce((sum, d) => sum + (d.commits || 0), 0),
         additions: totalAdditions,
         deletions: totalDeletions,
-        ratio: calculateRatio(totalAdditions, totalDeletions),
+        ratio: formatRatio(calculateRatio(totalAdditions, totalDeletions)),
       });
     }
     

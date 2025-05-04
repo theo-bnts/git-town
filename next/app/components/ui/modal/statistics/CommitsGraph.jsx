@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Graph from '@/app/components/ui/Graph';
+import { calculateRatio } from '@/app/utils/calculateRatio';
 
 export default function CommitsGraph({ 
   commits, 
@@ -47,14 +48,9 @@ export default function CommitsGraph({
         const additions = lines.Weekly.Counts[index].Additions || 0;
         const deletions = lines.Weekly.Counts[index].Deletions || 0;
         
-        let ratio = 0;
-        if (deletions > 0) {
-          ratio = +(additions / deletions).toFixed(1);
-        } else if (additions > 0) {
-          ratio = 0;
-        }
-        
-        dataPoint.ratio = ratio;
+        dataPoint.ratio = calculateRatio(additions, deletions);
+        dataPoint.additions = additions;
+        dataPoint.deletions = deletions;
       }
       
       return dataPoint;
@@ -80,10 +76,24 @@ export default function CommitsGraph({
         dataKey: 'ratio', 
         color: 'var(--selected-color)',
         name: 'Ratio',
-        yAxisId: 'right'
+        yAxisId: 'right',
+        strokeWidth: 2,
+        dot: {
+          r: 4,
+          fill: '#fff',
+          stroke: 'var(--selected-color)',
+          strokeWidth: 2
+        }
       }
     );
   }
+  
+  const tooltipFormatter = (value, name) => {
+    if (name === 'Ratio') {
+      return [value.toFixed(1), name];
+    }
+    return [value, name];
+  };
   
   return (
     <Graph
@@ -97,6 +107,7 @@ export default function CommitsGraph({
       multipleYAxis={showLinesData}
       showTypeSelector={showTypeSelector}
       emptyMessage="Aucune donnée de commits disponible"
+      tooltipFormatter={tooltipFormatter}
     />
   );
 }

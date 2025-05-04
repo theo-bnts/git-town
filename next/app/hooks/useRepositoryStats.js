@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useCallback } from 'react';
+import { calculateRatio } from '@/app/utils/calculateRatio';
 
 /**
  * Hook personnalisé pour le traitement des données statistiques d'un dépôt
@@ -32,18 +33,6 @@ export function useRepositoryStats(stats) {
     return { addedLines, deletedLines };
   };
 
-  /**
-   * Calcule les statistiques totales pour un utilisateur
-   * @param {Object} user - Données de l'utilisateur
-   * @returns {Object} Statistiques calculées (commits, lignes, ratio)
-   */
-  const calculateRatio = (added, deleted) => {
-    if (deleted === 0) {
-      return added > 0 ? Infinity : 0;
-    }
-    return Math.round((added / deleted) * 100) / 100;
-  };
-
   const calculateUserTotals = useCallback((user) => {
     if (!user || !user.Commits?.Weekly?.Counts) {
       return { totalCommits: 0, addedLines: 0, deletedLines: 0, ratio: 0 };
@@ -55,7 +44,6 @@ export function useRepositoryStats(stats) {
       : 0;
     
     const { addedLines, deletedLines } = getLineStatistics(user);
-    
     const ratio = calculateRatio(addedLines, deletedLines);
     
     return { totalCommits, addedLines, deletedLines, ratio };

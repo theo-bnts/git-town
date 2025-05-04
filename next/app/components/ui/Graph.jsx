@@ -24,6 +24,7 @@ export default function Graph({
   showLegend = true,
   emptyMessage = 'Aucune donnée disponible',
   showTypeSelector = false,
+  tooltipFormatter = null,
   multipleYAxis = false
 }) {
   const [chartType, setChartType] = useState(type);
@@ -91,7 +92,7 @@ export default function Graph({
         opacity={0.3} 
       />
     ),
-    tooltip: <Tooltip />,
+    tooltip: <Tooltip formatter={tooltipFormatter} />,
     legend: showLegend && <Legend />
   };
   

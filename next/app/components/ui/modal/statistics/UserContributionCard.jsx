@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { CommitsGraph } from '@/app/components/ui/modal/statistics';
+import { formatRatio } from '@/app/utils/calculateRatio';
 
 /**
  * Carte affichant les contributions d'un utilisateur individuel
@@ -36,7 +37,7 @@ export default function UserContributionCard({ user, calculateUserTotals, index 
           )}
           {(addedLines > 0 || deletedLines > 0) && (
             <span className="px-2 py-0.5 bg-blue-100 rounded-full text-blue-700 font-mono">
-              {ratio === Infinity ? "∞" : ratio.toFixed(1)} ratio
+              {formatRatio(ratio)} ratio
             </span>
           )}
         </div>
