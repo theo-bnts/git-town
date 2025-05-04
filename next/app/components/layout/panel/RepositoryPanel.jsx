@@ -2,43 +2,48 @@
 
 import React, { useState, useEffect } from 'react';
 import Button from '@/app/components/ui/Button';
-
 import RepositoryStatsModal from '@/app/components/ui/modal/statistics/RepositoryStatsModal';
-
 import { fetchRepositoryStatistics } from '@/app/services/api/repositories/fetchRepositoryStatistics';
 
 export default function RepositoryPanel() {
   const [modalOpen, setModalOpen] = useState(false);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [retry, setRetry] = useState(false);
+  const [error, setError] = useState(null);
 
   const repositoryId = '768767bf-80ad-4963-8c7d-d69e61fb7f8e';
 
   useEffect(() => {
     let cancelled = false;
-    let tries = 0;
-    const maxRetries = Number(process.env.NEXT_PUBLIC_MAX_RETRIES);
-    const retryDelay = Number(process.env.NEXT_PUBLIC_RETRY_DELAY);
 
     async function loadStats() {
+      if (cancelled) return;
+      
       setLoading(true);
-      let retry = true;
-      let lastData = null;
-      while (retry && tries < maxRetries && !cancelled) {
-        const res = await fetchRepositoryStatistics(
+      setError(null);
+      
+      try {
+        const { data, loading: stillLoading, retry: needsRetry } = await fetchRepositoryStatistics(
           repositoryId, 
-          { retryDelay: 0, maxRetries: 1 }
+          { backgroundMode: true }
         );
-        setStats(res.data);
-        setLoading(res.loading);
-        lastData = res.data;
-        retry = res.retry;
-        tries++;
-        if (!res.loading || !retry || cancelled) break;
-        await new Promise(r => setTimeout(r, retryDelay));
+        
+        if (cancelled) return;
+        
+        setStats(data);
+        setLoading(stillLoading);
+        setRetry(needsRetry);
+        
+        if (!stillLoading) {
+          setLoading(false);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        
+        setError(err);
+        setLoading(false);
       }
-      setLoading(false);
-      setStats(lastData);
     }
 
     if (modalOpen) {
@@ -55,6 +60,8 @@ export default function RepositoryPanel() {
     setModalOpen(false);
     setStats(null);
     setLoading(false);
+    setError(null);
+    setRetry(false);
   };
 
   return (
@@ -67,6 +74,8 @@ export default function RepositoryPanel() {
         onClose={handleClose}
         stats={stats}
         loading={loading}
+        error={error}
+        retry={retry}
       />
     </div>
   );
