@@ -1,18 +1,20 @@
 import { fetchWithAuth } from '@/app/services/auth';
 import { repositoryStatisticsRoute } from '@/app/services/routes';
-import { expectedShape } from './expectedRepositoryStatisticsShape';
+import { expectedShape, minimumExpectedShape } from './expectedRepositoryStatisticsShape';
 import { hasAllProperties } from '@/app/utils/objectUtils';
 import { handleApiError } from '@/app/services/errorHandler';
+
+const DEFAULT_BACKOFF_FACTOR = 1.5;
 
 /**
  * Récupère les statistiques d'un dépôt avec tentatives multiples
  * (GET /repositories/:repositoryId/statistics)
  *
- * 
  * @param {string} repositoryId - L'identifiant du dépôt
  * @param {object} options - Options de requête
- * @param {number} options.retryDelay - Délai en ms entre les tentatives (défaut: valeur de NEXT_PUBLIC_MAX_DELAY)
+ * @param {number} options.initialDelay - Délai initial en ms (défaut: valeur de NEXT_PUBLIC_INITIAL_DELAY)
  * @param {number} options.maxRetries - Nombre maximum de tentatives (défaut: valeur de NEXT_PUBLIC_MAX_RETRIES)
+ * @param {number} options.backoffFactor - Facteur pour le délai exponentiel (défaut: 1.5)
  * @param {AbortSignal} options.signal - Signal pour annuler la requête
  * @returns {Promise<{data: object, loading: boolean, retry: boolean}>} - Données, état de chargement et besoin de réessayer
  * @throws {Error} - En cas d'erreur lors de la récupération
@@ -20,12 +22,17 @@ import { handleApiError } from '@/app/services/errorHandler';
 export async function fetchRepositoryStatistics(
   repositoryId,
   { 
-    retryDelay = Number(process.env.NEXT_PUBLIC_MAX_DELAY), 
-    maxRetries = Number(process.env.NEXT_PUBLIC_MAX_RETRIES), 
+    initialDelay = Number(process.env.NEXT_PUBLIC_INITIAL_DELAY || 1000), 
+    maxRetries = Number(process.env.NEXT_PUBLIC_MAX_RETRIES || 3), 
+    backoffFactor = DEFAULT_BACKOFF_FACTOR,
     signal 
   } = {},
 ) {
   let retries = 0;
+
+  if (!repositoryId) {
+    throw new Error("L'identifiant du dépôt est requis");
+  }
 
   async function fetchStats() {
     try {
@@ -34,16 +41,23 @@ export async function fetchRepositoryStatistics(
       
       if (!res.ok) {
         const text = await res.text();
-        const data = text ? JSON.parse(text) : {};
+        let data = {};
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch (e) {
+          // Si le parsing échoue, on garde data vide
+        }
         return Promise.reject(handleApiError(res, data));
       }
       
       const data = await res.json();
 
-      if (!hasAllProperties(data, expectedShape)) {
+      if (!hasAllProperties(data, minimumExpectedShape)) {
+        
         if (retries < maxRetries) {
           retries++;
-          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+          const delay = initialDelay * Math.pow(backoffFactor, retries - 1);
+          await new Promise((resolve) => setTimeout(resolve, delay));
           return fetchStats();
         }
         return { data, loading: true, retry: true };
@@ -55,7 +69,8 @@ export async function fetchRepositoryStatistics(
       
       if (retries < maxRetries) {
         retries++;
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        const delay = initialDelay * Math.pow(backoffFactor, retries - 1);
+        await new Promise((resolve) => setTimeout(resolve, delay));
         return fetchStats();
       }
       

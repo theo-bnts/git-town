@@ -9,11 +9,28 @@ import { useMemo, useCallback } from 'react';
  */
 export function useRepositoryStats(stats) {
   const hasUserCommits = useMemo(() => 
-    Boolean(stats?.Users?.some(user => 
+    stats?.Users?.some(user => 
       user.Commits?.Weekly?.Counts?.some(count => count > 0)
-    )),
+    ) || false,
     [stats]
   );
+
+  const getLineStatistics = (user) => {
+    let addedLines = 0;
+    let deletedLines = 0;
+    
+    if (user.Lines?.Total) {
+      addedLines = user.Lines.Total.Additions || 0;
+      deletedLines = user.Lines.Total.Deletions || 0;
+    } 
+    else if (user.Lines?.Weekly?.Counts) {
+      const lineCounts = user.Lines.Weekly.Counts;
+      addedLines = lineCounts.reduce((sum, week) => sum + (week.Additions || 0), 0);
+      deletedLines = lineCounts.reduce((sum, week) => sum + (week.Deletions || 0), 0);
+    }
+    
+    return { addedLines, deletedLines };
+  };
 
   /**
    * Calcule les statistiques totales pour un utilisateur
@@ -25,35 +42,24 @@ export function useRepositoryStats(stats) {
       return { totalCommits: 0, addedLines: 0, deletedLines: 0, ratio: 0 };
     }
     
-    // Calcul du total des commits
-    const totalCommits = user.Commits.Weekly.Counts.reduce((sum, count) => sum + count, 0);
+    const counts = user.Commits.Weekly.Counts || [];
+    const totalCommits = Array.isArray(counts) 
+      ? counts.reduce((sum, count) => sum + (Number.isFinite(count) ? count : 0), 0)
+      : 0;
     
-    // Calcul des lignes ajoutées/supprimées
-    let addedLines = 0;
-    let deletedLines = 0;
+    const { addedLines, deletedLines } = getLineStatistics(user);
     
-    // Cas 1: Total directement disponible
-    if (user.Lines?.Total) {
-      addedLines = user.Lines.Total.Additions || 0;
-      deletedLines = user.Lines.Total.Deletions || 0;
-    } 
-    // Cas 2: Calcul à partir des données hebdomadaires
-    else if (user.Lines?.Weekly?.Counts) {
-      const lineCounts = user.Lines.Weekly.Counts;
-      addedLines = lineCounts.reduce((sum, week) => sum + (week.Additions || 0), 0);
-      deletedLines = lineCounts.reduce((sum, week) => sum + (week.Deletions || 0), 0);
-    }
-    
-    // Calcul du ratio (éviter la division par zéro)
-    let ratio = 0;
-    if (deletedLines > 0) {
-      ratio = parseFloat((addedLines / deletedLines).toFixed(2));
-    } else if (addedLines > 0) {
-      ratio = Infinity;
-    }
+    const ratio = calculateRatio(addedLines, deletedLines);
     
     return { totalCommits, addedLines, deletedLines, ratio };
   }, []);
+
+  const calculateRatio = (added, deleted) => {
+    if (deleted === 0) {
+      return added > 0 ? Infinity : 0;
+    }
+    return Math.round((added / deleted) * 100) / 100;
+  };
 
   return { hasUserCommits, calculateUserTotals };
 }

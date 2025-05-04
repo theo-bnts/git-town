@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useMemo } from 'react';
-
+import PropTypes from 'prop-types';
 import Graph from '@/app/components/ui/Graph';
 
-const MILLISECONDS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
+const MS_PER_DAY = 86400000;
+const MS_PER_WEEK = MS_PER_DAY * 7;
 
 /**
  * Affiche un graphique des commits par semaine
@@ -25,27 +26,37 @@ const CommitsGraph = React.memo(function CommitsGraph({
   height = 260,
   showLegend = true
 }) {
-  // Formatage des données pour le graphique
   const weeklyData = useMemo(() => {
-    if (!commits?.Weekly?.Counts) return [];
+    if (!commits?.Weekly?.Counts || !Array.isArray(commits.Weekly.Counts)) {
+      return [];
+    }
     
     const { Counts, FirstDayOfFirstWeek } = commits.Weekly;
-    const firstDate = new Date(FirstDayOfFirstWeek);
+    
+    let firstDate;
+    try {
+      firstDate = new Date(FirstDayOfFirstWeek);
+      if (isNaN(firstDate.getTime())) {
+        firstDate = new Date();
+        firstDate.setDate(firstDate.getDate() - (Counts.length * 7));
+      }
+    } catch (e) {
+      firstDate = new Date();
+      firstDate.setDate(firstDate.getDate() - (Counts.length * 7));
+    }
     
     return Counts.map((count, i) => ({
-      semaine: new Date(firstDate.getTime() + i * MILLISECONDS_PER_WEEK)
+      semaine: new Date(firstDate.getTime() + i * MS_PER_WEEK)
         .toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit' }),
-      commits: count,
+      commits: typeof count === 'number' ? count : 0,
     }));
   }, [commits]);
 
-  // Vérification de l'existence des données
   const hasData = useMemo(() => 
     weeklyData.length > 0 && weeklyData.some(item => item.commits > 0),
     [weeklyData]
   );
 
-  // Configuration du graphique
   const graphConfig = useMemo(() => ({
     title: !hideTitle ? title : "",
     data: weeklyData,
@@ -74,5 +85,19 @@ const CommitsGraph = React.memo(function CommitsGraph({
     </div>
   );
 });
+
+CommitsGraph.propTypes = {
+  commits: PropTypes.shape({
+    Weekly: PropTypes.shape({
+      Counts: PropTypes.arrayOf(PropTypes.number),
+      FirstDayOfFirstWeek: PropTypes.string
+    })
+  }),
+  loading: PropTypes.bool,
+  title: PropTypes.string,
+  hideTitle: PropTypes.bool,
+  height: PropTypes.number,
+  showLegend: PropTypes.bool
+};
 
 export default CommitsGraph;
