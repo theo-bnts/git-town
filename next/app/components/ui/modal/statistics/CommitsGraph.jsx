@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import Graph from '@/app/components/ui/Graph';
 import { calculateDelta } from '@/app/utils/calculateDelta';
 import { deltaQualifier } from '@/app/utils/deltaQualifier';
@@ -23,20 +23,30 @@ export default function CommitsGraph({
   showLegend = true,
   hideTitle = false
 }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {}, 10);
+    return () => clearTimeout(timer);
+  }, []);
+
   const data = useMemo(() => {
     if (!commits?.Weekly?.Counts) {
       return [];
     }
 
-    const firstDay = new Date(commits.Weekly.FirstDayOfFirstWeek);
+    const firstDay = commits.Weekly.FirstDayOfFirstWeek 
+      ? new Date(commits.Weekly.FirstDayOfFirstWeek) 
+      : new Date();
+      
     const hasLines = lines?.Weekly?.Counts && Array.isArray(lines.Weekly.Counts);
 
+    const weeksCount = commits.Weekly.Counts.length;
+    
     return commits.Weekly.Counts.map((count, idx) => {
       const week = new Date(firstDay);
       week.setDate(week.getDate() + idx * 7);
       const formattedDate = week.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 
-      let delta = null;
+      let delta = 0;
       if (hasLines && idx < lines.Weekly.Counts.length) {
         const weekData = lines.Weekly.Counts[idx];
         const additions = weekData?.Additions || 0;
@@ -46,37 +56,25 @@ export default function CommitsGraph({
 
       return {
         week: formattedDate,
-        commits: count,
-        delta
+        commits: count || 0,
+        delta: delta
       };
     });
   }, [commits, lines]);
 
   const series = useMemo(() => {
-    const result = [{
+    return [{
       name: "Commits",
       dataKey: "commits",
       yAxisId: "left",
       color: "var(--accent-color)"
+    }, {
+      name: "Delta",
+      dataKey: "delta",
+      yAxisId: "right",
+      color: "var(--selected-color)"
     }];
-
-    const lineDataExists = lines && 
-                          lines.Weekly && 
-                          lines.Weekly.Counts && 
-                          Array.isArray(lines.Weekly.Counts) &&
-                          lines.Weekly.Counts.length > 0;
-    
-    if (lineDataExists) {
-      result.push({
-        name: "Delta",
-        dataKey: "delta",
-        yAxisId: "right",
-        color: "var(--selected-color)"
-      });
-    }
-
-    return result;
-  }, [lines]);
+  }, []);
 
   const tooltipFormatter = (value, name) => {
     if (name === 'Delta' && value !== null && value !== undefined) {
