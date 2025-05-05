@@ -9,8 +9,8 @@ export const REPOSITORY_STATS_CONFIG = {
     backoffFactor: 1.5,
   },
   background: {
-    maxRetries: 12,
-    initialDelay: 5000,
-    backoffFactor: 1.2,
+    maxRetries: 6,
+    initialDelay: 2000,
+    backoffFactor: 1.5,
   }
 };

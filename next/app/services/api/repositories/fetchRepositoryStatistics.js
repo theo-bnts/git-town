@@ -4,6 +4,7 @@ import { minimumExpectedShape } from './expectedRepositoryStatisticsShape';
 import { hasAllProperties } from '@/app/utils/objectUtils';
 import { handleApiError } from '@/app/services/errorHandler';
 import { REPOSITORY_STATS_CONFIG } from '@/app/config/requestConfig';
+import { getFromCache, saveToCache, CACHE_KEYS } from '@/app/utils/cacheUtils';
 
 /**
  * Récupère les statistiques d'un dépôt avec tentatives multiples
@@ -15,7 +16,9 @@ import { REPOSITORY_STATS_CONFIG } from '@/app/config/requestConfig';
  * @param {number} options.backoffFactor - Facteur pour le délai exponentiel
  * @param {boolean} options.backgroundMode - Si true, utilise la config pour traitement en arrière-plan
  * @param {AbortSignal} options.signal - Signal pour annuler la requête
- * @returns {Promise<{data: object, loading: boolean, retry: boolean}>}
+ * @param {boolean} options.skipCache - Si true, ignore le cache
+ * @param {number} options.cacheTtl - Durée de vie du cache en ms
+ * @returns {Promise<{data: object, loading: boolean, retry: boolean, fromCache?: boolean, cacheTimestamp?: number}>}
  * @throws {Error} - En cas d'erreur lors de la récupération
  */
 export async function fetchRepositoryStatistics(
@@ -29,13 +32,28 @@ export async function fetchRepositoryStatistics(
     initialDelay = defaultConfig.initialDelay,
     maxRetries = defaultConfig.maxRetries,
     backoffFactor = defaultConfig.backoffFactor,
-    signal 
+    signal,
+    skipCache = false,
+    cacheTtl
   } = options;
 
   let retries = 0;
 
   if (!repositoryId) {
     throw new Error("L'identifiant du dépôt est requis");
+  }
+  
+  if (!skipCache) {
+    const cached = getFromCache(CACHE_KEYS.REPO_STATS, repositoryId);
+    if (cached) {
+      return { 
+        data: cached.data, 
+        loading: false, 
+        retry: false,
+        fromCache: true,
+        cacheTimestamp: cached.timestamp
+      };
+    }
   }
 
   async function fetchStats() {
@@ -66,6 +84,8 @@ export async function fetchRepositoryStatistics(
         }
         return { data, loading: true, retry: true };
       }
+
+      saveToCache(CACHE_KEYS.REPO_STATS, repositoryId, data, cacheTtl);
 
       return { data, loading: false, retry: false };
     } catch (error) {

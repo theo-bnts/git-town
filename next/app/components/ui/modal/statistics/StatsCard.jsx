@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { XIcon, InfoIcon } from '@primer/octicons-react';
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
@@ -19,16 +19,75 @@ const cacheInfoText = "Ces données peuvent venir du cache pour que votre expér
  * @param {Object} props - Propriétés du composant
  * @param {Object} props.stats - Données statistiques
  * @param {Function} props.onClose - Fonction appelée pour fermer la modal
+ * @param {boolean} props.isPartial - Indique si les données sont partielles
  */
-export default function StatsCard({ stats, onClose }) {
+export default function StatsCard({ stats, onClose, isPartial }) {
   const [showInfo, setShowInfo] = useState(false);
   const { calculateUserTotals } = useRepositoryStats(stats);
-
-  const hasCompleteData = stats?.Global && 
-                         stats?.Global.Commits && 
-                         stats?.Global.Lines && 
-                         stats?.Global.Lines.Weekly && 
-                         stats?.Global.Lines.Weekly.Counts;
+  
+  const hasGlobalData = stats?.Global && 
+                        stats?.Global.Commits && 
+                        stats?.Global.Lines;
+  
+  const globalStats = useMemo(() => {
+    if (hasGlobalData) return stats.Global;
+    
+    if (stats?.Users?.length > 0) {
+      const userWithDates = stats.Users.find(user => 
+        user?.Commits?.Weekly?.FirstDayOfFirstWeek && 
+        user?.Lines?.Weekly?.FirstDayOfFirstWeek
+      );
+      
+      const aggregatedStats = {
+        Commits: {
+          Weekly: {
+            Counts: [],
+            FirstDayOfFirstWeek: userWithDates?.Commits?.Weekly?.FirstDayOfFirstWeek || new Date().toISOString(),
+            FirstDayOfLastWeek: userWithDates?.Commits?.Weekly?.FirstDayOfLastWeek
+          }
+        },
+        Lines: {
+          Weekly: {
+            Counts: [],
+            FirstDayOfFirstWeek: userWithDates?.Lines?.Weekly?.FirstDayOfFirstWeek || new Date().toISOString()
+          }
+        }
+      };
+      
+      const firstUser = stats.Users[0];
+      const weeksCount = firstUser?.Commits?.Weekly?.Counts?.length || 0;
+      
+      for (let i = 0; i < weeksCount; i++) {
+        aggregatedStats.Commits.Weekly.Counts[i] = 0;
+        aggregatedStats.Lines.Weekly.Counts[i] = { Additions: 0, Deletions: 0 };
+      }
+      
+      stats.Users.forEach(user => {
+        if (user?.Commits?.Weekly?.Counts) {
+          user.Commits.Weekly.Counts.forEach((count, index) => {
+            if (index < weeksCount) {
+              aggregatedStats.Commits.Weekly.Counts[index] += count || 0;
+            }
+          });
+        }
+        
+        if (user?.Lines?.Weekly?.Counts) {
+          user.Lines.Weekly.Counts.forEach((line, index) => {
+            if (index < weeksCount) {
+              aggregatedStats.Lines.Weekly.Counts[index].Additions += line?.Additions || 0;
+              aggregatedStats.Lines.Weekly.Counts[index].Deletions += line?.Deletions || 0;
+            }
+          });
+        }
+      });
+      
+      return aggregatedStats;
+    }
+    
+    return null;
+  }, [stats, hasGlobalData]);
+  
+  const shouldShowGlobalStats = globalStats || (stats?.Users?.length > 0);
   
   return (
     <Card variant="default" className="p-3 lg:p-4 w-full h-full">
@@ -65,9 +124,9 @@ export default function StatsCard({ stats, onClose }) {
         <LanguagesSection languages={stats.Global?.Languages} />
         
         <div className="w-full overflow-x-hidden">
-          {hasCompleteData ? (
+          {shouldShowGlobalStats ? (
             <ContributionCard
-              contributor={stats.Global}
+              contributor={globalStats || {}} 
               isTeam={true}
               calculateUserTotals={calculateUserTotals}
               stats={stats}

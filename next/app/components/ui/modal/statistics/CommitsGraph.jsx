@@ -63,8 +63,8 @@ export default function CommitsGraph({
     const lineDataExists = lines && 
                           lines.Weekly && 
                           lines.Weekly.Counts && 
-                          lines.Weekly.Counts.length > 0 && 
-                          lines.Weekly.Counts.some(week => (week.Additions > 0 || week.Deletions > 0));
+                          Array.isArray(lines.Weekly.Counts) &&
+                          lines.Weekly.Counts.length > 0;
     
     if (lineDataExists) {
       result.push({

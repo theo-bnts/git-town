@@ -16,6 +16,7 @@ import { useRepositoryStats } from '@/app/hooks/useRepositoryStats';
  * @param {boolean} props.loading - État de chargement des données
  * @param {Error} [props.error] - Erreur éventuelle lors du chargement
  * @param {boolean} [props.retry] - Indique si les données sont partielles
+ * @param {boolean} [props.fromCache] - Indique si les données proviennent du cache
  */
 export default function RepositoryStatsModal({ 
   isOpen, 
@@ -23,7 +24,8 @@ export default function RepositoryStatsModal({
   stats, 
   loading, 
   error,
-  retry 
+  retry,
+  fromCache
 }) {
   if (!isOpen) return null;
   
@@ -55,7 +57,7 @@ export default function RepositoryStatsModal({
     <div className="fixed inset-0 bg-[var(--popup-color)] 
     flex items-center justify-center z-50 overflow-hidden">
       {loading ? (
-        <LoadingCard />
+        <LoadingCard fromCache={fromCache} />
       ) : (
         <div className="w-full h-full overflow-y-auto py-6 lg:py-8 2xl:py-4">
           <div className="w-full max-w-[95vw] 2xl:max-w-[75vw] mx-auto px-2 lg:px-4">
@@ -111,10 +113,12 @@ RepositoryStatsModal.propTypes = {
   stats: PropTypes.object,
   loading: PropTypes.bool,
   error: PropTypes.object,
-  retry: PropTypes.bool
+  retry: PropTypes.bool,
+  fromCache: PropTypes.bool
 };
 
 RepositoryStatsModal.defaultProps = {
   loading: false,
-  retry: false
+  retry: false,
+  fromCache: false
 };

@@ -11,6 +11,7 @@ export default function RepositoryPanel() {
   const [loading, setLoading] = useState(false);
   const [retry, setRetry] = useState(false);
   const [error, setError] = useState(null);
+  const [fromCache, setFromCache] = useState(false);
 
   const repositoryId = '768767bf-80ad-4963-8c7d-d69e61fb7f8e';
 
@@ -22,18 +23,18 @@ export default function RepositoryPanel() {
       
       setLoading(true);
       setError(null);
+      setFromCache(false);
       
       try {
-        const { data, loading: stillLoading, retry: needsRetry } = await fetchRepositoryStatistics(
-          repositoryId, 
-          { backgroundMode: true }
-        );
+        const { data, loading: stillLoading, retry: needsRetry, fromCache: isFromCache } = 
+          await fetchRepositoryStatistics(repositoryId, { backgroundMode: true });
         
         if (cancelled) return;
         
         setStats(data);
         setLoading(stillLoading);
         setRetry(needsRetry);
+        setFromCache(isFromCache);
         
         if (!stillLoading) {
           setLoading(false);
@@ -62,6 +63,7 @@ export default function RepositoryPanel() {
     setLoading(false);
     setError(null);
     setRetry(false);
+    setFromCache(false);
   };
 
   return (
@@ -76,6 +78,7 @@ export default function RepositoryPanel() {
         loading={loading}
         error={error}
         retry={retry}
+        fromCache={fromCache}
       />
     </div>
   );

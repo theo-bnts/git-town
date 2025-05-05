@@ -27,34 +27,55 @@ export default function ContributionCard({
   let deletedLines = 0;
 
   useEffect(() => {
-    if (contributor) {
+    // Vérifier si nous avons des données valides
+    if ((isTeam && contributor && stats?.Users?.length > 0) || 
+        (!isTeam && contributor?.User)) {
       setIsDataReady(true);
     }
-  }, [contributor]);
+  }, [contributor, isTeam, stats]);
   
   if (isTeam) {
-    const commitsArray = contributor?.Commits?.Weekly?.Counts || [];
-    totalCommits = commitsArray.reduce((sum, count) => sum + (Number.isFinite(count) ? count : 0), 0);
+    // Pour l'équipe, on peut soit utiliser les données globales, soit calculer à partir des utilisateurs
+    if (contributor?.Commits?.Weekly?.Counts) {
+      const commitsArray = contributor.Commits.Weekly.Counts || [];
+      totalCommits = commitsArray.reduce((sum, count) => sum + (Number.isFinite(count) ? count : 0), 0);
+    } else if (stats?.Users) {
+      // Calculer à partir des utilisateurs si pas de données globales
+      totalCommits = stats.Users.reduce((sum, user) => {
+        const userCommits = user?.Commits?.Weekly?.Counts || [];
+        return sum + userCommits.reduce((userSum, count) => userSum + (Number.isFinite(count) ? count : 0), 0);
+      }, 0);
+    }
     
-    const linesCounts = contributor?.Lines?.Weekly?.Counts || [];
-    addedLines = linesCounts.reduce((sum, week) => sum + (week?.Additions || 0), 0);
-    deletedLines = linesCounts.reduce((sum, week) => sum + (week?.Deletions || 0), 0);
+    if (contributor?.Lines?.Weekly?.Counts) {
+      const linesCounts = contributor.Lines.Weekly.Counts || [];
+      addedLines = linesCounts.reduce((sum, week) => sum + (week?.Additions || 0), 0);
+      deletedLines = linesCounts.reduce((sum, week) => sum + (week?.Deletions || 0), 0);
+    } else if (stats?.Users) {
+      // Calculer à partir des utilisateurs si pas de données globales
+      stats.Users.forEach(user => {
+        const userLines = user?.Lines?.Weekly?.Counts || [];
+        addedLines += userLines.reduce((sum, week) => sum + (week?.Additions || 0), 0);
+        deletedLines += userLines.reduce((sum, week) => sum + (week?.Deletions || 0), 0);
+      });
+    }
   } else {
+    // Pour un utilisateur individuel
     const userStats = calculateUserTotals(contributor);
-    totalCommits = userStats.totalCommits;
-    addedLines = userStats.addedLines;
-    deletedLines = userStats.deletedLines;
+    totalCommits = userStats.totalCommits || 0;
+    addedLines = userStats.addedLines || 0;
+    deletedLines = userStats.deletedLines || 0;
   }
   
   const delta = calculateDelta(addedLines, deletedLines);
   
   const displayName = isTeam 
     ? "Équipe complète" 
-    : contributor?.User?.FullName;
+    : contributor?.User?.FullName || "Utilisateur";
   
   const subtitle = isTeam
     ? `${stats?.Users?.length || 0} membres` 
-    : contributor?.User?.EmailAddress;
+    : contributor?.User?.EmailAddress || "";
   
   return (
     <div className={`rounded-lg border border-gray-200 bg-white p-4 shadow-sm ${isTeam ? 'border-[var(--selected-color)]' : ''}`}>
@@ -83,8 +104,18 @@ export default function ContributionCard({
       <div className="mt-4">
         {isDataReady && (
           <CommitsGraph
-            commits={contributor?.Commits}
-            lines={contributor?.Lines}
+            commits={contributor?.Commits || (isTeam && {
+              Weekly: {
+                FirstDayOfFirstWeek: stats?.Users?.[0]?.Commits?.Weekly?.FirstDayOfFirstWeek,
+                Counts: contributor?.Commits?.Weekly?.Counts || []
+              }
+            })}
+            lines={contributor?.Lines || (isTeam && {
+              Weekly: {
+                FirstDayOfFirstWeek: stats?.Users?.[0]?.Lines?.Weekly?.FirstDayOfFirstWeek,
+                Counts: contributor?.Lines?.Weekly?.Counts || []
+              }
+            })}
             title={`Commits de ${displayName}`}
             height={200}
             showLegend={true}
