@@ -8,18 +8,6 @@ import { getFromCache, saveToCache, CACHE_KEYS } from '@/app/utils/cacheUtils';
 
 /**
  * Récupère les statistiques d'un dépôt avec tentatives multiples
- * 
- * @param {string} repositoryId - L'identifiant du dépôt
- * @param {object} options - Options de requête
- * @param {number} options.initialDelay - Délai initial en ms
- * @param {number} options.maxRetries - Nombre maximum de tentatives
- * @param {number} options.backoffFactor - Facteur pour le délai exponentiel
- * @param {boolean} options.backgroundMode - Si true, utilise la config pour traitement en arrière-plan
- * @param {AbortSignal} options.signal - Signal pour annuler la requête
- * @param {boolean} options.skipCache - Si true, ignore le cache
- * @param {number} options.cacheTtl - Durée de vie du cache en ms
- * @returns {Promise<{data: object, loading: boolean, retry: boolean, fromCache?: boolean, cacheTimestamp?: number}>}
- * @throws {Error} - En cas d'erreur lors de la récupération
  */
 export async function fetchRepositoryStatistics(
   repositoryId,

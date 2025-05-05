@@ -4,19 +4,12 @@ import React from 'react';
 import { AlertIcon } from '@primer/octicons-react'; 
 import PropTypes from 'prop-types';
 import Card from '@/app/components/ui/Card';
-import { LoadingCard, StatsCard, UserContributionsCard } from '@/app/components/ui/modal/statistics';
+import ContributionCard from '@/app/components/ui/modal/statistics/ContributionCard';
+import { LoadingCard, StatsCard } from '@/app/components/ui/modal/statistics';
 import { useRepositoryStats } from '@/app/hooks/useRepositoryStats';
 
 /**
  * Modal affichant les statistiques détaillées d'un dépôt
- * @param {Object} props - Propriétés du composant
- * @param {boolean} props.isOpen - État d'ouverture de la modal
- * @param {Function} props.onClose - Fonction de fermeture de la modal
- * @param {Object} props.stats - Données statistiques du dépôt
- * @param {boolean} props.loading - État de chargement des données
- * @param {Error} [props.error] - Erreur éventuelle lors du chargement
- * @param {boolean} [props.retry] - Indique si les données sont partielles
- * @param {boolean} [props.fromCache] - Indique si les données proviennent du cache
  */
 export default function RepositoryStatsModal({ 
   isOpen, 
@@ -91,12 +84,29 @@ export default function RepositoryStatsModal({
                 </div>
 
                 <div className="w-full">
-                  <UserContributionsCard 
-                    users={stats.Users} 
-                    hasUserCommits={hasUserCommits} 
-                    calculateUserTotals={calculateUserTotals}
-                    isPartial={retry}
-                  />
+                  <Card variant="default" className="p-3 lg:p-4 w-full h-full">
+                    <div className="space-y-3 lg:space-y-4">
+                      <h3 className="text-lg font-bold leading-none">Contributions par utilisateur</h3>
+                      
+                      {!hasUserCommits ? (
+                        <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                          Aucune donnée de commits par utilisateur à afficher
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-4">
+                          {stats.Users?.map((user, index) => (
+                            <ContributionCard 
+                              key={user.User?.Id || index}
+                              contributor={user}
+                              isTeam={false}
+                              calculateUserTotals={calculateUserTotals}
+                              stats={stats}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </Card>
                 </div>
               </div>
             )}

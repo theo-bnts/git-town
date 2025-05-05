@@ -1,7 +1,6 @@
 /**
  * Configuration des paramètres de requêtes API
  */
-
 export const REPOSITORY_STATS_CONFIG = {
   standard: {
     maxRetries: 3,

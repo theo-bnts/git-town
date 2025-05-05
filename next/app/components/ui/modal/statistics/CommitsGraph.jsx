@@ -1,19 +1,12 @@
 'use client';
 
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import Graph from '@/app/components/ui/Graph';
 import { calculateDelta } from '@/app/utils/calculateDelta';
 import { deltaQualifier } from '@/app/utils/deltaQualifier';
 
 /**
  * Graphique affichant l'évolution des commits et des lignes de code
- * @param {Object} props - Propriétés du composant
- * @param {Object} props.commits - Données de commits
- * @param {Object} props.lines - Données de lignes
- * @param {string} props.title - Titre du graphique
- * @param {number} props.height - Hauteur du graphique
- * @param {boolean} props.showLegend - Affichage de la légende
- * @param {boolean} props.hideTitle - Masquer le titre
  */
 export default function CommitsGraph({ 
   commits, 
@@ -23,15 +16,8 @@ export default function CommitsGraph({
   showLegend = true,
   hideTitle = false
 }) {
-  useEffect(() => {
-    const timer = setTimeout(() => {}, 10);
-    return () => clearTimeout(timer);
-  }, []);
-
   const data = useMemo(() => {
-    if (!commits?.Weekly?.Counts) {
-      return [];
-    }
+    if (!commits?.Weekly?.Counts) return [];
 
     const firstDay = commits.Weekly.FirstDayOfFirstWeek 
       ? new Date(commits.Weekly.FirstDayOfFirstWeek) 
@@ -39,19 +25,22 @@ export default function CommitsGraph({
       
     const hasLines = lines?.Weekly?.Counts && Array.isArray(lines.Weekly.Counts);
 
-    const weeksCount = commits.Weekly.Counts.length;
-    
     return commits.Weekly.Counts.map((count, idx) => {
       const week = new Date(firstDay);
       week.setDate(week.getDate() + idx * 7);
-      const formattedDate = week.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      const formattedDate = week.toLocaleDateString('fr-FR', { 
+        day: 'numeric', 
+        month: 'short' 
+      });
 
       let delta = 0;
       if (hasLines && idx < lines.Weekly.Counts.length) {
         const weekData = lines.Weekly.Counts[idx];
-        const additions = weekData?.Additions || 0;
-        const deletions = weekData?.Deletions || 0;
-        delta = calculateDelta(additions, deletions);
+        if (weekData) {
+          const additions = weekData.Additions || 0;
+          const deletions = weekData.Deletions || 0;
+          delta = calculateDelta(additions, deletions);
+        }
       }
 
       return {
@@ -62,19 +51,20 @@ export default function CommitsGraph({
     });
   }, [commits, lines]);
 
-  const series = useMemo(() => {
-    return [{
+  const series = [
+    {
       name: "Commits",
       dataKey: "commits",
       yAxisId: "left",
       color: "var(--accent-color)"
-    }, {
+    }, 
+    {
       name: "Delta",
       dataKey: "delta",
       yAxisId: "right",
       color: "var(--selected-color)"
-    }];
-  }, []);
+    }
+  ];
 
   const tooltipFormatter = (value, name) => {
     if (name === 'Delta' && value !== null && value !== undefined) {

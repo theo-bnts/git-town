@@ -5,21 +5,20 @@ import { XIcon, InfoIcon } from '@primer/octicons-react';
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import { 
-  InfoTooltip, 
   LanguagesSection,
   ContributionsTable,
   ContributionCard
 } from '@/app/components/ui/modal/statistics';
+import InfoTooltip from '@/app/components/ui/InfoTooltip';
 import { useRepositoryStats } from '@/app/hooks/useRepositoryStats';
+import { generateGlobalStatsFromUsers } from '@/app/utils/statisticsUtils';
 
-const cacheInfoText = "Ces données peuvent venir du cache pour que votre expérience ne soit pas ralentie. Les données peuvent présenter un retard jusqu'à une heure.";
+const CACHE_INFO_TEXT = 
+  "Ces données peuvent venir du cache pour que votre expérience ne soit pas ralentie. " +
+  "Les données peuvent présenter un retard jusqu'à une heure.";
 
 /**
  * Carte principale affichant les statistiques globales du dépôt
- * @param {Object} props - Propriétés du composant
- * @param {Object} props.stats - Données statistiques
- * @param {Function} props.onClose - Fonction appelée pour fermer la modal
- * @param {boolean} props.isPartial - Indique si les données sont partielles
  */
 export default function StatsCard({ stats, onClose, isPartial }) {
   const [showInfo, setShowInfo] = useState(false);
@@ -31,60 +30,7 @@ export default function StatsCard({ stats, onClose, isPartial }) {
   
   const globalStats = useMemo(() => {
     if (hasGlobalData) return stats.Global;
-    
-    if (stats?.Users?.length > 0) {
-      const userWithDates = stats.Users.find(user => 
-        user?.Commits?.Weekly?.FirstDayOfFirstWeek && 
-        user?.Lines?.Weekly?.FirstDayOfFirstWeek
-      );
-      
-      const aggregatedStats = {
-        Commits: {
-          Weekly: {
-            Counts: [],
-            FirstDayOfFirstWeek: userWithDates?.Commits?.Weekly?.FirstDayOfFirstWeek || new Date().toISOString(),
-            FirstDayOfLastWeek: userWithDates?.Commits?.Weekly?.FirstDayOfLastWeek
-          }
-        },
-        Lines: {
-          Weekly: {
-            Counts: [],
-            FirstDayOfFirstWeek: userWithDates?.Lines?.Weekly?.FirstDayOfFirstWeek || new Date().toISOString()
-          }
-        }
-      };
-      
-      const firstUser = stats.Users[0];
-      const weeksCount = firstUser?.Commits?.Weekly?.Counts?.length || 0;
-      
-      for (let i = 0; i < weeksCount; i++) {
-        aggregatedStats.Commits.Weekly.Counts[i] = 0;
-        aggregatedStats.Lines.Weekly.Counts[i] = { Additions: 0, Deletions: 0 };
-      }
-      
-      stats.Users.forEach(user => {
-        if (user?.Commits?.Weekly?.Counts) {
-          user.Commits.Weekly.Counts.forEach((count, index) => {
-            if (index < weeksCount) {
-              aggregatedStats.Commits.Weekly.Counts[index] += count || 0;
-            }
-          });
-        }
-        
-        if (user?.Lines?.Weekly?.Counts) {
-          user.Lines.Weekly.Counts.forEach((line, index) => {
-            if (index < weeksCount) {
-              aggregatedStats.Lines.Weekly.Counts[index].Additions += line?.Additions || 0;
-              aggregatedStats.Lines.Weekly.Counts[index].Deletions += line?.Deletions || 0;
-            }
-          });
-        }
-      });
-      
-      return aggregatedStats;
-    }
-    
-    return null;
+    return generateGlobalStatsFromUsers(stats?.Users);
   }, [stats, hasGlobalData]);
   
   const shouldShowGlobalStats = globalStats || (stats?.Users?.length > 0);
@@ -110,7 +56,7 @@ export default function StatsCard({ stats, onClose, isPartial }) {
               </Button>
               <InfoTooltip 
                 show={showInfo} 
-                text={cacheInfoText} 
+                text={CACHE_INFO_TEXT} 
                 position="top-9 left-0" 
                 variant="success" 
               />
@@ -126,7 +72,7 @@ export default function StatsCard({ stats, onClose, isPartial }) {
         <div className="w-full overflow-x-hidden">
           {shouldShowGlobalStats ? (
             <ContributionCard
-              contributor={globalStats || {}} 
+              contributor={globalStats} 
               isTeam={true}
               calculateUserTotals={calculateUserTotals}
               stats={stats}
@@ -139,7 +85,7 @@ export default function StatsCard({ stats, onClose, isPartial }) {
         </div>
         
         <div className="w-full overflow-x-hidden">
-          <ContributionsTable users={stats.Users} />
+          <ContributionsTable users={stats.Users} stats={stats} />
         </div>
       </div>
     </Card>

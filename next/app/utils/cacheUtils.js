@@ -6,13 +6,10 @@ const CACHE_KEYS = {
   REPO_STATS: 'repo_stats'
 };
 
-const DEFAULT_TTL = 10 * 60 * 1000; // 10 minutes par défaut
+const DEFAULT_TTL = 10 * 60 * 1000;
 
 /**
  * Récupère des données du cache
- * @param {string} key - Clé de cache
- * @param {string} id - Identifiant de la ressource
- * @returns {Object|null} Données en cache ou null
  */
 export function getFromCache(key, id) {
   if (typeof window === 'undefined') return null;
@@ -39,10 +36,6 @@ export function getFromCache(key, id) {
 
 /**
  * Stocke des données en cache
- * @param {string} key - Clé de cache
- * @param {string} id - Identifiant de la ressource
- * @param {Object} data - Données à mettre en cache
- * @param {number} ttl - Durée de vie du cache (ms)
  */
 export function saveToCache(key, id, data, ttl = DEFAULT_TTL) {
   if (typeof window === 'undefined') return;

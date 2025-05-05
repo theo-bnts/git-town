@@ -5,9 +5,6 @@ import { textStyles } from '@/app/styles/tailwindStyles';
 
 /**
  * Affiche la liste des langages de programmation utilisés dans le dépôt
- * 
- * @param {Object} props - Propriétés du composant
- * @param {Array} props.languages - Liste des langages avec pourcentages
  */
 export default function LanguagesSection({ languages = [] }) {
   if (!languages?.length) return null;

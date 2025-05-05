@@ -1,7 +1,5 @@
 /**
  * Qualifie un delta selon sa valeur
- * @param {number} delta - La valeur du delta à qualifier
- * @returns {Object} - Un objet contenant le label et la classe CSS associée
  */
 export function deltaQualifier(delta) {
   if (delta >= 0.8) {
