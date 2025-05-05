@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useCallback } from 'react';
-import { calculateRatio } from '@/app/utils/calculateRatio';
+import { calculateDelta } from '@/app/utils/calculateDelta';
 
 /**
  * Hook personnalisé pour le traitement des données statistiques d'un dépôt
@@ -35,7 +35,7 @@ export function useRepositoryStats(stats) {
 
   const calculateUserTotals = useCallback((user) => {
     if (!user || !user.Commits?.Weekly?.Counts) {
-      return { totalCommits: 0, addedLines: 0, deletedLines: 0, ratio: 0 };
+      return { totalCommits: 0, addedLines: 0, deletedLines: 0, delta: 0 };
     }
     
     const counts = user.Commits.Weekly.Counts || [];
@@ -44,9 +44,9 @@ export function useRepositoryStats(stats) {
       : 0;
     
     const { addedLines, deletedLines } = getLineStatistics(user);
-    const ratio = calculateRatio(addedLines, deletedLines);
+    const delta = calculateDelta(addedLines, deletedLines);
     
-    return { totalCommits, addedLines, deletedLines, ratio };
+    return { totalCommits, addedLines, deletedLines, delta };
   }, []);
 
   const calculateTeamTotals = useCallback(() => {
