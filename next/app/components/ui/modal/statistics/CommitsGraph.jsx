@@ -57,7 +57,7 @@ export default function CommitsGraph({
       return {
         week: formattedDate,
         commits: count || 0,
-        delta: delta
+        delta
       };
     });
   }, [commits, lines]);

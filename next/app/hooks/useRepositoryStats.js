@@ -51,7 +51,7 @@ export function useRepositoryStats(stats) {
 
   const calculateTeamTotals = useCallback(() => {
     if (!stats?.Global) {
-      return { totalCommits: 0, totalPullRequests: 0, addedLines: 0, deletedLines: 0 };
+      return { totalCommits: 0, totalPullRequests: 0, addedLines: 0, deletedLines: 0, delta: 0 };
     }
     
     const commitsArray = stats.Global.Commits?.Weekly?.Counts || [];
@@ -64,10 +64,12 @@ export function useRepositoryStats(stats) {
     let deletedLines = 0;
     
     const linesCounts = stats.Global.Lines?.Weekly?.Counts || [];
-    addedLines = linesCounts.reduce((sum, week) => sum + (week.Additions || 0), 0);
-    deletedLines = linesCounts.reduce((sum, week) => sum + (week.Deletions || 0), 0);
+    addedLines = linesCounts.reduce((sum, week) => sum + (week?.Additions || 0), 0);
+    deletedLines = linesCounts.reduce((sum, week) => sum + (week?.Deletions || 0), 0);
     
-    return { totalCommits, totalPullRequests, addedLines, deletedLines };
+    const delta = calculateDelta(addedLines, deletedLines);
+    
+    return { totalCommits, totalPullRequests, addedLines, deletedLines, delta };
   }, [stats]);
 
   const calculateContributorTotals = useCallback((contributor) => {

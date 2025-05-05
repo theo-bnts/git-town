@@ -25,9 +25,9 @@ export default function ContributionCard({
   let totalCommits = 0;
   let addedLines = 0;
   let deletedLines = 0;
+  let delta = 0;
 
   useEffect(() => {
-    // Vérifier si nous avons des données valides
     if ((isTeam && contributor && stats?.Users?.length > 0) || 
         (!isTeam && contributor?.User)) {
       setIsDataReady(true);
@@ -35,39 +35,18 @@ export default function ContributionCard({
   }, [contributor, isTeam, stats]);
   
   if (isTeam) {
-    // Pour l'équipe, on peut soit utiliser les données globales, soit calculer à partir des utilisateurs
-    if (contributor?.Commits?.Weekly?.Counts) {
-      const commitsArray = contributor.Commits.Weekly.Counts || [];
-      totalCommits = commitsArray.reduce((sum, count) => sum + (Number.isFinite(count) ? count : 0), 0);
-    } else if (stats?.Users) {
-      // Calculer à partir des utilisateurs si pas de données globales
-      totalCommits = stats.Users.reduce((sum, user) => {
-        const userCommits = user?.Commits?.Weekly?.Counts || [];
-        return sum + userCommits.reduce((userSum, count) => userSum + (Number.isFinite(count) ? count : 0), 0);
-      }, 0);
-    }
-    
-    if (contributor?.Lines?.Weekly?.Counts) {
-      const linesCounts = contributor.Lines.Weekly.Counts || [];
-      addedLines = linesCounts.reduce((sum, week) => sum + (week?.Additions || 0), 0);
-      deletedLines = linesCounts.reduce((sum, week) => sum + (week?.Deletions || 0), 0);
-    } else if (stats?.Users) {
-      // Calculer à partir des utilisateurs si pas de données globales
-      stats.Users.forEach(user => {
-        const userLines = user?.Lines?.Weekly?.Counts || [];
-        addedLines += userLines.reduce((sum, week) => sum + (week?.Additions || 0), 0);
-        deletedLines += userLines.reduce((sum, week) => sum + (week?.Deletions || 0), 0);
-      });
-    }
+    const teamStats = calculateUserTotals(contributor) || calculateTeamTotals();
+    totalCommits = teamStats.totalCommits || 0;
+    addedLines = teamStats.addedLines || 0;
+    deletedLines = teamStats.deletedLines || 0;
+    delta = teamStats.delta || 0;
   } else {
-    // Pour un utilisateur individuel
     const userStats = calculateUserTotals(contributor);
     totalCommits = userStats.totalCommits || 0;
     addedLines = userStats.addedLines || 0;
     deletedLines = userStats.deletedLines || 0;
+    delta = calculateDelta(addedLines, deletedLines);
   }
-  
-  const delta = calculateDelta(addedLines, deletedLines);
   
   const displayName = isTeam 
     ? "Équipe complète" 
