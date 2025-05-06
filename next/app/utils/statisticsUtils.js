@@ -260,10 +260,24 @@ export function getDefaultStats(isTeam = false) {
  * Calcule les statistiques globales de façon cohérente
  */
 export function getGlobalCommitStats(stats) {
-  if (!stats) return { totalCommits: 0 };
+  if (!stats) return { 
+    totalCommits: 0,
+    addedLines: 0,
+    deletedLines: 0,
+    delta: 0,
+    pullRequests: 0,
+    merges: 0,
+    membersCount: 0 
+  };
+  
+  const membersCount = Array.isArray(stats.Users) ? stats.Users.length : 0;
   
   if (stats.Global?.Commits?.Weekly?.Counts) {
-    return calculateUserStats(stats.Global);
+    const globalStats = calculateUserStats(stats.Global);
+    return {
+      ...globalStats,
+      membersCount
+    };
   }
   
   if (Array.isArray(stats.Users) && stats.Users.length > 0) {
@@ -272,10 +286,39 @@ export function getGlobalCommitStats(stats) {
       return sum + userStats.totalCommits;
     }, 0);
     
+    let totalAddedLines = 0;
+    let totalDeletedLines = 0;
+    let totalMerges = 0;
+    let totalPRs = 0;
+    
+    stats.Users.forEach(user => {
+      const userStats = calculateUserStats(user);
+      totalAddedLines += userStats.addedLines;
+      totalDeletedLines += userStats.deletedLines;
+      totalMerges += userStats.merges;
+      totalPRs += userStats.pullRequests;
+    });
+    
+    const delta = calculateDelta(totalAddedLines, totalDeletedLines);
+    
     return {
       totalCommits,
+      addedLines: totalAddedLines,
+      deletedLines: totalDeletedLines,
+      delta,
+      merges: totalMerges,
+      pullRequests: totalPRs,
+      membersCount
     };
   }
   
-  return { totalCommits: 0 };
+  return { 
+    totalCommits: 0,
+    addedLines: 0,
+    deletedLines: 0,
+    delta: 0,
+    pullRequests: 0,
+    merges: 0,
+    membersCount: 0
+  };
 }

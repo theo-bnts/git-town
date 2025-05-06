@@ -44,7 +44,7 @@ export default function ContributionCard({
   
   const displayName = isTeam ? "Équipe complète" : contributor?.User?.FullName || "Utilisateur";
   const subtitle = isTeam 
-    ? `${membersCount || 0} membres` 
+    ? `${membersCount || 0} membre${membersCount !== 1 ? 's' : ''}` 
     : contributor?.User?.EmailAddress || "";
   
   return (
