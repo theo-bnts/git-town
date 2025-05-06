@@ -3,8 +3,7 @@
 import React, { useMemo } from 'react';
 import { textStyles } from '@/app/styles/tailwindStyles';
 import Table from '@/app/components/layout/table/Table';
-import { calculateDelta } from '@/app/utils/calculateDelta';
-import { calculateTotal, extractLineStatistics } from '@/app/utils/statisticsUtils';
+import { calculateUserStats, getGlobalCommitStats } from '@/app/utils/statisticsUtils';
 import Tag from '@/app/components/ui/Tag';
 
 const getTableColumns = () => [
@@ -46,16 +45,16 @@ export default function ContributionsTable({ users = [], stats }) {
     
     const userData = users.map(userStat => {
       const user = userStat.User || {};
-      const { addedLines: additions, deletedLines: deletions } = extractLineStatistics(userStat);
-      const delta = calculateDelta(additions, deletions);
+      const { totalCommits, addedLines, deletedLines, delta, pullRequests, merges } = 
+        calculateUserStats(userStat);
 
       return {
         name: user.FullName || '',
-        merges: userStat.PullRequests?.Closed ?? 0,
-        prs: (userStat.PullRequests?.Open ?? 0) + (userStat.PullRequests?.Closed ?? 0),
-        commits: userStat.Commits?.Weekly?.Counts?.reduce((sum, c) => sum + (c || 0), 0) ?? 0,
-        additions,
-        deletions,
+        merges,
+        prs: pullRequests,
+        commits: totalCommits,
+        additions: addedLines,
+        deletions: deletedLines,
         delta: parseFloat(delta.toFixed(1)),
       };
     });
@@ -63,22 +62,16 @@ export default function ContributionsTable({ users = [], stats }) {
     let data = [...userData];
     
     if (data.length > 0) {
-      const globalCommits = stats?.Global?.Commits?.Weekly?.Counts?.reduce(
-        (sum, count) => sum + (Number.isFinite(count) ? count : 0), 0
-      ) || calculateTotal(data, 'commits');
-      
-      const totalAdditions = calculateTotal(data, 'additions');
-      const totalDeletions = calculateTotal(data, 'deletions');
-      const totalDelta = calculateDelta(totalAdditions, totalDeletions);
+      const globalStats = getGlobalCommitStats(stats);
       
       data.push({
         name: <span className="font-bold">Équipe complète</span>,
-        merges: calculateTotal(data, 'merges'),
-        prs: calculateTotal(data, 'prs'),
-        commits: globalCommits,
-        additions: totalAdditions,
-        deletions: totalDeletions,
-        delta: parseFloat(totalDelta.toFixed(1)),
+        merges: globalStats.merges,
+        prs: globalStats.pullRequests,
+        commits: globalStats.totalCommits,
+        additions: globalStats.addedLines,
+        deletions: globalStats.deletedLines,
+        delta: parseFloat(globalStats.delta.toFixed(1)),
       });
     }
     

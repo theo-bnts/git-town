@@ -24,16 +24,17 @@ export default function StatsCard({ stats, onClose, isPartial }) {
   const [showInfo, setShowInfo] = useState(false);
   const { calculateUserTotals } = useRepositoryStats(stats);
   
-  const hasGlobalData = stats?.Global && 
-                        stats?.Global.Commits && 
-                        stats?.Global.Lines;
+  const hasGlobalData = Boolean(
+    stats?.Global?.Commits?.Weekly?.Counts && 
+    stats?.Global?.Lines?.Weekly?.Counts
+  );
   
-  const globalStats = useMemo(() => {
-    if (hasGlobalData) return stats.Global;
-    return generateGlobalStatsFromUsers(stats?.Users);
-  }, [stats, hasGlobalData]);
+  const globalStats = useMemo(() => 
+    hasGlobalData ? stats.Global : generateGlobalStatsFromUsers(stats?.Users)
+  , [stats, hasGlobalData]);
   
-  const shouldShowGlobalStats = globalStats || (stats?.Users?.length > 0);
+  const hasUsers = Array.isArray(stats?.Users) && stats.Users.length > 0;
+  const shouldShowGlobalStats = Boolean(globalStats || hasUsers);
   
   return (
     <Card variant="default" className="p-3 lg:p-4 w-full h-full">

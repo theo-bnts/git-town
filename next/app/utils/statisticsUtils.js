@@ -1,6 +1,7 @@
 /**
  * Utilitaires pour le calcul des statistiques
  */
+import { calculateDelta } from "./calculateDelta";
 
 /**
  * Calcule la somme des valeurs d'un tableau en gérant les cas spéciaux
@@ -17,9 +18,6 @@ export function safeArraySum(array, accessor = null) {
 
 /**
  * Calcule la somme des valeurs d'un tableau pour une propriété donnée
- * @param {Array} data - Tableau de données
- * @param {string} key - Clé de la propriété à additionner
- * @returns {number} - Somme des valeurs
  */
 export function calculateTotal(data, key) {
   if (!Array.isArray(data) || !data.length) return 0;
@@ -27,26 +25,23 @@ export function calculateTotal(data, key) {
 }
 
 /**
- * Extrait les statistiques de lignes (ajoutées/supprimées) d'une entité
- * @param {Object} entity - Objet contenant les statistiques
- * @returns {Object} - Statistiques extraites
+ * Extraction de statistiques optimisée avec memoization si nécessaire
  */
 export function extractLineStatistics(entity) {
-  if (!entity) {
+  if (!entity?.Lines?.Weekly?.Counts) {
     return { addedLines: 0, deletedLines: 0 };
   }
   
+  const lineCounts = entity.Lines.Weekly.Counts;
   let addedLines = 0;
   let deletedLines = 0;
   
-  if (entity.Lines?.Total) {
-    addedLines = entity.Lines.Total.Additions || 0;
-    deletedLines = entity.Lines.Total.Deletions || 0;
-  } 
-  else if (entity.Lines?.Weekly?.Counts) {
-    const lineCounts = entity.Lines.Weekly.Counts;
-    addedLines = lineCounts.reduce((sum, week) => sum + (week?.Additions || 0), 0);
-    deletedLines = lineCounts.reduce((sum, week) => sum + (week?.Deletions || 0), 0);
+  for (let i = 0; i < lineCounts.length; i++) {
+    const lineData = lineCounts[i];
+    if (lineData) {
+      addedLines += lineData.Additions || 0;
+      deletedLines += lineData.Deletions || 0;
+    }
   }
   
   return { addedLines, deletedLines };
@@ -84,70 +79,203 @@ export function formatUserStatistics(users) {
 }
 
 /**
- * Génère des statistiques globales à partir des données utilisateurs
- * @param {Array} users - Tableau d'utilisateurs
- * @returns {Object} - Statistiques globales agrégées
+ * Trouve un utilisateur avec des données temporelles valides
  */
-export function generateGlobalStatsFromUsers(users) {
-  if (!users || users.length === 0) return null;
-  
-  // Trouver un utilisateur avec des données de dates
-  const userWithDates = users.find(user => 
+function findUserWithDates(users) {
+  return users.find(user => 
     user?.Commits?.Weekly?.FirstDayOfFirstWeek && 
     user?.Lines?.Weekly?.FirstDayOfFirstWeek
   );
-  
-  // Créer la structure de base
-  const globalStats = {
+}
+
+/**
+ * Crée la structure de base pour les statistiques globales
+ */
+function createEmptyGlobalStats(userWithDates) {
+  const defaultDate = new Date().toISOString();
+  return {
     Commits: {
       Weekly: {
         Counts: [],
-        FirstDayOfFirstWeek: userWithDates?.Commits?.Weekly?.FirstDayOfFirstWeek || 
-                          new Date().toISOString(),
+        FirstDayOfFirstWeek: userWithDates?.Commits?.Weekly?.FirstDayOfFirstWeek || defaultDate,
         FirstDayOfLastWeek: userWithDates?.Commits?.Weekly?.FirstDayOfLastWeek
       }
     },
     Lines: {
       Weekly: {
         Counts: [],
-        FirstDayOfFirstWeek: userWithDates?.Lines?.Weekly?.FirstDayOfFirstWeek || 
-                          new Date().toISOString()
+        FirstDayOfFirstWeek: userWithDates?.Lines?.Weekly?.FirstDayOfFirstWeek || defaultDate
       }
     }
   };
-  
-  // Déterminer la longueur maximale des tableaux
-  const weeksCount = Math.max(...users.map(
+}
+
+/**
+ * Calcule le nombre maximum de semaines dans les données utilisateurs
+ */
+function calculateMaxWeeks(users) {
+  return Math.max(...users.map(
     user => user?.Commits?.Weekly?.Counts?.length || 0
   ));
-  
-  // Initialiser les tableaux
+}
+
+/**
+ * Initialise des tableaux de données vides pour les statistiques
+ */
+function initializeDataArrays(globalStats, weeksCount) {
   for (let i = 0; i < weeksCount; i++) {
     globalStats.Commits.Weekly.Counts[i] = 0;
     globalStats.Lines.Weekly.Counts[i] = { Additions: 0, Deletions: 0 };
   }
+}
+
+/**
+ * Agrège les données de commits d'un utilisateur
+ */
+function aggregateUserCommits(user, globalStats, weeksCount) {
+  if (user?.Commits?.Weekly?.Counts) {
+    user.Commits.Weekly.Counts.forEach((count, index) => {
+      if (index < weeksCount) {
+        globalStats.Commits.Weekly.Counts[index] += count || 0;
+      }
+    });
+  }
+}
+
+/**
+ * Agrège les données de lignes d'un utilisateur
+ */
+function aggregateUserLines(user, globalStats, weeksCount) {
+  if (user?.Lines?.Weekly?.Counts) {
+    user.Lines.Weekly.Counts.forEach((line, index) => {
+      if (index < weeksCount && line) {
+        globalStats.Lines.Weekly.Counts[index].Additions += line.Additions || 0;
+        globalStats.Lines.Weekly.Counts[index].Deletions += line.Deletions || 0;
+      }
+    });
+  }
+}
+
+/**
+ * Génère des statistiques globales à partir des données utilisateurs
+ */
+export function generateGlobalStatsFromUsers(users) {
+  if (!users || users.length === 0) return null;
   
-  // Agréger les données
+  const userWithDates = findUserWithDates(users);
+  const globalStats = createEmptyGlobalStats(userWithDates);
+  const weeksCount = calculateMaxWeeks(users);
+  
+  initializeDataArrays(globalStats, weeksCount);
+  
   users.forEach(user => {
-    // Commits
-    if (user?.Commits?.Weekly?.Counts) {
-      user.Commits.Weekly.Counts.forEach((count, index) => {
-        if (index < weeksCount) {
-          globalStats.Commits.Weekly.Counts[index] += count || 0;
-        }
-      });
-    }
-    
-    // Lignes
-    if (user?.Lines?.Weekly?.Counts) {
-      user.Lines.Weekly.Counts.forEach((line, index) => {
-        if (index < weeksCount && line) {
-          globalStats.Lines.Weekly.Counts[index].Additions += line.Additions || 0;
-          globalStats.Lines.Weekly.Counts[index].Deletions += line.Deletions || 0;
-        }
-      });
-    }
+    aggregateUserCommits(user, globalStats, weeksCount);
+    aggregateUserLines(user, globalStats, weeksCount);
   });
   
   return globalStats;
+}
+
+/**
+ * Cache des résultats pour les calculs coûteux
+ */
+const statsCache = new Map();
+
+/**
+ * Calcule les statistiques avec cache pour éviter les recalculs inutiles
+ */
+export function calculateUserStats(user) {
+  if (!user) {
+    return { 
+      totalCommits: 0, 
+      addedLines: 0, 
+      deletedLines: 0, 
+      delta: 0,
+      pullRequests: 0,
+      merges: 0
+    };
+  }
+  
+  const cacheKey = user.User?.Id;
+  if (cacheKey && statsCache.has(cacheKey)) {
+    return statsCache.get(cacheKey);
+  }
+  
+  const counts = user.Commits?.Weekly?.Counts || [];
+  const totalCommits = safeArraySum(counts);
+  
+  const { addedLines, deletedLines } = extractLineStatistics(user);
+  const delta = calculateDelta(addedLines, deletedLines);
+  
+  const merges = user.PullRequests?.Closed || 0;
+  const pullRequests = (user.PullRequests?.Open || 0) + merges;
+  
+  const result = { 
+    totalCommits, 
+    addedLines, 
+    deletedLines, 
+    delta,
+    pullRequests,
+    merges
+  };
+
+  if (cacheKey) {
+    statsCache.set(cacheKey, result);
+  }
+  
+  return result;
+}
+
+/**
+ * Valeurs par défaut pour les statistiques
+ */
+export const DEFAULT_STATS = {
+  user: {
+    totalCommits: 0,
+    addedLines: 0,
+    deletedLines: 0,
+    delta: 0,
+    pullRequests: 0,
+    merges: 0
+  },
+  team: {
+    totalCommits: 0,
+    addedLines: 0,
+    deletedLines: 0,
+    delta: 0,
+    pullRequests: 0,
+    merges: 0,
+    membersCount: 0
+  }
+};
+
+/**
+ * Fournit des valeurs par défaut pour les statistiques d'une entité
+ */
+export function getDefaultStats(isTeam = false) {
+  return isTeam ? {...DEFAULT_STATS.team} : {...DEFAULT_STATS.user};
+}
+
+/**
+ * Calcule les statistiques globales de façon cohérente
+ */
+export function getGlobalCommitStats(stats) {
+  if (!stats) return { totalCommits: 0 };
+  
+  if (stats.Global?.Commits?.Weekly?.Counts) {
+    return calculateUserStats(stats.Global);
+  }
+  
+  if (Array.isArray(stats.Users) && stats.Users.length > 0) {
+    const totalCommits = stats.Users.reduce((sum, user) => {
+      const userStats = calculateUserStats(user);
+      return sum + userStats.totalCommits;
+    }, 0);
+    
+    return {
+      totalCommits,
+    };
+  }
+  
+  return { totalCommits: 0 };
 }

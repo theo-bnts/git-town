@@ -1,10 +1,44 @@
 import { fetchWithAuth } from '@/app/services/auth';
 import { repositoryStatisticsRoute } from '@/app/services/routes';
-import { minimumExpectedShape } from './expectedRepositoryStatisticsShape';
+import { minimumExpectedShape, expectedShape } from './expectedRepositoryStatisticsShape';
 import { hasAllProperties } from '@/app/utils/objectUtils';
 import { handleApiError } from '@/app/services/errorHandler';
 import { REPOSITORY_STATS_CONFIG } from '@/app/config/requestConfig';
 import { getFromCache, saveToCache, CACHE_KEYS } from '@/app/utils/cacheUtils';
+
+/**
+ * Vérifie si les données en cache sont complètes
+ */
+export function isCacheComplete(data) {
+  return Boolean(
+    data && 
+    data.Global?.Commits?.Weekly?.Counts &&
+    data.Global?.Lines?.Weekly?.Counts &&
+    Array.isArray(data.Users)
+  );
+}
+
+/**
+ * Valide les données de statistiques reçues
+ */
+export function validateRepositoryStats(data, fullValidation = false) {
+  if (!data) return { 
+    valid: false, 
+    message: 'Aucune donnée de statistiques disponible' 
+  };
+  
+  const shapeToCheck = fullValidation ? expectedShape : minimumExpectedShape;
+  
+  if (!hasAllProperties(data, shapeToCheck)) {
+    return { 
+      valid: false, 
+      partial: true,
+      message: 'Format de données incomplet: certaines données pourraient manquer' 
+    };
+  }
+  
+  return { valid: true, partial: false };
+}
 
 /**
  * Récupère les statistiques d'un dépôt avec tentatives multiples
@@ -34,10 +68,11 @@ export async function fetchRepositoryStatistics(
   if (!skipCache) {
     const cached = getFromCache(CACHE_KEYS.REPO_STATS, repositoryId);
     if (cached) {
+      const isComplete = isCacheComplete(cached.data);
       return { 
         data: cached.data, 
         loading: false, 
-        retry: false,
+        retry: !isComplete,
         fromCache: true,
         cacheTimestamp: cached.timestamp
       };
@@ -61,9 +96,9 @@ export async function fetchRepositoryStatistics(
       }
       
       const data = await res.json();
-
-      if (!hasAllProperties(data, minimumExpectedShape)) {
-        
+      const validation = validateRepositoryStats(data, false);
+      
+      if (!validation.valid) {
         if (retries < maxRetries) {
           retries++;
           const delay = initialDelay * Math.pow(backoffFactor, retries - 1);

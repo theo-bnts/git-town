@@ -3,40 +3,48 @@
 import React, { useMemo } from 'react';
 import { CommitsGraph } from '@/app/components/ui/modal/statistics';
 import Tag from '@/app/components/ui/Tag';
+import { calculateUserStats, getGlobalCommitStats } from '@/app/utils/statisticsUtils';
 
 /**
  * Carte affichant les contributions d'un utilisateur ou de l'équipe
  */
 export default function ContributionCard({ 
   contributor, 
-  isTeam = false, 
-  calculateUserTotals, 
-  stats 
+  isTeam = false,
+  stats = null
 }) {
-  const hasValidData = contributor?.Commits?.Weekly?.Counts && contributor?.Lines?.Weekly?.Counts;
+  const hasValidData = contributor?.Commits?.Weekly?.Counts && 
+                       contributor?.Lines?.Weekly?.Counts;
 
   const contributorStats = useMemo(() => {
-    if (!contributor) {
-      return { totalCommits: 0, addedLines: 0, deletedLines: 0, delta: 0 };
+    if (isTeam && stats) {
+      return getGlobalCommitStats(stats);
     }
-
-    const totals = calculateUserTotals(contributor);
     
-    if (isTeam) {
-      return {
-        ...totals,
-        membersCount: stats?.Users?.length || 0
+    if (!contributor) {
+      return { 
+        totalCommits: 0, 
+        addedLines: 0, 
+        deletedLines: 0, 
+        delta: 0, 
+        pullRequests: 0, 
+        merges: 0 
       };
     }
     
-    return totals;
-  }, [contributor, isTeam, calculateUserTotals, stats]);
+    const calculatedStats = calculateUserStats(contributor);
+    
+    return {
+      ...calculatedStats,
+      membersCount: isTeam && contributor.Users ? contributor.Users.length : 0
+    };
+  }, [contributor, isTeam, stats]);
 
   const { totalCommits, addedLines, deletedLines, delta, membersCount } = contributorStats;
   
   const displayName = isTeam ? "Équipe complète" : contributor?.User?.FullName || "Utilisateur";
   const subtitle = isTeam 
-    ? `${membersCount || stats?.Users?.length || 0} membres` 
+    ? `${membersCount || 0} membres` 
     : contributor?.User?.EmailAddress || "";
   
   return (
