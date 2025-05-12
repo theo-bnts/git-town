@@ -4,19 +4,6 @@ import { minimumExpectedShape, expectedShape } from './expectedRepositoryStatist
 import { hasAllProperties } from '@/app/utils/objectUtils';
 import { handleApiError } from '@/app/services/errorHandler';
 import { REPOSITORY_STATS_CONFIG } from '@/app/config/requestConfig';
-import { getFromCache, saveToCache, CACHE_KEYS } from '@/app/utils/cacheUtils';
-
-/**
- * Vérifie si les données en cache sont complètes
- */
-export function isCacheComplete(data) {
-  return Boolean(
-    data && 
-    data.Global?.Commits?.Weekly?.Counts &&
-    data.Global?.Lines?.Weekly?.Counts &&
-    Array.isArray(data.Users)
-  );
-}
 
 /**
  * Valide les données de statistiques reçues
@@ -54,29 +41,13 @@ export async function fetchRepositoryStatistics(
     initialDelay = defaultConfig.initialDelay,
     maxRetries = defaultConfig.maxRetries,
     backoffFactor = defaultConfig.backoffFactor,
-    signal,
-    skipCache = false,
-    cacheTtl
+    signal
   } = options;
 
   let retries = 0;
 
   if (!repositoryId) {
     throw new Error("L'identifiant du dépôt est requis");
-  }
-  
-  if (!skipCache) {
-    const cached = getFromCache(CACHE_KEYS.REPO_STATS, repositoryId);
-    if (cached) {
-      const isComplete = isCacheComplete(cached.data);
-      return { 
-        data: cached.data, 
-        loading: false, 
-        retry: !isComplete,
-        fromCache: true,
-        cacheTimestamp: cached.timestamp
-      };
-    }
   }
 
   async function fetchStats() {
@@ -107,8 +78,6 @@ export async function fetchRepositoryStatistics(
         }
         return { data, loading: true, retry: true };
       }
-
-      saveToCache(CACHE_KEYS.REPO_STATS, repositoryId, data, cacheTtl);
 
       return { data, loading: false, retry: false };
     } catch (error) {

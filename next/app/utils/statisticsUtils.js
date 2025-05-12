@@ -182,7 +182,7 @@ export function generateGlobalStatsFromUsers(users) {
 const statsCache = new Map();
 
 /**
- * Calcule les statistiques avec cache pour éviter les recalculs inutiles
+ * Calcule les statistiques utilisateur
  */
 export function calculateUserStats(user) {
   if (!user) {
@@ -194,11 +194,6 @@ export function calculateUserStats(user) {
       pullRequests: 0,
       merges: 0
     };
-  }
-  
-  const cacheKey = user.User?.Id;
-  if (cacheKey && statsCache.has(cacheKey)) {
-    return statsCache.get(cacheKey);
   }
   
   const counts = user.Commits?.Weekly?.Counts || [];
@@ -218,10 +213,6 @@ export function calculateUserStats(user) {
     pullRequests,
     merges
   };
-
-  if (cacheKey) {
-    statsCache.set(cacheKey, result);
-  }
   
   return result;
 }
