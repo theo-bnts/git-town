@@ -3,7 +3,7 @@
 import React from 'react';
 import Graph from '@/app/components/ui/Graph';
 import { useCommitsGraphData } from '@/app/hooks/statistics/statsHooks';
-import { deltaQualifier } from '@/app/utils/deltaQualifier';
+import { deltaQualifier } from '@/app/utils/deltaUtils';
 
 /**
  * Graphique affichant l'évolution des commits et des lignes de code

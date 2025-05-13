@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { calculateDelta } from '@/app/utils/calculateDelta';
+import { calculateDelta } from '@/app/utils/deltaUtils';
 
 /**
  * Prépare les données pour le graphique de commits et delta

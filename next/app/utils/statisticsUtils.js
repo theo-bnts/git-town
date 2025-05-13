@@ -2,7 +2,7 @@
  * Utilitaires pour le calcul des statistiques
  */
 
-import { calculateDelta } from "./calculateDelta";
+import { calculateDelta } from "@/app/utils/deltaUtils";
 import { DEFAULT_STATS } from "@/app/config/config";
 
 /**
@@ -51,8 +51,16 @@ export function calculateStats(entity, options = {}) {
     return isTeam ? {...DEFAULT_STATS.team} : {...DEFAULT_STATS.user};
   }
   
-  const counts = entity.Commits?.Weekly?.Counts || [];
-  const totalCommits = safeArraySum(counts);
+  let totalCommits;
+  
+  // Pour les statistiques d'équipe, utiliser le total fourni par l'API si disponible
+  if (isTeam && entity.TotalCommits !== undefined) {
+    totalCommits = entity.TotalCommits;
+  } else {
+    // Sinon recalculer à partir des commits hebdomadaires
+    const counts = entity.Commits?.Weekly?.Counts || [];
+    totalCommits = safeArraySum(counts);
+  }
   
   const { addedLines, deletedLines } = extractLineStatistics(entity);
   const delta = calculateDelta(addedLines, deletedLines);
