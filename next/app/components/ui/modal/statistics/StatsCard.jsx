@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { XIcon, InfoIcon } from '@primer/octicons-react';
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
@@ -10,31 +10,17 @@ import {
   ContributionCard
 } from '@/app/components/ui/modal/statistics';
 import InfoTooltip from '@/app/components/ui/InfoTooltip';
-import { useRepositoryStats } from '@/app/hooks/useRepositoryStats';
-import { generateGlobalStatsFromUsers } from '@/app/utils/statisticsUtils';
-
-const CACHE_INFO_TEXT = 
-  "Ces données peuvent venir du cache pour que votre expérience ne soit pas ralentie. " +
-  "Les données peuvent présenter un retard jusqu'à une heure.";
+import { STATISTICS_CONFIG } from '@/app/config/config';
 
 /**
  * Carte principale affichant les statistiques globales du dépôt
  */
-export default function StatsCard({ stats, onClose, isPartial }) {
+export default function StatsCard({ formattedStats, onClose }) {
   const [showInfo, setShowInfo] = useState(false);
-  const { calculateUserTotals } = useRepositoryStats(stats);
   
-  const hasGlobalData = Boolean(
-    stats?.Global?.Commits?.Weekly?.Counts && 
-    stats?.Global?.Lines?.Weekly?.Counts
-  );
+  const { globalStats, teamStats, userStats, languages } = formattedStats || {};
   
-  const globalStats = useMemo(() => 
-    hasGlobalData ? stats.Global : generateGlobalStatsFromUsers(stats?.Users)
-  , [stats, hasGlobalData]);
-  
-  const hasUsers = Array.isArray(stats?.Users) && stats.Users.length > 0;
-  const shouldShowGlobalStats = Boolean(globalStats || hasUsers);
+  const shouldShowGlobalStats = Boolean(globalStats);
   
   return (
     <Card variant="default" className="p-3 lg:p-4 w-full h-full">
@@ -57,7 +43,7 @@ export default function StatsCard({ stats, onClose, isPartial }) {
               </Button>
               <InfoTooltip 
                 show={showInfo} 
-                text={CACHE_INFO_TEXT} 
+                text={STATISTICS_CONFIG.CACHE_INFO_TEXT} 
                 position="top-9 left-0" 
                 variant="success" 
               />
@@ -68,15 +54,17 @@ export default function StatsCard({ stats, onClose, isPartial }) {
           </Button>
         </div>
 
-        <LanguagesSection languages={stats.Global?.Languages} />
+        <LanguagesSection languages={languages} />
         
         <div className="w-full overflow-x-hidden">
           {shouldShowGlobalStats ? (
             <ContributionCard
-              contributor={globalStats} 
+              userData={{
+                user: { FullName: "Équipe complète" },
+                stats: teamStats,
+                rawData: globalStats
+              }} 
               isTeam={true}
-              calculateUserTotals={calculateUserTotals}
-              stats={stats}
             />
           ) : (
             <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
@@ -86,7 +74,7 @@ export default function StatsCard({ stats, onClose, isPartial }) {
         </div>
         
         <div className="w-full overflow-x-hidden">
-          <ContributionsTable users={stats.Users} stats={stats} />
+          <ContributionsTable userStats={userStats} teamStats={teamStats} />
         </div>
       </div>
     </Card>

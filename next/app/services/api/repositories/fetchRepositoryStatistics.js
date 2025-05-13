@@ -1,9 +1,9 @@
 import { fetchWithAuth } from '@/app/services/auth';
 import { repositoryStatisticsRoute } from '@/app/services/routes';
-import { minimumExpectedShape, expectedShape } from './expectedRepositoryStatisticsShape';
 import { hasAllProperties } from '@/app/utils/objectUtils';
 import { handleApiError } from '@/app/services/errorHandler';
-import { REPOSITORY_STATS_CONFIG } from '@/app/config/requestConfig';
+import { REPOSITORY_STATS_CONFIG } from '@/app/config/config';
+import { REPOSITORY_STATISTICS_SHAPES as shapes } from './expectedResultsShape';
 
 /**
  * Valide les données de statistiques reçues
@@ -14,7 +14,7 @@ export function validateRepositoryStats(data, fullValidation = false) {
     message: 'Aucune donnée de statistiques disponible' 
   };
   
-  const shapeToCheck = fullValidation ? expectedShape : minimumExpectedShape;
+  const shapeToCheck = fullValidation ? shapes.complete : shapes.minimal;
   
   if (!hasAllProperties(data, shapeToCheck)) {
     return { 
@@ -67,9 +67,14 @@ export async function fetchRepositoryStatistics(
       }
       
       const data = await res.json();
-      const validation = validateRepositoryStats(data, false);
-      
-      if (!validation.valid) {
+
+      // Vérification simplifiée
+      const hasMinimumData = Boolean(
+        data?.Global?.Commits?.Weekly?.Counts || 
+        (Array.isArray(data?.Users) && data.Users.length > 0)
+      );
+
+      if (!hasMinimumData) {
         if (retries < maxRetries) {
           retries++;
           const delay = initialDelay * Math.pow(backoffFactor, retries - 1);

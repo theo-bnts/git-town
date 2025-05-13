@@ -1,47 +1,9 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import Graph from '@/app/components/ui/Graph';
-import { calculateDelta } from '@/app/utils/calculateDelta';
+import { useCommitsGraphData } from '@/app/hooks/statistics/statsHooks';
 import { deltaQualifier } from '@/app/utils/deltaQualifier';
-
-/**
- * Prépare les données pour le graphique de commits
- */
-function prepareGraphData(commits, lines) {
-  if (!commits?.Weekly?.Counts) return [];
-
-  const firstDay = commits.Weekly.FirstDayOfFirstWeek 
-    ? new Date(commits.Weekly.FirstDayOfFirstWeek) 
-    : new Date();
-    
-  const hasLines = lines?.Weekly?.Counts && Array.isArray(lines.Weekly.Counts);
-
-  return commits.Weekly.Counts.map((count, idx) => {
-    const week = new Date(firstDay);
-    week.setDate(week.getDate() + idx * 7);
-    const formattedDate = week.toLocaleDateString('fr-FR', { 
-      day: 'numeric', 
-      month: 'short' 
-    });
-    
-    let delta = 0;
-    if (hasLines && idx < lines.Weekly.Counts.length) {
-      const weekData = lines.Weekly.Counts[idx];
-      if (weekData) {
-        const additions = weekData.Additions || 0;
-        const deletions = weekData.Deletions || 0;
-        delta = calculateDelta(additions, deletions);
-      }
-    }
-
-    return {
-      week: formattedDate,
-      commits: count || 0,
-      delta
-    };
-  });
-}
 
 /**
  * Graphique affichant l'évolution des commits et des lignes de code
@@ -54,7 +16,7 @@ export default function CommitsGraph({
   showLegend = true,
   hideTitle = false
 }) {
-  const data = useMemo(() => prepareGraphData(commits, lines), [commits, lines]);
+  const data = useCommitsGraphData(commits, lines);
 
   const series = [
     {
@@ -76,7 +38,7 @@ export default function CommitsGraph({
       const qualifier = deltaQualifier(value);
       return [
         <>
-          {value.toFixed(1)} <span className={qualifier.class}>({qualifier.label})</span>
+          {value.toFixed(1)} <span className={qualifier.class}>{qualifier.label}</span>
         </>, 
         name
       ];

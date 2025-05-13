@@ -4,9 +4,12 @@ import React from 'react';
 import { AlertIcon } from '@primer/octicons-react'; 
 import PropTypes from 'prop-types';
 import Card from '@/app/components/ui/Card';
-import ContributionCard from '@/app/components/ui/modal/statistics/ContributionCard';
-import { LoadingCard, StatsCard } from '@/app/components/ui/modal/statistics';
-import { useRepositoryStats } from '@/app/hooks/useRepositoryStats';
+import { 
+  LoadingCard, 
+  StatsCard, 
+  ContributionCard 
+} from '@/app/components/ui/modal/statistics';
+import { useFormattedStats } from '@/app/hooks/statistics/statsHooks';
 
 /**
  * Modal affichant les statistiques détaillées d'un dépôt
@@ -22,7 +25,7 @@ export default function RepositoryStatsModal({
 }) {
   if (!isOpen) return null;
   
-  const { hasUserCommits, calculateUserTotals } = useRepositoryStats(stats);
+  const formattedStats = useFormattedStats(stats);
 
   if (error) {
     return (
@@ -54,7 +57,7 @@ export default function RepositoryStatsModal({
       ) : (
         <div className="w-full h-full overflow-y-auto py-6 lg:py-8 2xl:py-4">
           <div className="w-full max-w-[95vw] 2xl:max-w-[75vw] mx-auto px-2 lg:px-4">
-            {!stats ? (
+            {!formattedStats ? (
               <Card variant="default" className="p-4 mx-auto max-w-md">
                 <div className="text-center text-gray-500">
                   Aucune donnée à afficher.
@@ -80,7 +83,11 @@ export default function RepositoryStatsModal({
                 )}
 
                 <div className="w-full">
-                  <StatsCard stats={stats} onClose={onClose} isPartial={retry} />
+                  <StatsCard 
+                    formattedStats={formattedStats}
+                    onClose={onClose} 
+                    isPartial={retry}
+                  />
                 </div>
 
                 <div className="w-full">
@@ -88,19 +95,17 @@ export default function RepositoryStatsModal({
                     <div className="space-y-3 lg:space-y-4">
                       <h3 className="text-lg font-bold leading-none">Contributions par utilisateur</h3>
                       
-                      {!hasUserCommits ? (
+                      {!formattedStats.hasUserCommits ? (
                         <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
                           Aucune donnée de commits par utilisateur à afficher
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 gap-4">
-                          {stats.Users?.map((user, index) => (
+                          {formattedStats.userStats.map((userData, index) => (
                             <ContributionCard 
-                              key={user.User?.Id || index}
-                              contributor={user}
+                              key={userData.user?.Id || index}
+                              userData={userData}
                               isTeam={false}
-                              calculateUserTotals={calculateUserTotals}
-                              stats={stats}
                             />
                           ))}
                         </div>

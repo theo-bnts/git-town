@@ -3,7 +3,6 @@
 import React, { useMemo } from 'react';
 import { textStyles } from '@/app/styles/tailwindStyles';
 import Table from '@/app/components/layout/table/Table';
-import { calculateUserStats, getGlobalCommitStats } from '@/app/utils/statisticsUtils';
 import Tag from '@/app/components/ui/Tag';
 
 const getTableColumns = () => [
@@ -39,44 +38,38 @@ const getTableColumns = () => [
 /**
  * Affiche un tableau des contributions par utilisateur
  */
-export default function ContributionsTable({ users = [], stats }) {
+export default function ContributionsTable({ userStats = [], teamStats }) {
   const { columns, tableData } = useMemo(() => {
     const columns = getTableColumns();
     
-    const userData = users.map(userStat => {
-      const user = userStat.User || {};
-      const { totalCommits, addedLines, deletedLines, delta, pullRequests, merges } = 
-        calculateUserStats(userStat);
-
-      return {
-        name: user.FullName || '',
-        merges,
-        prs: pullRequests,
-        commits: totalCommits,
-        additions: addedLines,
-        deletions: deletedLines,
-        delta: parseFloat(delta.toFixed(1)),
-      };
-    });
+    // Convertir les données utilisateur au format du tableau
+    const userData = userStats.map(({ user, stats }) => ({
+      name: user?.FullName || '',
+      merges: stats.merges,
+      prs: stats.pullRequests,
+      commits: stats.totalCommits,
+      additions: stats.addedLines,
+      deletions: stats.deletedLines,
+      delta: parseFloat(stats.delta.toFixed(1)),
+    }));
 
     let data = [...userData];
     
-    if (data.length > 0) {
-      const globalStats = getGlobalCommitStats(stats);
-      
+    // Ajouter les statistiques d'équipe en bas du tableau
+    if (data.length > 0 && teamStats) {
       data.push({
         name: <span className="font-bold">Équipe complète</span>,
-        merges: globalStats.merges,
-        prs: globalStats.pullRequests,
-        commits: globalStats.totalCommits,
-        additions: globalStats.addedLines,
-        deletions: globalStats.deletedLines,
-        delta: parseFloat(globalStats.delta.toFixed(1)),
+        merges: teamStats.merges,
+        prs: teamStats.pullRequests,
+        commits: teamStats.totalCommits,
+        additions: teamStats.addedLines,
+        deletions: teamStats.deletedLines,
+        delta: parseFloat(teamStats.delta.toFixed(1)),
       });
     }
     
     return { columns, tableData: data };
-  }, [users, stats]);
+  }, [userStats, teamStats]);
 
   if (!tableData.length) return null;
 

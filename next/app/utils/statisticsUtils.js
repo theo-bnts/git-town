@@ -1,7 +1,9 @@
 /**
  * Utilitaires pour le calcul des statistiques
  */
+
 import { calculateDelta } from "./calculateDelta";
+import { DEFAULT_STATS } from "@/app/config/config";
 
 /**
  * Calcule la somme des valeurs d'un tableau en gérant les cas spéciaux
@@ -17,15 +19,7 @@ export function safeArraySum(array, accessor = null) {
 }
 
 /**
- * Calcule la somme des valeurs d'un tableau pour une propriété donnée
- */
-export function calculateTotal(data, key) {
-  if (!Array.isArray(data) || !data.length) return 0;
-  return data.reduce((sum, item) => sum + (Number.isFinite(item?.[key]) ? item[key] : 0), 0);
-}
-
-/**
- * Extraction de statistiques optimisée avec memoization si nécessaire
+ * Extraction de statistiques optimisée
  */
 export function extractLineStatistics(entity) {
   if (!entity?.Lines?.Weekly?.Counts) {
@@ -48,268 +42,107 @@ export function extractLineStatistics(entity) {
 }
 
 /**
- * Extrait et formate les données statistiques pour l'affichage
+ * Fonction unifiée pour calculer les statistiques d'une entité (utilisateur ou équipe)
  */
-export function formatUserStatistics(users) {
-  if (!users || !Array.isArray(users)) return [];
+export function calculateStats(entity, options = {}) {
+  const { isTeam = false, users = [] } = options;
   
-  return users.map(user => {
-    const name = user.User?.FullName || 'Inconnu';
-    const email = user.User?.EmailAddress || '';
-    
-    const commits = safeArraySum(user.Commits?.Weekly?.Counts);
-    const merges = user.PullRequests?.Closed || 0;
-    const prs = (user.PullRequests?.Open || 0) + (user.PullRequests?.Closed || 0);
-    
-    const lines = user.Lines?.Weekly?.Counts || [];
-    const additions = safeArraySum(lines, line => line?.Additions || 0);
-    const deletions = safeArraySum(lines, line => line?.Deletions || 0);
-    
-    return {
-      id: user.User?.Id || String(Math.random()),
-      name,
-      email,
-      commits,
-      merges,
-      prs,
-      additions,
-      deletions
-    };
-  });
-}
-
-/**
- * Trouve un utilisateur avec des données temporelles valides
- */
-function findUserWithDates(users) {
-  return users.find(user => 
-    user?.Commits?.Weekly?.FirstDayOfFirstWeek && 
-    user?.Lines?.Weekly?.FirstDayOfFirstWeek
-  );
-}
-
-/**
- * Crée la structure de base pour les statistiques globales
- */
-function createEmptyGlobalStats(userWithDates) {
-  const defaultDate = new Date().toISOString();
-  return {
-    Commits: {
-      Weekly: {
-        Counts: [],
-        FirstDayOfFirstWeek: userWithDates?.Commits?.Weekly?.FirstDayOfFirstWeek || defaultDate,
-        FirstDayOfLastWeek: userWithDates?.Commits?.Weekly?.FirstDayOfLastWeek
-      }
-    },
-    Lines: {
-      Weekly: {
-        Counts: [],
-        FirstDayOfFirstWeek: userWithDates?.Lines?.Weekly?.FirstDayOfFirstWeek || defaultDate
-      }
-    }
-  };
-}
-
-/**
- * Calcule le nombre maximum de semaines dans les données utilisateurs
- */
-function calculateMaxWeeks(users) {
-  return Math.max(...users.map(
-    user => user?.Commits?.Weekly?.Counts?.length || 0
-  ));
-}
-
-/**
- * Initialise des tableaux de données vides pour les statistiques
- */
-function initializeDataArrays(globalStats, weeksCount) {
-  for (let i = 0; i < weeksCount; i++) {
-    globalStats.Commits.Weekly.Counts[i] = 0;
-    globalStats.Lines.Weekly.Counts[i] = { Additions: 0, Deletions: 0 };
-  }
-}
-
-/**
- * Agrège les données de commits d'un utilisateur
- */
-function aggregateUserCommits(user, globalStats, weeksCount) {
-  if (user?.Commits?.Weekly?.Counts) {
-    user.Commits.Weekly.Counts.forEach((count, index) => {
-      if (index < weeksCount) {
-        globalStats.Commits.Weekly.Counts[index] += count || 0;
-      }
-    });
-  }
-}
-
-/**
- * Agrège les données de lignes d'un utilisateur
- */
-function aggregateUserLines(user, globalStats, weeksCount) {
-  if (user?.Lines?.Weekly?.Counts) {
-    user.Lines.Weekly.Counts.forEach((line, index) => {
-      if (index < weeksCount && line) {
-        globalStats.Lines.Weekly.Counts[index].Additions += line.Additions || 0;
-        globalStats.Lines.Weekly.Counts[index].Deletions += line.Deletions || 0;
-      }
-    });
-  }
-}
-
-/**
- * Génère des statistiques globales à partir des données utilisateurs
- */
-export function generateGlobalStatsFromUsers(users) {
-  if (!users || users.length === 0) return null;
-  
-  const userWithDates = findUserWithDates(users);
-  const globalStats = createEmptyGlobalStats(userWithDates);
-  const weeksCount = calculateMaxWeeks(users);
-  
-  initializeDataArrays(globalStats, weeksCount);
-  
-  users.forEach(user => {
-    aggregateUserCommits(user, globalStats, weeksCount);
-    aggregateUserLines(user, globalStats, weeksCount);
-  });
-  
-  return globalStats;
-}
-
-/**
- * Cache des résultats pour les calculs coûteux
- */
-const statsCache = new Map();
-
-/**
- * Calcule les statistiques utilisateur
- */
-export function calculateUserStats(user) {
-  if (!user) {
-    return { 
-      totalCommits: 0, 
-      addedLines: 0, 
-      deletedLines: 0, 
-      delta: 0,
-      pullRequests: 0,
-      merges: 0
-    };
+  if (!entity) {
+    return isTeam ? {...DEFAULT_STATS.team} : {...DEFAULT_STATS.user};
   }
   
-  const counts = user.Commits?.Weekly?.Counts || [];
+  const counts = entity.Commits?.Weekly?.Counts || [];
   const totalCommits = safeArraySum(counts);
   
-  const { addedLines, deletedLines } = extractLineStatistics(user);
+  const { addedLines, deletedLines } = extractLineStatistics(entity);
   const delta = calculateDelta(addedLines, deletedLines);
   
-  const merges = user.PullRequests?.Closed || 0;
-  const pullRequests = (user.PullRequests?.Open || 0) + merges;
+  const merges = entity.PullRequests?.Closed || 0;
+  const pullRequests = (entity.PullRequests?.Open || 0) + merges;
   
-  const result = { 
+  return { 
     totalCommits, 
     addedLines, 
     deletedLines, 
     delta,
     pullRequests,
-    merges
+    merges,
+    membersCount: isTeam && Array.isArray(users) ? users.length : 0
   };
-  
-  return result;
 }
 
 /**
- * Valeurs par défaut pour les statistiques
+ * Génère des statistiques globales à partir des statistiques des utilisateurs
  */
-export const DEFAULT_STATS = {
-  user: {
-    totalCommits: 0,
-    addedLines: 0,
-    deletedLines: 0,
-    delta: 0,
-    pullRequests: 0,
-    merges: 0
-  },
-  team: {
-    totalCommits: 0,
-    addedLines: 0,
-    deletedLines: 0,
-    delta: 0,
-    pullRequests: 0,
-    merges: 0,
-    membersCount: 0
+export function generateGlobalStatsFromUsers(users = []) {
+  if (!Array.isArray(users) || users.length === 0) {
+    return null;
   }
-};
-
-/**
- * Fournit des valeurs par défaut pour les statistiques d'une entité
- */
-export function getDefaultStats(isTeam = false) {
-  return isTeam ? {...DEFAULT_STATS.team} : {...DEFAULT_STATS.user};
-}
-
-/**
- * Calcule les statistiques globales de façon cohérente
- */
-export function getGlobalCommitStats(stats) {
-  if (!stats) return { 
-    totalCommits: 0,
-    addedLines: 0,
-    deletedLines: 0,
-    delta: 0,
-    pullRequests: 0,
-    merges: 0,
-    membersCount: 0 
+  
+  // Structure pour stocker les résultats agrégés
+  const aggregatedStats = {
+    Commits: {
+      Weekly: { 
+        Counts: [], 
+        FirstDayOfFirstWeek: null 
+      }
+    },
+    Lines: {
+      Weekly: { 
+        Counts: [] 
+      }
+    },
+    PullRequests: {
+      Open: 0,
+      Closed: 0
+    }
   };
   
-  const membersCount = Array.isArray(stats.Users) ? stats.Users.length : 0;
+  // Trouve le premier utilisateur avec des données de commits
+  const firstUserWithCommits = users.find(u => u.Commits?.Weekly?.Counts?.length > 0);
   
-  if (stats.Global?.Commits?.Weekly?.Counts) {
-    const globalStats = calculateUserStats(stats.Global);
-    return {
-      ...globalStats,
-      membersCount
-    };
-  }
-  
-  if (Array.isArray(stats.Users) && stats.Users.length > 0) {
-    const totalCommits = stats.Users.reduce((sum, user) => {
-      const userStats = calculateUserStats(user);
-      return sum + userStats.totalCommits;
-    }, 0);
+  if (firstUserWithCommits) {
+    // Copier la date de référence du premier jour
+    aggregatedStats.Commits.Weekly.FirstDayOfFirstWeek = 
+      firstUserWithCommits.Commits.Weekly.FirstDayOfFirstWeek;
     
-    let totalAddedLines = 0;
-    let totalDeletedLines = 0;
-    let totalMerges = 0;
-    let totalPRs = 0;
+    // Déterminer la longueur maximale des tableaux de commits
+    const maxLength = Math.max(
+      ...users.map(u => (u.Commits?.Weekly?.Counts?.length || 0))
+    );
     
-    stats.Users.forEach(user => {
-      const userStats = calculateUserStats(user);
-      totalAddedLines += userStats.addedLines;
-      totalDeletedLines += userStats.deletedLines;
-      totalMerges += userStats.merges;
-      totalPRs += userStats.pullRequests;
+    // Préparer les tableaux avec des zéros
+    for (let i = 0; i < maxLength; i++) {
+      aggregatedStats.Commits.Weekly.Counts[i] = 0;
+      aggregatedStats.Lines.Weekly.Counts[i] = { Additions: 0, Deletions: 0 };
+    }
+    
+    // Agréger les données de tous les utilisateurs
+    users.forEach(user => {
+      // Agréger les commits
+      if (user.Commits?.Weekly?.Counts) {
+        user.Commits.Weekly.Counts.forEach((count, idx) => {
+          if (idx < aggregatedStats.Commits.Weekly.Counts.length) {
+            aggregatedStats.Commits.Weekly.Counts[idx] += (count || 0);
+          }
+        });
+      }
+      
+      // Agréger les lignes
+      if (user.Lines?.Weekly?.Counts) {
+        user.Lines.Weekly.Counts.forEach((lineData, idx) => {
+          if (idx < aggregatedStats.Lines.Weekly.Counts.length) {
+            aggregatedStats.Lines.Weekly.Counts[idx].Additions += (lineData?.Additions || 0);
+            aggregatedStats.Lines.Weekly.Counts[idx].Deletions += (lineData?.Deletions || 0);
+          }
+        });
+      }
+      
+      // Agréger les pull requests
+      aggregatedStats.PullRequests.Open += (user.PullRequests?.Open || 0);
+      aggregatedStats.PullRequests.Closed += (user.PullRequests?.Closed || 0);
     });
-    
-    const delta = calculateDelta(totalAddedLines, totalDeletedLines);
-    
-    return {
-      totalCommits,
-      addedLines: totalAddedLines,
-      deletedLines: totalDeletedLines,
-      delta,
-      merges: totalMerges,
-      pullRequests: totalPRs,
-      membersCount
-    };
   }
   
-  return { 
-    totalCommits: 0,
-    addedLines: 0,
-    deletedLines: 0,
-    delta: 0,
-    pullRequests: 0,
-    merges: 0,
-    membersCount: 0
-  };
+  return aggregatedStats;
 }

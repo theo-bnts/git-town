@@ -1,51 +1,27 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { CommitsGraph } from '@/app/components/ui/modal/statistics';
 import Tag from '@/app/components/ui/Tag';
-import { calculateUserStats, getGlobalCommitStats } from '@/app/utils/statisticsUtils';
 
 /**
  * Carte affichant les contributions d'un utilisateur ou de l'équipe
  */
-export default function ContributionCard({ 
-  contributor, 
-  isTeam = false,
-  stats = null
-}) {
-  const hasValidData = contributor?.Commits?.Weekly?.Counts && 
-                       contributor?.Lines?.Weekly?.Counts;
-
-  const contributorStats = useMemo(() => {
-    if (isTeam && stats) {
-      return getGlobalCommitStats(stats);
-    }
-    
-    if (!contributor) {
-      return { 
-        totalCommits: 0, 
-        addedLines: 0, 
-        deletedLines: 0, 
-        delta: 0, 
-        pullRequests: 0, 
-        merges: 0 
-      };
-    }
-    
-    const calculatedStats = calculateUserStats(contributor);
-    
-    return {
-      ...calculatedStats,
-      membersCount: isTeam && contributor.Users ? contributor.Users.length : 0
-    };
-  }, [contributor, isTeam, stats]);
-
-  const { totalCommits, addedLines, deletedLines, delta, membersCount } = contributorStats;
+export default function ContributionCard({ userData, isTeam = false }) {
+  const { user, stats, rawData } = userData || {};
   
-  const displayName = isTeam ? "Équipe complète" : contributor?.User?.FullName || "Utilisateur";
+  const hasValidData = rawData?.Commits?.Weekly?.Counts && 
+                       rawData?.Lines?.Weekly?.Counts;
+  
+  const { totalCommits, addedLines, deletedLines, delta, membersCount } = stats || {};
+  
+  const displayName = isTeam 
+    ? "Équipe complète" 
+    : user?.FullName || "Utilisateur";
+    
   const subtitle = isTeam 
     ? `${membersCount || 0} membre${membersCount !== 1 ? 's' : ''}` 
-    : contributor?.User?.EmailAddress || "";
+    : user?.EmailAddress || "";
   
   return (
     <div className={`rounded-lg border border-gray-200 bg-white p-4 shadow-sm
@@ -61,15 +37,15 @@ export default function ContributionCard({
           <Tag variant="default">{totalCommits} commits</Tag>
           <Tag variant="success">+{addedLines}</Tag>
           <Tag variant="danger">-{deletedLines}</Tag>
-          <Tag variant="selected">Δ {delta.toFixed(1)}</Tag>
+          <Tag variant="selected">Δ {delta?.toFixed(1)}</Tag>
         </div>
       </div>
       
       <div className="mt-4">
         {hasValidData && (
           <CommitsGraph
-            commits={contributor.Commits}
-            lines={contributor.Lines}
+            commits={rawData.Commits}
+            lines={rawData.Lines}
             height={200}
             showLegend={true}
             hideTitle={true}
