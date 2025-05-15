@@ -2,6 +2,8 @@
 export const API_ERRORS = {
   400: {
     FST_ERR_CTP_EMPTY_JSON_BODY: "(400) : Corps de la requête vide.",
+    INVALID_REPOSITORY_ID: "(400) : Identifiant de dépôt invalide.",
+    INVALID_STATISTICS_PARAMS: "(400) : Paramètres de statistiques invalides.",
     default: "(400) : Requête incorrecte.",
   },
   401: {
@@ -13,14 +15,17 @@ export const API_ERRORS = {
   },
   403: {
     INSUFFICIENT_PERMISSIONS: "(403) : Permissions insuffisantes.",
-    USER_ID_MISMATCH: "(403) : L’identifiant utilisateur ne correspond pas.",
+    USER_ID_MISMATCH: "(403) : L'identifiant utilisateur ne correspond pas.",
     SELF_ROLE: "(403) : Modification de votre propre rôle non autorisée.",
+    NOT_REPOSITORY_MEMBER: "(403) : Vous n'êtes pas membre de ce dépôt.",
     default: "(403) : Accès refusé.",
   },
   404: {
     UNKNOWN_USER_ID: "(404) : Utilisateur inconnu.",
     UNKNOWN_ROLE_KEYWORD: "(404) : Rôle inconnu.",
     UNKNOWN_EMAIL_ADDRESS: "(404) : Adresse e-mail inconnue.",
+    UNKNOWN_REPOSITORY_ID: "(404) : Dépôt inconnu.",
+    STATISTICS_NOT_FOUND: "(404) : Statistiques non disponibles pour ce dépôt.",
     default: "(404) : Ressource non trouvée.",
   },
   409: {
@@ -29,11 +34,11 @@ export const API_ERRORS = {
     SAME_FULL_NAME: "(409) : Nom complet déjà utilisé.",
     SAME_ROLE_KEYWORD: "(409) : Rôle déjà attribué.",
     OWN_ROLE: "(409) : Vous ne pouvez pas vous attribuer ce rôle.",
-    STUDENT_ROLE: "(409) : Le rôle étudiant n’est pas autorisé.",
+    STUDENT_ROLE: "(409) : Le rôle étudiant n'est pas autorisé.",
     GITHUB_ID_ALREADY_DEFINED: "(409) : GitHub ID déjà défini.",
-    ALREADY_MEMBER: "(409) : Membre de l’organisation GitHub.",
+    ALREADY_MEMBER: "(409) : Membre de l'organisation GitHub.",
     DUPLICATE_GITHUB_ID: "(409) : GitHub ID déjà utilisé.",
-    NOT_STUDENT_ROLE : "(409) : Le rôle n’est pas étudiant.",
+    NOT_STUDENT_ROLE: "(409) : Le rôle n'est pas étudiant.",
     SAME_DIPLOMA_INITIALISM: "(409) : Même Diplôme selectionné.",
     DUPLICATE_INITIALISM: "(409) : Sigle déjà utilisé.",
     DUPLICATE: "(409) : Configuration déjà existante.",
@@ -41,7 +46,13 @@ export const API_ERRORS = {
     DUPLICATE_TITLE: "(409) : Titre déjà utilisé.",
     DATE_OUT_OF_RANGE: "(409) : Date hors des contraintes.",
     YEAR_UNEDITABLE_WHILE_LINKED_TO_REPOSITORIES: "(409) : Année non modifiable car liée à des dépôts.",
+    NO_GITHUB_DATA: "(409) : Aucune donnée GitHub disponible pour ce dépôt.",
+    PENDING_STATISTICS: "(409) : Les statistiques sont en cours de calcul, veuillez réessayer.",
     default: "(409) : Conflit de requête.",
+  },
+  423: {
+    ARCHIVED: "(423) : Le dépôt est archivé et ne peut pas être consulté.",
+    default: "(423) : Ressource verrouillée.",
   },
   429: {
     RATE_LIMIT_EXCEEDED: "(429) : Trop de requêtes. Veuillez réessayer plus tard.",
