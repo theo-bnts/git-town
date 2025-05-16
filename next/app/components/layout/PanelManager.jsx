@@ -10,9 +10,9 @@ import TemplatePanel from '@/app/components/layout/panel/TemplatePanel';
 
 export default function PanelManager({ fullName, role }) {
   const navbarItems = [
-    { label: "Utilisateurs", component: UsersPanel },
-    { label: "Promotions", component: PromotionPanel },
     { label: "Dépots", component: () => <div>Future Dépots Panel</div> },
+    { label: "Promotions", component: PromotionPanel },
+    { label: "Utilisateurs", component: UsersPanel },
     { label: "Modèles", component: TemplatePanel },
     { label: "UE", component: EnseignementUnitPanel },
   ];

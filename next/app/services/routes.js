@@ -1,70 +1,68 @@
 // app/services/routes.js
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export const publicRoute = (email) =>
-  `${API_BASE_URL}/users/${encodeURIComponent(email)}/public`;
+  `${process.env.NEXT_PUBLIC_API_URL}/users/${encodeURIComponent(email)}/public`;
 
 export const userRoute = (userId) =>
-  `${API_BASE_URL}/users/${userId}`;
+  `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`;
 
 export const usersRoute = () =>
-  `${API_BASE_URL}/users`;
+  `${process.env.NEXT_PUBLIC_API_URL}/users`;
 
 export const tokenRoute = (userId) =>
-  `${API_BASE_URL}/users/${userId}/tokens`;
+  `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/tokens`;
 
 export const temporaryCodeRoute = (userId) =>
-  `${API_BASE_URL}/users/${userId}/temporary-codes`;
+  `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/temporary-codes`;
 
 export const passwordRoute = (userId) =>
-  `${API_BASE_URL}/users/${userId}/password`;
+  `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/password`;
 
 export const githubOAuthRoute = (userId) =>
-  `${API_BASE_URL}/users/${userId}/github/oauth-code`;
+  `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/github/oauth-code`;
 
 export const githubInviteRoute = (userId) =>
-  `${API_BASE_URL}/users/${userId}/github/invite`;
+  `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/github/invite`;
 
 export const userPromotionsRoute = (userId) =>
-  `${API_BASE_URL}/users/${userId}/promotions`;
+  `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/promotions`;
 
 export const promotionsRoute = () =>
-  `${API_BASE_URL}/promotions`;
+  `${process.env.NEXT_PUBLIC_API_URL}/promotions`;
 
 export const promotionRoute = (promotionId) =>
-  `${API_BASE_URL}/promotions/${promotionId}`;
+  `${process.env.NEXT_PUBLIC_API_URL}/promotions/${promotionId}`;
 
 export const editPromotionRoute = (promotionId) =>
-  `${API_BASE_URL}/promotions/${promotionId}`;
+  `${process.env.NEXT_PUBLIC_API_URL}/promotions/${promotionId}`;
 
 export const delTokenRoute = (userId, tokenId) =>
-  `${API_BASE_URL}/users/${userId}/tokens/${tokenId}`;
+  `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/tokens/${tokenId}`;
 
 export const deleteUserPromotionRoute = (userId, userPromotionId) =>
-  `${API_BASE_URL}/users/${userId}/promotions/${userPromotionId}`;
+  `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/promotions/${userPromotionId}`;
 
 export const enseignementUnitsRoute = () =>
-  `${API_BASE_URL}/enseignement-units`;
+  `${process.env.NEXT_PUBLIC_API_URL}/enseignement-units`;
 
 export const enseignementUnitRoute = (unitId) =>
-  `${API_BASE_URL}/enseignement-units/${unitId}`;
+  `${process.env.NEXT_PUBLIC_API_URL}/enseignement-units/${unitId}`;
 
 export const templatesRoute = () =>
-  `${API_BASE_URL}/templates`;
+  `${process.env.NEXT_PUBLIC_API_URL}/templates`;
 
 export const templateRoute = (templateId) =>
-  `${API_BASE_URL}/templates/${templateId}`;
+  `${process.env.NEXT_PUBLIC_API_URL}/templates/${templateId}`;
 
 export const templateMilestonesRoute = (tplId) =>
-  `${API_BASE_URL}/templates/${tplId}/milestones`;
+  `${process.env.NEXT_PUBLIC_API_URL}/templates/${tplId}/milestones`;
 
 export const templateMilestoneRoute  = (tplId, msId) =>
-  `${API_BASE_URL}/templates/${tplId}/milestones/${msId}`;
+  `${process.env.NEXT_PUBLIC_API_URL}/templates/${tplId}/milestones/${msId}`;
 
 export const repositoriesRoute = () =>
-  `${API_BASE_URL}/repositories`;
+  `${process.env.NEXT_PUBLIC_API_URL}/repositories`;
 
 export const repositoryRoute = (repoId) =>
-  `${API_BASE_URL}/repositories/${repoId}`;
+  `${process.env.NEXT_PUBLIC_API_URL}/repositories/${repoId}`;
 

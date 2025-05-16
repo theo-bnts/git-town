@@ -9,8 +9,8 @@ import postOAuthCode from '@/app/services/api/users/id/github/postOAuthCode';
 
 import { getCookie } from '@/app/services/cookies';
 
-import gittownhublogo from '../../../public/assets/pictures/gittownhub.svg';
-import miageLogo from '../../../public/assets/pictures/miage.png';
+import gittownhublogo from '../../../public/assets/pictures/git-townhub.svg';
+import miageLogo from '../../../public/assets/pictures/miage.svg';
 import LinkOrgForm from '@/app/components/layout/forms/github/LinkOrgForm';
 
 export default function AuthorizePageContent() {

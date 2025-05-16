@@ -13,7 +13,7 @@ export async function POST(request) {
     sameSite: 'lax',
     httpOnly: false,
     secure: false,
-    expires: new Date(Date.now() + 60 * 60 * 1000),  
+    expires: new Date(Date.now() + process.env.NEXT_PUBLIC_COOKIE_EXPIRATION_TIME * 60 * 1000),
   });
   return response;
 }

@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import delToken from "@/app/services/api/users/id/token/delToken";
 import { getCookie, removeCookie } from "@/app/services/cookies";
 
-import gittownlogo from "../../../public/assets/pictures/gittown.svg";
+import gittownlogo from "../../../public/assets/pictures/git-town.svg";
 import { textStyles } from "@/app/styles/tailwindStyles";
 
 import Card from "@/app/components/ui/Card";

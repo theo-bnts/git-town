@@ -8,6 +8,9 @@ import { textStyles, listboxStyles } from '@/app/styles/tailwindStyles';
 import { processCsvFile } from '@/app/services/logic/importUsers';
 import saveUser from '@/app/services/api/users/saveUser';
 import { getCookie } from '@/app/services/cookies';
+import RejectListBox from '@/app/components/ui/listbox/RejectListBox';
+import getRejectFiles from '@/app/services/logic/csv/rejects/getRejectFile';
+import deleteRejectFile from '@/app/services/logic/csv/rejects/deleteRejectsFile';
 
 export default function ImportUserModal({ isOpen, onClose, onImport }) {
   const fileInputRef = useRef(null);
@@ -19,6 +22,7 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
   const [authToken, setAuthToken] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
+  const [rejectFiles,  setRejectFiles]  = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -26,6 +30,21 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
       if (token) setAuthToken(token);
     })();
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      refreshRejects();
+    }
+  }, [isOpen]);
+
+  const refreshRejects = async () => {
+    try {
+      const files = await getRejectFiles();
+      setRejectFiles(files);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -48,14 +67,13 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
     fileInputRef.current?.click();
   };
 
-  const buildRejectedCsvContent = (rejectedUsers) => {
-    let csv = 'EMAIL_ADDRESS,FULL_NAME,ROLE_KEYWORD,REASON\n';
-    rejectedUsers.forEach(({ EmailAddress, FullName, Role, reason }) => {
-      const roleKeyword = Role?.Keyword || '';
-      const sanitize = (str) => `"${(str || '').replace(/"/g, '""')}"`;
-      csv += `${sanitize(EmailAddress)},${sanitize(FullName)},${sanitize(roleKeyword)},${sanitize(reason)}\n`;
-    });
-    return csv;
+  const handleExportSampleFile = () => {
+    const link = document.createElement('a');
+    link.href = '/api/csv/sample/';
+    link.download = 'sample.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   async function uploadRejectsCsvToServer(fileName, csvContent) {
@@ -72,7 +90,7 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
   }
 
   const downloadCsvFromServer = (fileName) => {
-    const url = `/api/csv/rejects/?filename=${encodeURIComponent(fileName)}`;
+    const url = `/api/csv/rejects/${encodeURIComponent(fileName)}`;
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', fileName);
@@ -81,13 +99,19 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
     document.body.removeChild(link);
   };
 
-  const handleExportSampleFile = () => {
-    const link = document.createElement('a');
-    link.href = '/api/csv/sample/';
-    link.download = 'sample.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownloadReject = (fileName) => {
+    downloadCsvFromServer(fileName);
+  };
+
+  const handleDeleteReject = async (fileName) => {
+    try {
+      await deleteRejectFile(fileName);
+      setRejectFiles(prev => prev.filter(f => f !== fileName));
+    } catch (err) {
+      console.error(err);
+      setAlertMessage("Échec de la suppression.");
+      setAlertType("warn");
+    }
   };
 
   const handleFileChange = async (event) => {
@@ -100,34 +124,26 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
       return;
     }
 
-    const { isValid, errors, users } = await processCsvFile(file);
+    const { isValid, users, rejectCsv } = await processCsvFile(file);
 
     if (!isValid) {
-      const rejectedRows = errors.map(err => ({
-        EmailAddress: '',
-        FullName: '',
-        Role: { Keyword: '' },
-        reason: `Ligne ${err.line} : ${err.message}`
-      }));
-      const csvRejected = buildRejectedCsvContent(rejectedRows);
-      
       try {
-        const savedName = await uploadRejectsCsvToServer(undefined, csvRejected);
+        const savedName = await uploadRejectsCsvToServer(undefined, rejectCsv);
         downloadCsvFromServer(savedName);
       } catch (err) {
         console.error(err);
       }
-      
       setAlertMessage('Le fichier comporte des erreurs, rejeté dans son intégralité.');
       setAlertType('warn');
       clearFileSelection();
-    } else {
-      setImportedFile(file);
-      setUsersToProcess(users);
-      setIsValidated(true);
-      setAlertMessage('Fichier valide ! Vous pouvez cliquer sur "Traiter".');
-      setAlertType('success');
+      return;
     }
+
+    setImportedFile(file);
+    setUsersToProcess(users);
+    setIsValidated(true);
+    setAlertMessage('Fichier valide ! Vous pouvez cliquer sur "Traiter".');
+    setAlertType('success');
   };
 
   const handleRemoveFile = () => {
@@ -170,7 +186,16 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
     }
 
     if (rejectedFromApi.length > 0) {
-      const csvRejected = buildRejectedCsvContent(rejectedFromApi);
+      const csvRejected = (() => {
+        let csv = 'EMAIL_ADDRESS,FULL_NAME,ROLE_KEYWORD,REASON\n';
+        const sanitize = (str) => `"${(str || '').replace(/"/g, '""')}"`;
+        rejectedFromApi.forEach(({ EmailAddress, FullName, Role, reason }) => {
+          const roleKeyword = Role?.Keyword || '';
+          csv += `${sanitize(EmailAddress)},${sanitize(FullName)},${sanitize(roleKeyword)},${sanitize(reason)}\n`;
+        });
+        return csv;
+      })();
+
       try {
         const savedName = await uploadRejectsCsvToServer(undefined, csvRejected);
         downloadCsvFromServer(savedName);
@@ -178,6 +203,8 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
         console.error(err);
       }
       
+      await refreshRejects();
+
       setAlertMessage('Traitement terminé, certains utilisateurs n’ont pas pu être créés.');
       setAlertType('warn');
     } else {
@@ -190,7 +217,9 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
     if (onImport) onImport();
   };
 
-  return !isOpen ? null : (
+  if (!isOpen) return null;
+
+  return (
     <div className="fixed inset-0 bg-[var(--popup-color)] flex items-center justify-center z-50">
       <div className="w-[300px]">
         <Card variant="default" className="relative p-6">
@@ -208,6 +237,15 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
             style={{ display: 'none' }}
             accept=".csv,text/csv"
           />
+
+          <div className="mt-4">
+            <p className={`mb-1 ${textStyles.default}`}>Anciens rejets</p>
+            <RejectListBox
+              files={rejectFiles}
+              onDownload={handleDownloadReject}
+              onDelete={handleDeleteReject}
+            />
+          </div>
 
           <div>
             <p className={`mb-1 ${textStyles.default}`}>Fichier exemple</p>
@@ -247,7 +285,10 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
 
             {isProcessing && (
               <div className="w-full bg-gray-300 rounded-full h-2.5 mt-2">
-                <div className="bg-[var(--accent-color)] h-2.5 rounded-full" style={{ width: `${progress}%` }} />
+                <div
+                  className="bg-[var(--accent-color)] h-2.5 rounded-full"
+                  style={{ width: `${progress}%` }}
+                />
               </div>
             )}
 
@@ -257,28 +298,30 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
                 type="submit"
                 disabled={!importedFile || isProcessing}
               >
-                <p className={textStyles.defaultWhite}>{isProcessing ? 'En cours...' : 'Traiter'}</p>
+                <p className={textStyles.defaultWhite}>
+                  {isProcessing ? 'En cours...' : 'Traiter'}
+                </p>
               </Button>
             </div>
           </form>
         </Card>
-        
+
         {alertMessage && (
-            <div className="mt-4">
-              <Card variant={alertType} className="w-full">
-                <div className="flex items-center">
-                  <p className="flex-1">{alertMessage}</p>
-                  <Button
-                    variant="cancel_action_sq"
-                    onClick={() => setAlertMessage('')}
-                    className="ml-2 transition-transform duration-200 hover:scale-110"
-                  >
-                    <XIcon size={20} />
-                  </Button>
-                </div>
-              </Card>
-            </div>
-          )}
+          <div className="mt-4">
+            <Card variant={alertType} className="w-full">
+              <div className="flex items-center">
+                <p className="flex-1">{alertMessage}</p>
+                <Button
+                  variant="cancel_action_sq"
+                  onClick={() => setAlertMessage('')}
+                  className="ml-2 transition-transform duration-200 hover:scale-110"
+                >
+                  <XIcon size={20} />
+                </Button>
+              </div>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

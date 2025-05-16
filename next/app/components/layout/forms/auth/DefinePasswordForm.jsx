@@ -111,7 +111,7 @@ export default function DefinePasswordForm({ userId, email, onSuccess, onBack })
                 />
                 {tooltips.password && (
                   <div className="absolute w-40 lg:w-80 p-1 z-50">
-                    <Card variant="info">
+                    <Card variant="success">
                       <p className={textStyles.defaultWhite}>
                         Votre mot de passe doit contenir au moins 8 caractères.
                       </p>
