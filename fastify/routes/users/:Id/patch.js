@@ -71,6 +71,19 @@ export default async function route(app) {
           throw { statusCode: 409, error: 'SAME_EMAIL_ADDRESS' };
         }
 
+        if (
+          (
+            requestedUser.Role.Keyword === 'student'
+            && !emailAddress.endsWith(`@${process.env.USER_EMAIL_DOMAIN_STUDENT}`)
+          )
+          || (
+            requestedUser.Role.Keyword !== 'student'
+            && !emailAddress.endsWith(`@${process.env.USER_EMAIL_DOMAIN_NON_STUDENT}`)
+          )
+        ) {
+          throw { statusCode: 409, error: 'EMAIL_ADDRESS_DOMAIN_MISMATCH' };
+        }
+
         if (await User.isEmailAddressInserted(emailAddress)) {
           throw { statusCode: 409, error: 'DUPLICATE_EMAIL_ADDRESS' };
         }

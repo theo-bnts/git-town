@@ -30,8 +30,8 @@ export default async function route(app) {
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
-      await AuthorizationMiddleware.assertSufficientUserRoleOrUserIdMatch(request, 'teacher');
       await ParametersMiddleware.assertUserIdInserted(request);
+      await AuthorizationMiddleware.assertSufficientUserRoleOrUserIdMatch(request, 'teacher');
     },
     handler: async (request) => {
       const { UserId: userId } = request.params;

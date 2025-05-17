@@ -1,23 +1,49 @@
-CREATE OR REPLACE FUNCTION check_user_role()
+CREATE OR REPLACE FUNCTION assert_user_email_domain_role()
 RETURNS TRIGGER AS
 $$
+  DECLARE
+      role_keyword TEXT;
   BEGIN
-    IF NOT EXISTS (
-      SELECT 1
-      FROM public.user
-      JOIN public.role ON public.user.role_id = public.role.id
-      WHERE public.user.id = NEW.user_id AND public.role.keyword = TG_ARGV[0]
-    )
-    THEN
-      RAISE EXCEPTION 'User % does not have the % role', NEW.user_id, TG_ARGV[0];
-    END IF;
+      SELECT keyword
+      INTO role_keyword
+      FROM public.role
+      WHERE id = NEW.role_id;
 
-    RETURN NEW;
+      IF (
+        (role_keyword = 'student' AND NEW.email_address NOT LIKE '%@etud.u-picardie.fr')
+        OR (role_keyword != 'student' AND NEW.email_address NOT LIKE '%@u-picardie.fr')
+      ) THEN
+        RAISE EXCEPTION 'Email domain is not valid for user role';
+      END IF;
+
+      RETURN NEW;
   END;
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION check_archive()
+CREATE OR REPLACE FUNCTION assert_user_role()
+RETURNS TRIGGER AS
+$$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.user u
+    JOIN public.role     r ON u.role_id = r.id
+    WHERE u.id = NEW.user_id
+    AND r.keyword = ANY (TG_ARGV)
+  ) THEN
+    RAISE EXCEPTION
+      'User % is not %',
+      NEW.user_id,
+      array_to_string(TG_ARGV, ' or ');
+  END IF;
+
+  RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION assert_non_archive()
 RETURNS TRIGGER AS
 $$
   BEGIN
@@ -30,7 +56,7 @@ $$
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION check_template_promotion_same_year()
+CREATE OR REPLACE FUNCTION assert_template_promotion_same_year()
 RETURNS TRIGGER AS
 $$
 DECLARE
@@ -41,7 +67,7 @@ BEGIN
   SELECT year INTO promotion_year FROM public.promotion WHERE id = NEW.promotion_id;
 
   IF template_year != promotion_year THEN
-    RAISE EXCEPTION 'Template and Promotion must have the same year';
+    RAISE EXCEPTION 'Template and promotion must have the same year';
   END IF;
 
   RETURN NEW;
@@ -49,7 +75,7 @@ END;
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION text_normalization_and_check()
+CREATE OR REPLACE FUNCTION assert_strings_rules()
 RETURNS TRIGGER AS
 $$
   DECLARE
@@ -98,96 +124,109 @@ LANGUAGE plpgsql;
 
 
 
-CREATE TRIGGER user_promotion_check_user_role
-BEFORE INSERT OR UPDATE ON public.user_promotion
-FOR EACH ROW
-EXECUTE FUNCTION check_user_role('student');
-
-CREATE TRIGGER user_repository_check_user_role
-BEFORE INSERT OR UPDATE ON public.user_repository
-FOR EACH ROW
-EXECUTE FUNCTION check_user_role('student');
-
-
-
-CREATE TRIGGER repository_check_archive
-BEFORE UPDATE ON public.repository
-FOR EACH ROW
-EXECUTE FUNCTION check_archive();
-
-
-
-CREATE TRIGGER repository_check_template_promotion_same_year
-BEFORE INSERT OR UPDATE ON public.repository
-FOR EACH ROW
-EXECUTE FUNCTION check_template_promotion_same_year();
-
-
-
-CREATE TRIGGER role_text_normalization_and_check
-BEFORE INSERT OR UPDATE ON public.role
-FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
-
-CREATE TRIGGER user_text_normalization_and_check
+CREATE TRIGGER user_assert_email_role
 BEFORE INSERT OR UPDATE ON public.user
 FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
+EXECUTE FUNCTION assert_user_email_domain_role();
 
-CREATE TRIGGER token_text_normalization_and_check
-BEFORE INSERT OR UPDATE ON public.token
-FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
 
-CREATE TRIGGER temporary_code_text_normalization_and_check
-BEFORE INSERT OR UPDATE ON public.temporary_code
-FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
 
-CREATE TRIGGER diploma_text_normalization_and_check
-BEFORE INSERT OR UPDATE ON public.diploma
-FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
 
-CREATE TRIGGER promotion_level_text_normalization_and_check
-BEFORE INSERT OR UPDATE ON public.promotion_level
-FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
-
-CREATE TRIGGER promotion_text_normalization_and_check
-BEFORE INSERT OR UPDATE ON public.promotion
-FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
-
-CREATE TRIGGER user_promotion_text_normalization_and_check
-BEFORE INSERT OR UPDATE ON public.user_promotion
-FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
-
-CREATE TRIGGER ue_text_normalization_and_check
-BEFORE INSERT OR UPDATE ON public.enseignement_unit
-FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
-
-CREATE TRIGGER template_text_normalization_and_check
-BEFORE INSERT OR UPDATE ON public.template
-FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
-
-CREATE TRIGGER repository_text_normalization_and_check
+CREATE TRIGGER repository_assert_user_role
 BEFORE INSERT OR UPDATE ON public.repository
 FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
+EXECUTE FUNCTION assert_user_role('teacher', 'administrator');
 
-CREATE TRIGGER user_repository_text_normalization_and_check
+CREATE TRIGGER user_promotion_assert_user_role
+BEFORE INSERT OR UPDATE ON public.user_promotion
+FOR EACH ROW
+EXECUTE FUNCTION assert_user_role('student');
+
+CREATE TRIGGER user_repository_assert_user_role
 BEFORE INSERT OR UPDATE ON public.user_repository
 FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
+EXECUTE FUNCTION assert_user_role('student');
 
-CREATE TRIGGER milestone_text_normalization_and_check
+
+
+CREATE TRIGGER repository_assert_non_archive
+BEFORE UPDATE ON public.repository
+FOR EACH ROW
+EXECUTE FUNCTION assert_non_archive();
+
+
+
+CREATE TRIGGER repository_assert_template_promotion_same_year
+BEFORE INSERT OR UPDATE ON public.repository
+FOR EACH ROW
+EXECUTE FUNCTION assert_template_promotion_same_year();
+
+
+
+CREATE TRIGGER role_assert_strings_rules
+BEFORE INSERT OR UPDATE ON public.role
+FOR EACH ROW
+EXECUTE FUNCTION assert_strings_rules();
+
+CREATE TRIGGER user_assert_strings_rules
+BEFORE INSERT OR UPDATE ON public.user
+FOR EACH ROW
+EXECUTE FUNCTION assert_strings_rules();
+
+CREATE TRIGGER token_assert_strings_rules
+BEFORE INSERT OR UPDATE ON public.token
+FOR EACH ROW
+EXECUTE FUNCTION assert_strings_rules();
+
+CREATE TRIGGER temporary_code_assert_strings_rules
+BEFORE INSERT OR UPDATE ON public.temporary_code
+FOR EACH ROW
+EXECUTE FUNCTION assert_strings_rules();
+
+CREATE TRIGGER diploma_assert_strings_rules
+BEFORE INSERT OR UPDATE ON public.diploma
+FOR EACH ROW
+EXECUTE FUNCTION assert_strings_rules();
+
+CREATE TRIGGER promotion_level_assert_strings_rules
+BEFORE INSERT OR UPDATE ON public.promotion_level
+FOR EACH ROW
+EXECUTE FUNCTION assert_strings_rules();
+
+CREATE TRIGGER promotion_assert_strings_rules
+BEFORE INSERT OR UPDATE ON public.promotion
+FOR EACH ROW
+EXECUTE FUNCTION assert_strings_rules();
+
+CREATE TRIGGER user_promotion_assert_strings_rules
+BEFORE INSERT OR UPDATE ON public.user_promotion
+FOR EACH ROW
+EXECUTE FUNCTION assert_strings_rules();
+
+CREATE TRIGGER ue_assert_strings_rules
+BEFORE INSERT OR UPDATE ON public.enseignement_unit
+FOR EACH ROW
+EXECUTE FUNCTION assert_strings_rules();
+
+CREATE TRIGGER template_assert_strings_rules
+BEFORE INSERT OR UPDATE ON public.template
+FOR EACH ROW
+EXECUTE FUNCTION assert_strings_rules();
+
+CREATE TRIGGER repository_assert_strings_rules
+BEFORE INSERT OR UPDATE ON public.repository
+FOR EACH ROW
+EXECUTE FUNCTION assert_strings_rules();
+
+CREATE TRIGGER user_repository_assert_strings_rules
+BEFORE INSERT OR UPDATE ON public.user_repository
+FOR EACH ROW
+EXECUTE FUNCTION assert_strings_rules();
+
+CREATE TRIGGER milestone_assert_strings_rules
 BEFORE INSERT OR UPDATE ON public.milestone
 FOR EACH ROW
-EXECUTE FUNCTION text_normalization_and_check();
+EXECUTE FUNCTION assert_strings_rules();
 
 
 

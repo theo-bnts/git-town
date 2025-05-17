@@ -64,6 +64,19 @@ export default async function route(app) {
         throw { statusCode: 404, error: 'UNKNOWN_ROLE_KEYWORD' };
       }
 
+      if (
+        (
+          roleKeyword === 'student'
+          && !emailAddress.endsWith(`@${process.env.USER_EMAIL_DOMAIN_STUDENT}`)
+        )
+        || (
+          roleKeyword !== 'student'
+          && !emailAddress.endsWith(`@${process.env.USER_EMAIL_DOMAIN_NON_STUDENT}`)
+        )
+      ) {
+        throw { statusCode: 409, error: 'EMAIL_ADDRESS_DOMAIN_MISMATCH' };
+      }
+
       const role = await Role.fromKeyword(roleKeyword);
 
       const user = new User(

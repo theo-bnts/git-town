@@ -1,6 +1,7 @@
 import Request from '../Request.js';
 import Role from '../../Role.js';
 import Security from '../Security.js';
+import UserRepository from '../../UserRepository.js';
 
 export default class AuthorizationMiddleware {
   static async assertAuthentication(request) {
@@ -18,13 +19,16 @@ export default class AuthorizationMiddleware {
     }
   }
 
-  static async assertSufficientUserRole(request, requiredRoleKeyword) {
+  static async isSufficientUserRole(request, requiredRoleKeyword) {
     const token = await Request.getUsedToken(request);
-    const { Role: authenticatedUserRole } = token.User;
 
     const requiredRole = await Role.fromKeyword(requiredRoleKeyword);
 
-    if (authenticatedUserRole.HierarchyLevel < requiredRole.HierarchyLevel) {
+    return token.User.Role.HierarchyLevel >= requiredRole.HierarchyLevel;
+  }
+
+  static async assertSufficientUserRole(request, requiredRoleKeyword) {
+    if (!await this.isSufficientUserRole(request, requiredRoleKeyword)) {
       throw { statusCode: 403, error: 'INSUFFICIENT_PERMISSIONS' };
     }
   }
@@ -33,15 +37,29 @@ export default class AuthorizationMiddleware {
     const { UserId: requestedUserId } = request.params;
 
     const token = await Request.getUsedToken(request);
-    const { Id: authenticatedUserId, Role: authenticatedUserRole } = token.User;
-
-    const requiredRole = await Role.fromKeyword(requiredRoleKeyword);
 
     if (
-      authenticatedUserRole.HierarchyLevel < requiredRole.HierarchyLevel
-      && requestedUserId !== authenticatedUserId
+      !(await this.isSufficientUserRole(request, requiredRoleKeyword))
+      && requestedUserId !== token.User.Id
     ) {
       throw { statusCode: 403, error: 'INSUFFICIENT_PERMISSIONS_OR_USER_ID_MISMATCH' };
+    }
+  }
+
+  static async assertSufficientUserRoleOrUserInRepository(request, requiredRoleKeyword) {
+    const { RepositoryId: requestedRepositoryId } = request.params;
+
+    const token = await Request.getUsedToken(request);
+
+    const userRepositories = await UserRepository.fromUser(token.User);
+
+    if (
+      !(await this.isSufficientUserRole(request, requiredRoleKeyword))
+      && !userRepositories.some(
+        (userRepository) => userRepository.Repository.Id === requestedRepositoryId,
+      )
+    ) {
+      throw { statusCode: 403, error: 'INSUFFICIENT_PERMISSIONS_OR_USER_NOT_IN_REPOSITORY' };
     }
   }
 }
