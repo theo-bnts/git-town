@@ -12,7 +12,7 @@ export default class EmailTransporter {
 
   async sendEmail(to, subject, html) {
     await this.Transporter.sendMail({
-      from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_FROM_ADDRESS}>`,
+      from: `"${process.env.EMAIL_NAME_FROM}" <${process.env.EMAIL_ADDRESS_FROM}>`,
       to,
       subject,
       html,
@@ -24,10 +24,10 @@ export default class EmailTransporter {
 
     await this.sendEmail(
       emailAddress,
-      'Ton code temporaire',
+      process.env.EMAIL_SUBJECT_TEMPORARY_CODE,
       template
-        .replace('{{CODE}}', temporaryCode.Value)
-        .replace('{{MINUTES}}', Number(process.env.TEMPORARY_CODE_EXPIRATION_MINUTES)),
+        .replace('CODE', temporaryCode.Value)
+        .replace('MINUTES', Number(process.env.TEMPORARY_CODE_EXPIRATION_MINUTES)),
     );
   }
 

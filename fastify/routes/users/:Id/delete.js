@@ -1,6 +1,7 @@
 import AuthorizationMiddleware from '../../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import GitHubApp from '../../../entities/tools/GitHub/GitHubApp.js';
 import ParametersMiddleware from '../../../entities/tools/Middleware/ParametersMiddleware.js';
+import Repository from '../../../entities/Repository.js';
 import Request from '../../../entities/tools/Request.js';
 import User from '../../../entities/User.js';
 import UserRepository from '../../../entities/UserRepository.js';
@@ -47,7 +48,10 @@ export default async function route(app) {
         throw { statusCode: 403, error: 'SELF' };
       }
 
-      if (await UserRepository.isUserInserted(requestedUser)) {
+      if (
+        await Repository.isUserInserted(requestedUser)
+        || await UserRepository.isUserInserted(requestedUser)
+      ) {
         throw { statusCode: 409, error: 'HAS_REPOSITORIES' };
       }
 
