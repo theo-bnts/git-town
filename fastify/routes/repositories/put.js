@@ -91,6 +91,10 @@ export default async function route(app) {
 
       const user = await User.fromId(userId);
 
+      if (user.Role.Keyword === 'student') {
+        throw { statusCode: 409, error: 'USER_IS_STUDENT' };
+      }
+
       const connection = await DatabasePool.EnvironmentInstance.createConnection();
 
       await DatabasePool.begin(connection);

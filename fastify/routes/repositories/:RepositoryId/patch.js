@@ -155,6 +155,10 @@ export default async function route(app) {
         }
 
         repository.User = await User.fromId(userId);
+
+        if (user.Role.Keyword === 'student') {
+          throw { statusCode: 409, error: 'USER_IS_STUDENT' };
+        }
       }
 
       await repository.update();
