@@ -5,6 +5,7 @@ import Milestone from '../../entities/Milestone.js';
 import Promotion from '../../entities/Promotion.js';
 import Repository from '../../entities/Repository.js';
 import Template from '../../entities/Template.js';
+import User from '../../entities/User.js';
 
 export default async function route(app) {
   app.route({
@@ -44,8 +45,18 @@ export default async function route(app) {
             },
             required: ['Id'],
           },
+          User: {
+            type: 'object',
+            properties: {
+              Id: {
+                type: 'string',
+                pattern: process.env.UUID_PATTERN,
+              },
+            },
+            required: ['Id'],
+          },
         },
-        required: ['Template', 'Promotion'],
+        required: ['Template', 'Promotion', 'User'],
       },
     },
     preHandler: async (request) => {
@@ -53,7 +64,11 @@ export default async function route(app) {
       await AuthorizationMiddleware.assertSufficientUserRole(request, 'administrator');
     },
     handler: async (request) => {
-      const { Template: { Id: templateId }, Promotion: { Id: promotionId } } = request.body;
+      const {
+        Template: { Id: templateId },
+        Promotion: { Id: promotionId },
+        User: { Id: userId },
+      } = request.body;
 
       if (!await Template.isIdInserted(templateId)) {
         throw { statusCode: 404, error: 'UNKNOWN_TEMPLATE_ID' };
@@ -63,11 +78,21 @@ export default async function route(app) {
         throw { statusCode: 404, error: 'UNKNOWN_PROMOTION_ID' };
       }
 
+      if (!await User.isIdInserted(userId)) {
+        throw { statusCode: 404, error: 'UNKNOWN_USER_ID' };
+      }
+
       const template = await Template.fromId(templateId);
       const promotion = await Promotion.fromId(promotionId);
 
       if (template.Year !== promotion.Year) {
         throw { statusCode: 409, error: 'YEAR_MISMATCH' };
+      }
+
+      const user = await User.fromId(userId);
+
+      if (user.Role.Keyword === 'student') {
+        throw { statusCode: 409, error: 'USER_IS_STUDENT' };
       }
 
       const connection = await DatabasePool.EnvironmentInstance.createConnection();
@@ -81,8 +106,7 @@ export default async function route(app) {
         null,
         template,
         promotion,
-        null,
-        null,
+        user,
         null,
       );
 

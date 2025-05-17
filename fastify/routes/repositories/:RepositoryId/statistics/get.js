@@ -35,6 +35,7 @@ export default async function route(app) {
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
+      await AuthorizationMiddleware.assertSufficientUserRoleOrUserInRepository(request, 'teacher');
       await ParametersMiddleware.assertRepositoryIdInserted(request);
     },
     handler: async (request) => {
@@ -111,7 +112,8 @@ export default async function route(app) {
         [mappedUsersPullRequestCounts, mappedUsersWeeklyCommitsAndLines]
           .reduce((accumulator, current) => {
             current.forEach((userData, userId) => {
-              const previousUserData = accumulator.get(userId) || {
+              const previousUserData = accumulator.get(userId)
+              || {
                 User: userData.User,
                 PullRequests: {
                   Open: 0,

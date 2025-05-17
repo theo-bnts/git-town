@@ -1,6 +1,7 @@
 import DatabasePool from './tools/DatabasePool.js';
 import Promotion from './Promotion.js';
 import Template from './Template.js';
+import User from './User.js';
 
 export default class Repository {
   Id;
@@ -15,6 +16,8 @@ export default class Repository {
 
   Promotion;
 
+  User;
+
   Comment;
 
   constructor(
@@ -24,6 +27,7 @@ export default class Repository {
     archivedAt,
     template,
     promotion,
+    user,
     comment,
   ) {
     this.Id = id;
@@ -32,6 +36,7 @@ export default class Repository {
     this.ArchivedAt = archivedAt;
     this.Template = template;
     this.Promotion = promotion;
+    this.User = user;
     this.Comment = comment;
   }
 
@@ -42,13 +47,15 @@ export default class Repository {
           archived_at,
           template_id,
           promotion_id,
+          user_id,
           comment
         )
         VALUES (
           $1::timestamp with time zone,
           $2::uuid,
           $3::uuid,
-          $4::text
+          $4::uuid,
+          $5::text
         )
         RETURNING id, created_at, updated_at
       `,
@@ -56,6 +63,7 @@ export default class Repository {
         this.ArchivedAt,
         this.Template.Id,
         this.Promotion.Id,
+        this.User.Id,
         this.Comment,
       ],
       connection,
@@ -74,14 +82,16 @@ export default class Repository {
           archived_at = $1::timestamp with time zone,
           template_id = $2::uuid,
           promotion_id = $3::uuid,
-          comment = $4::text
-        WHERE id = $5::uuid
+          user_id = $4::uuid,
+          comment = $5::text
+        WHERE id = $6::uuid
         RETURNING updated_at
       `,
       [
         this.ArchivedAt,
         this.Template.Id,
         this.Promotion.Id,
+        this.User.Id,
         this.Comment,
         this.Id,
       ],
@@ -97,6 +107,7 @@ export default class Repository {
       UpdatedAt: this.UpdatedAt,
       ArchivedAt: this.ArchivedAt,
       Template: this.Template,
+      User: this.User,
       Promotion: this.Promotion,
     };
   }
@@ -140,6 +151,19 @@ export default class Repository {
     return row.count > 0;
   }
 
+  static async isUserInserted(user) {
+    const [row] = await DatabasePool.EnvironmentInstance.query(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.repository
+        WHERE repository.user_id = $1::uuid
+      `,
+      [user.Id],
+    );
+
+    return row.count > 0;
+  }
+
   static async fromId(id) {
     const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
@@ -149,6 +173,7 @@ export default class Repository {
           repository.archived_at,
           repository.template_id,
           repository.promotion_id,
+          repository.user_id,
           repository.comment
         FROM public.repository
         WHERE repository.id = $1::uuid
@@ -158,6 +183,7 @@ export default class Repository {
 
     const template = await Template.fromId(row.template_id);
     const promotion = await Promotion.fromId(row.promotion_id);
+    const user = await User.fromId(row.user_id);
 
     return new this(
       id,
@@ -166,6 +192,7 @@ export default class Repository {
       row.archived_at,
       template,
       promotion,
+      user,
       row.comment,
     );
   }
@@ -179,6 +206,7 @@ export default class Repository {
           repository.updated_at,
           repository.archived_at,
           repository.promotion_id,
+          repository.user_id,
           repository.comment
         FROM public.repository
         WHERE repository.template_id = $1::uuid
@@ -189,6 +217,7 @@ export default class Repository {
     return Promise.all(
       rows.map(async (row) => {
         const promotion = await Promotion.fromId(row.promotion_id);
+        const user = await User.fromId(row.user_id);
 
         return new this(
           row.id,
@@ -197,6 +226,7 @@ export default class Repository {
           row.archived_at,
           template,
           promotion,
+          user,
           row.comment,
         );
       }),
@@ -213,6 +243,7 @@ export default class Repository {
           repository.archived_at,
           repository.template_id,
           repository.promotion_id,
+          repository.user_id,
           repository.comment
         FROM public.repository
       `,
@@ -222,6 +253,7 @@ export default class Repository {
       rows.map(async (row) => {
         const template = await Template.fromId(row.template_id);
         const promotion = await Promotion.fromId(row.promotion_id);
+        const user = await User.fromId(row.user_id);
 
         return new this(
           row.id,
@@ -230,6 +262,7 @@ export default class Repository {
           row.archived_at,
           template,
           promotion,
+          user,
           row.comment,
         );
       }),
@@ -246,6 +279,7 @@ export default class Repository {
           repository.archived_at,
           repository.template_id,
           repository.promotion_id,
+          repository.user_id,
           repository.comment
         FROM public.repository
         WHERE archived_at IS NULL
@@ -258,6 +292,7 @@ export default class Repository {
       rows.map(async (row) => {
         const template = await Template.fromId(row.template_id);
         const promotion = await Promotion.fromId(row.promotion_id);
+        const user = await User.fromId(row.user_id);
 
         return new this(
           row.id,
@@ -266,6 +301,7 @@ export default class Repository {
           row.archived_at,
           template,
           promotion,
+          user,
           row.comment,
         );
       }),

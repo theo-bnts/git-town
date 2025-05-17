@@ -1,12 +1,12 @@
 import AuthorizationMiddleware from '../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
-import User from '../../../../entities/User.js';
 import UserRepository from '../../../../entities/UserRepository.js';
+import Repository from '../../../../entities/Repository.js';
 
 export default async function route(app) {
   app.route({
     method: 'GET',
-    url: '/users/:UserId/repositories',
+    url: '/repositories/:RepositoryId/users',
     schema: {
       headers: {
         type: 'object',
@@ -21,7 +21,7 @@ export default async function route(app) {
       params: {
         type: 'object',
         properties: {
-          UserId: {
+          RepositoryId: {
             type: 'string',
             pattern: process.env.UUID_PATTERN,
           },
@@ -30,17 +30,17 @@ export default async function route(app) {
     },
     preHandler: async (request) => {
       await AuthorizationMiddleware.assertAuthentication(request);
-      await AuthorizationMiddleware.assertSufficientUserRoleOrUserIdMatch(request, 'teacher');
-      await ParametersMiddleware.assertUserIdInserted(request);
+      await AuthorizationMiddleware.assertSufficientUserRoleOrUserInRepository(request, 'teacher');
+      await ParametersMiddleware.assertRepositoryIdInserted(request);
     },
     handler: async (request) => {
-      const { UserId: userId } = request.params;
+      const { RepositoryId: repositoryId } = request;
 
-      const user = await User.fromId(userId);
+      const repository = await Repository.fromId(repositoryId);
 
-      const userRepositories = await UserRepository.fromUser(user);
+      const userRepositories = await UserRepository.fromRepository(repository);
 
-      return userRepositories.map((userRepository) => userRepository.Repository);
+      return userRepositories.map((userRepository) => userRepository.User);
     },
   });
 }

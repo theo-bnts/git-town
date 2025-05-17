@@ -154,10 +154,12 @@ CREATE TABLE public.repository (
   archived_at timestamp DEFAULT NULL,
   template_id uuid NOT NULL,
   promotion_id uuid NOT NULL,
+  user_id uuid NOT NULL,
   comment text DEFAULT NULL,
   CONSTRAINT repository_pk PRIMARY KEY (id),
   CONSTRAINT repository_fk_template FOREIGN KEY (template_id) REFERENCES public.template(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT repository_fk_promotion FOREIGN KEY (promotion_id) REFERENCES public.promotion(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT repository_fk_promotion FOREIGN KEY (promotion_id) REFERENCES public.promotion(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT repository_fk_user FOREIGN KEY (user_id) REFERENCES public.user(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
 CREATE TABLE public.user_repository (

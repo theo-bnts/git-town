@@ -5,6 +5,7 @@ import ParametersMiddleware from '../../../entities/tools/Middleware/ParametersM
 import Promotion from '../../../entities/Promotion.js';
 import Repository from '../../../entities/Repository.js';
 import Template from '../../../entities/Template.js';
+import User from '../../../entities/User.js';
 import UserRepository from '../../../entities/UserRepository.js';
 
 export default async function route(app) {
@@ -54,6 +55,16 @@ export default async function route(app) {
             },
             required: ['Id'],
           },
+          User: {
+            type: 'object',
+            properties: {
+              Id: {
+                type: 'string',
+                pattern: process.env.UUID_PATTERN,
+              },
+            },
+            required: ['Id'],
+          },
         },
         minProperties: 1,
       },
@@ -65,7 +76,7 @@ export default async function route(app) {
     },
     handler: async (request) => {
       const { RepositoryId: repositoryId } = request.params;
-      const { Template: template, Promotion: promotion } = request.body;
+      const { Template: template, Promotion: promotion, User: user } = request.body;
 
       const repository = await Repository.fromId(repositoryId);
 
@@ -130,6 +141,26 @@ export default async function route(app) {
 
       if (repository.Template.Year !== repository.Promotion.Year) {
         throw { statusCode: 409, error: 'YEAR_MISMATCH' };
+      }
+
+      if (user !== undefined) {
+        const { Id: userId } = user;
+
+        if (!await User.isIdInserted(userId)) {
+          throw { statusCode: 404, error: 'UNKNOWN_USER_ID' };
+        }
+
+        if (userId === repository.User.Id) {
+          throw { statusCode: 409, error: 'SAME_USER_ID' };
+        }
+
+        const fetchedUser = await User.fromId(userId);
+
+        if (fetchedUser.Role.Keyword === 'student') {
+          throw { statusCode: 409, error: 'USER_IS_STUDENT' };
+        }
+
+        repository.User = fetchedUser;
       }
 
       await repository.update();
