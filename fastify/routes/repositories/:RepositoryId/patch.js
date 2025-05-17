@@ -154,11 +154,13 @@ export default async function route(app) {
           throw { statusCode: 409, error: 'SAME_USER_ID' };
         }
 
-        repository.User = await User.fromId(userId);
+        const fetchedUser = await User.fromId(userId);
 
-        if (user.Role.Keyword === 'student') {
+        if (fetchedUser.Role.Keyword === 'student') {
           throw { statusCode: 409, error: 'USER_IS_STUDENT' };
         }
+
+        repository.User = fetchedUser;
       }
 
       await repository.update();
