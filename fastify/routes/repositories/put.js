@@ -67,7 +67,7 @@ export default async function route(app) {
       const {
         Template: { Id: templateId },
         Promotion: { Id: promotionId },
-        User: { Id: userId }
+        User: { Id: userId },
       } = request.body;
 
       if (!await Template.isIdInserted(templateId)) {
