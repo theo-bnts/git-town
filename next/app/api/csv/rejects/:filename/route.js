@@ -24,7 +24,7 @@ export async function GET(_req, { params }) {
 
 export async function DELETE(_req, { params }) {
   const { filename } = params;
-  const filePath     = path.join(process.env.REJECTS_DIR, filename);
+  const filePath = path.join(process.env.REJECTS_DIR, filename);
 
   if (!fs.existsSync(filePath)) {
     return NextResponse.json({ error: 'Fichier introuvable.' }, { status: 404 });

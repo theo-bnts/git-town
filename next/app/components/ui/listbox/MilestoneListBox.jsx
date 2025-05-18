@@ -20,7 +20,7 @@ export default function MilestoneListBox({ items, onChange }) {
 }
 
 function MilestoneInner() {
-  const { addItem, updateItem } = useListBox();
+  const {addItem, updateItem} = useListBox();
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -71,7 +71,6 @@ function MilestoneInner() {
         }}
       />
 
-      <div className="space-y-2 pt-2">
         <Input variant="default" placeholder="Nom milestone" value={title} onChange={(e) => setTitle(e.target.value)} />
         <Input variant="default" placeholder="JJ-MM-AAAA" value={date} onChange={(e) => setDate(e.target.value)} />
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -86,7 +85,6 @@ function MilestoneInner() {
             </Button>
           )}
         </div>
-      </div>
     </>
   );
 }

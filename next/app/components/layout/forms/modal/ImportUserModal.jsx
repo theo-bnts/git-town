@@ -22,7 +22,7 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
   const [authToken, setAuthToken] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
-  const [rejectFiles,  setRejectFiles]  = useState([]);
+  const [rejectFiles, setRejectFiles]  = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -39,8 +39,7 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
 
   const refreshRejects = async () => {
     try {
-      const files = await getRejectFiles();
-      setRejectFiles(files);
+      setRejectFiles(await getRejectFiles());
     } catch (err) {
       console.error(err);
     }

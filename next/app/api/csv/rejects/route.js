@@ -7,16 +7,20 @@ import path from 'path';
 export const config = { api: { bodyParser: false } };
 
 function getFormattedDate() {
-  return new Date().toISOString().replace(/[:T]/g, '-').split('.')[0];
+  return new Date()
+    .toISOString()
+    .replace(/[:T]/g, '-')
+    .split('.')[0];
 }
 
 export async function GET() {
   try {
-    const rejectsDir = process.env.REJECTS_DIR;
-    await fsPromises.mkdir(rejectsDir, { recursive: true });
-    const files = (await fsPromises.readdir(rejectsDir))
+    await fsPromises.mkdir(process.env.REJECTS_DIR, { recursive: true });
+    const files = (await fsPromises
+      .readdir(process.env.REJECTS_DIR))
       .filter(f => f.endsWith('.csv'))
-      .sort().reverse();
+      .sort()
+      .reverse();
     return NextResponse.json({ files }, { status: 200 });
   } catch (err) {
     return NextResponse.json({ error: 'Impossible de lister les rejets.' }, { status: 500 });
@@ -31,10 +35,9 @@ export async function POST(request) {
     }
 
     const finalName = `rejects_${getFormattedDate()}.csv`;
-    const rejectsDir = process.env.REJECTS_DIR;
-    await fsPromises.mkdir(rejectsDir, { recursive: true });
+    await fsPromises.mkdir(process.env.REJECTS_DIR, { recursive: true });
 
-    const filePath = path.join(rejectsDir, finalName);
+    const filePath = path.join(process.env.REJECTS_DIR, finalName);
     await fsPromises.writeFile(filePath, csvContent, 'utf8');
 
     return NextResponse.json({ success: true, fileName: finalName }, { status: 200 });

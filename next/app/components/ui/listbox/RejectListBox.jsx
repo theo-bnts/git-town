@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import Card   from '@/app/components/ui/Card';
+import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import { DownloadIcon, TrashIcon } from '@primer/octicons-react';
 import { listboxStyles } from '@/app/styles/tailwindStyles';
@@ -19,8 +19,8 @@ export default function RejectListBox({ files = [], onDownload, onDelete }) {
           files.map((name) => (
             <div key={name} className="flex items-center justify-between px-4 py-2">
               <span className="truncate">{name}</span>
-              <div className="space-x-1">
-                <Button variant="action_icon"      onClick={() => onDownload(name)}>
+              <div className="flex justify-center space-x-2">
+                <Button variant="action_icon" onClick={() => onDownload(name)}>
                   <DownloadIcon size={16} />
                 </Button>
                 <Button variant="action_icon_warn" onClick={() => onDelete(name)}>
@@ -34,3 +34,29 @@ export default function RejectListBox({ files = [], onDownload, onDelete }) {
     </div>
   );
 }
+
+/*
+// app/components/ui/listbox/RejectListBox.jsx
+'use client';
+
+import React from 'react';
+import { DownloadIcon } from '@primer/octicons-react';
+import ListBoxProvider from '@/app/components/ui/listbox/ListBoxProvider';
+import ListBoxArea from '@/app/components/ui/listbox/ListBoxArea';
+
+export default function RejectListBox({ files = [], onDownload, onDelete }) {
+  // on convertit chaque nom de fichier en item { id, value }
+  const items = files.map((name) => ({ id: name, value: name }));
+
+  return (
+    <ListBoxProvider items={items} onChange={() => {}}>
+      <ListBoxArea
+        renderChip={(item) => <span className="truncate">{item.value}</span>}
+        onEdit={(item) => onDownload(item.value)}     // bouton download
+        onRemove={(item) => onDelete(item.value)}     // bouton poubelle
+        editIcon={DownloadIcon}                       // icône « télécharger »
+      />
+    </ListBoxProvider>
+  );
+}
+*/
