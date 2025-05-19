@@ -1,4 +1,3 @@
-// /app/services/errorCodes.jsx
 export const API_ERRORS = {
   400: {
     FST_ERR_CTP_EMPTY_JSON_BODY: "(400) : Corps de la requête vide.",
@@ -6,6 +5,7 @@ export const API_ERRORS = {
   },
   401: {
     INVALID_TOKEN: "(401) : Token invalide.",
+    INVALID_SIGNATURE: "(401) : Signature invalide.",
     INVALID_OAUTH_CODE: "(401) : Code OAuth invalide.",
     INVALID_TEMPORARY_CODE: "(401) : Code temporaire invalide.",
     INVALID_PASSWORD: "(401) : Mot de passe invalide.",
@@ -14,10 +14,13 @@ export const API_ERRORS = {
   403: {
     INSUFFICIENT_PERMISSIONS: "(403) : Permissions insuffisantes.",
     USER_ID_MISMATCH: "(403) : L’identifiant utilisateur ne correspond pas.",
+    SELF: "(403) : Vous ne pouvez pas vous supprimer.",
     SELF_ROLE: "(403) : Modification de votre propre rôle non autorisée.",
     default: "(403) : Accès refusé.",
   },
   404: {
+    UNKNOWN_ENSEIGNMENT_UNIT_ID: "(404) : Unité d’enseignement inconnue.",
+    UNKNOWN_MILESTONE_ID: "(404) : Jalon inconnu.",
     UNKNOWN_USER_ID: "(404) : Utilisateur inconnu.",
     UNKNOWN_ROLE_KEYWORD: "(404) : Rôle inconnu.",
     UNKNOWN_EMAIL_ADDRESS: "(404) : Adresse e-mail inconnue.",
@@ -41,13 +44,18 @@ export const API_ERRORS = {
     DUPLICATE_TITLE: "(409) : Titre déjà utilisé.",
     DATE_OUT_OF_RANGE: "(409) : Date hors des contraintes.",
     YEAR_UNEDITABLE_WHILE_LINKED_TO_REPOSITORIES: "(409) : Année non modifiable car liée à des dépôts.",
+    EMAIL_ADDRESS_DOMAIN_MISMATCH: "(409) : Nom de domaine de l’adresse e-mail renseigné non autorisé pour le rôle sélectionné.",
+    DUPLICATE_NAME: "(409) : Nom déjà utilisé.",
     default: "(409) : Conflit de requête.",
+  },
+  422: {
+    default: "(422) : Conflit, essayez de quitter l'organisation si vous êtes déjà dedans et de la rejoindre à nouveau.",
   },
   429: {
     RATE_LIMIT_EXCEEDED: "(429) : Trop de requêtes. Veuillez réessayer plus tard.",
     default: "(429) : Trop de requêtes.",
   },
   500: {
-    default: "(500) : Erreur interne du serveur.",
+    default: "(500) : Erreur interne du serveur contactez l’administrateur.",
   },
 };

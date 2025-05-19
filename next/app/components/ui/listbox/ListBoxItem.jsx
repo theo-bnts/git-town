@@ -16,7 +16,7 @@ export default function ListBoxItem({
 }) {
   const Chip = renderChip;
   return (
-    <div className="flex items-center justify-between px-4 py-2">
+    <div className="flex items-center justify-between px-4 py-1">
       <Chip {...item} />
       <div className="space-x-2">
         {onEdit && (

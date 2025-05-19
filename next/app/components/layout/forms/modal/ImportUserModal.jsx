@@ -7,214 +7,181 @@ import { DashIcon, XIcon } from '@primer/octicons-react';
 import { textStyles, listboxStyles } from '@/app/styles/tailwindStyles';
 import { processCsvFile } from '@/app/services/logic/importUsers';
 import saveUser from '@/app/services/api/users/saveUser';
-import { getCookie } from '@/app/services/cookies';
 import RejectListBox from '@/app/components/ui/listbox/RejectListBox';
 import getRejectFiles from '@/app/services/logic/csv/rejects/getRejectFile';
 import deleteRejectFile from '@/app/services/logic/csv/rejects/deleteRejectsFile';
+import { useNotification } from '@/app/context/NotificationContext';
+import useAuthToken from '@/app/hooks/useAuthToken';
 
 export default function ImportUserModal({ isOpen, onClose, onImport }) {
   const fileInputRef = useRef(null);
+  const notify = useNotification();
+  const token = useAuthToken();
+
   const [importedFile, setImportedFile] = useState(null);
   const [usersToProcess, setUsersToProcess] = useState([]);
   const [isValidated, setIsValidated] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [authToken, setAuthToken] = useState('');
-  const [alertMessage, setAlertMessage] = useState('');
-  const [alertType, setAlertType] = useState('');
-  const [rejectFiles, setRejectFiles]  = useState([]);
+  const [rejectFiles, setRejectFiles] = useState([]);
 
   useEffect(() => {
-    (async () => {
-      const token = await getCookie('token');
-      if (token) setAuthToken(token);
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      refreshRejects();
-    }
+    if (isOpen) refreshRejects();
+    else clearFile();
   }, [isOpen]);
 
-  const refreshRejects = async () => {
+  async function refreshRejects() {
     try {
-      setRejectFiles(await getRejectFiles());
+      const files = await getRejectFiles();
+      setRejectFiles(files);
     } catch (err) {
       console.error(err);
+      notify('Impossible de charger les rejets', 'error');
     }
-  };
+  }
 
-  useEffect(() => {
-    if (!isOpen) {
-      clearFileSelection();
-      setAlertMessage('');
-      setAlertType('');
-    }
-  }, [isOpen]);
-
-  const clearFileSelection = () => {
+  function clearFile() {
     setImportedFile(null);
     setUsersToProcess([]);
     setIsValidated(false);
     setProgress(0);
     setIsProcessing(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+  }
 
-  const handleImportFile = () => {
+  function handleImportFile() {
     fileInputRef.current?.click();
-  };
+  }
 
-  const handleExportSampleFile = () => {
+  function handleExportSampleFile() {
     const link = document.createElement('a');
     link.href = '/api/csv/sample/';
     link.download = 'sample.csv';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  }
 
-  async function uploadRejectsCsvToServer(fileName, csvContent) {
+  async function uploadRejectsCsvToServer(_, csvContent) {
     const res = await fetch('/api/csv/rejects/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ csvContent, fileName })
+      body: JSON.stringify({ csvContent })
     });
-    if (!res.ok) {
-      throw new Error('Erreur lors de la sauvegarde du fichier CSV de rejets.');
-    }
-    const data = await res.json();
-    return data.fileName;
+    if (!res.ok) throw new Error('Erreur lors de l’enregistrement des rejets');
+    return (await res.json()).fileName;
   }
 
-  const downloadCsvFromServer = (fileName) => {
-    const url = `/api/csv/rejects/${encodeURIComponent(fileName)}`;
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', fileName);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  function downloadCsvFromServer(filename) {
+    const url = `/api/csv/rejects/${encodeURIComponent(filename)}`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 
-  const handleDownloadReject = (fileName) => {
-    downloadCsvFromServer(fileName);
-  };
-
-  const handleDeleteReject = async (fileName) => {
+  async function handleDeleteReject(filename) {
     try {
-      await deleteRejectFile(fileName);
-      setRejectFiles(prev => prev.filter(f => f !== fileName));
-    } catch (err) {
-      console.error(err);
-      setAlertMessage("Échec de la suppression.");
-      setAlertType("warn");
+      await deleteRejectFile(filename);
+      setRejectFiles(files => files.filter((f) => f !== filename));
+      notify(`Fichier de Rejets : "${filename}" supprimé`, 'success');
+    } catch {
+      notify('Échec de la suppression', 'error');
     }
-  };
+  }
 
-  const handleFileChange = async (event) => {
-    const file = event.target.files[0];
+  async function handleFileChange(e) {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.name.endsWith('.csv')) {
-      setAlertMessage('Veuillez sélectionner un fichier CSV.');
-      setAlertType('warn');
+      notify('Veuillez sélectionner un CSV', 'error');
       return;
     }
 
     const { isValid, users, rejectCsv } = await processCsvFile(file);
-
     if (!isValid) {
       try {
-        const savedName = await uploadRejectsCsvToServer(undefined, rejectCsv);
-        downloadCsvFromServer(savedName);
-      } catch (err) {
-        console.error(err);
+        const name = await uploadRejectsCsvToServer(undefined, rejectCsv);
+        downloadCsvFromServer(name);
+        await refreshRejects();
+      } catch {
+        notify('Erreur lors de l’enregistrement du rejet', 'error');
       }
-      setAlertMessage('Le fichier comporte des erreurs, rejeté dans son intégralité.');
-      setAlertType('warn');
-      clearFileSelection();
+      notify('Fichier rejeté: données invalides', 'error');
+      clearFile();
       return;
     }
 
     setImportedFile(file);
     setUsersToProcess(users);
     setIsValidated(true);
-    setAlertMessage('Fichier valide ! Vous pouvez cliquer sur "Traiter".');
-    setAlertType('success');
-  };
+    notify('CSV valide, prêt à être traité', 'success');
+  }
 
-  const handleRemoveFile = () => {
-    clearFileSelection();
-  };
+  function handleRemoveFile() {
+    clearFile();
+  }
 
-  const handleValidate = async (e) => {
+  async function handleValidate(e) {
     e.preventDefault();
-    if (!importedFile) {
-      setAlertMessage('Aucun fichier sélectionné.');
-      setAlertType('warn');
+    if (!token) {
+      notify('Vous devez être authentifié pour importer', 'error');
       return;
     }
-    if (!authToken) {
-      setAlertMessage('Aucun token trouvé.');
-      setAlertType('warn');
+    if (!importedFile) {
+      notify('Aucun fichier sélectionné', 'error');
       return;
     }
     if (!isValidated || usersToProcess.length === 0) {
-      setAlertMessage('Le fichier n’est pas valide ou est vide.');
-      setAlertType('warn');
+      notify('Rien à traiter', 'error');
       return;
     }
 
     setIsProcessing(true);
     setProgress(0);
     const total = usersToProcess.length;
-    const rejectedFromApi = [];
+    const rejected = [];
 
     for (let i = 0; i < total; i++) {
       try {
-        await saveUser(null, usersToProcess[i], authToken);
+        await saveUser(null, usersToProcess[i], token);
       } catch (err) {
-        rejectedFromApi.push({
-          ...usersToProcess[i],
-          reason: err.message || 'Erreur inconnue'
-        });
+        rejected.push({ ...usersToProcess[i], reason: err.message });
       }
       setProgress(Math.round(((i + 1) / total) * 100));
     }
 
-    if (rejectedFromApi.length > 0) {
-      const csvRejected = (() => {
-        let csv = 'EMAIL_ADDRESS,FULL_NAME,ROLE_KEYWORD,REASON\n';
-        const sanitize = (str) => `"${(str || '').replace(/"/g, '""')}"`;
-        rejectedFromApi.forEach(({ EmailAddress, FullName, Role, reason }) => {
-          const roleKeyword = Role?.Keyword || '';
-          csv += `${sanitize(EmailAddress)},${sanitize(FullName)},${sanitize(roleKeyword)},${sanitize(reason)}\n`;
-        });
-        return csv;
-      })();
-
+    if (rejected.length > 0) {
+      let csv = 'EMAIL_ADDRESS,FULL_NAME,ROLE_KEYWORD,REASON\n';
+      rejected.forEach(r => {
+        const sanitize = (s) => `"${(s || '').replace(/"/g, '""')}"`;
+        csv += [
+          sanitize(r.EmailAddress),
+          sanitize(r.FullName),
+          sanitize(r.Role?.Keyword),
+          sanitize(r.reason)
+        ].join(',') + '\n';
+      });
       try {
-        const savedName = await uploadRejectsCsvToServer(undefined, csvRejected);
-        downloadCsvFromServer(savedName);
-      } catch (err) {
-        console.error(err);
+        const name = await uploadRejectsCsvToServer(undefined, csv);
+        downloadCsvFromServer(name);
+        await refreshRejects();
+      } catch {
+        notify('Erreur lors de l’enregistrement du rejet', 'error');
       }
-      
-      await refreshRejects();
-
-      setAlertMessage('Traitement terminé, certains utilisateurs n’ont pas pu être créés.');
-      setAlertType('warn');
+      notify('Traitement terminé : certains utilisateurs ont échoué', 'error');
     } else {
-      setAlertMessage('Tous les utilisateurs ont été créés avec succès !');
-      setAlertType('success');
+      notify('Tous les utilisateurs ont été créés', 'success');
+      await refreshRejects();
     }
 
     setIsProcessing(false);
-    clearFileSelection();
-    if (onImport) onImport();
-  };
+    clearFile();
+    onImport?.();
+  }
 
   if (!isOpen) return null;
 
@@ -233,20 +200,20 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
+            accept=".csv"
             style={{ display: 'none' }}
-            accept=".csv,text/csv"
           />
 
           <div className="mt-4">
             <p className={`mb-1 ${textStyles.default}`}>Anciens rejets</p>
             <RejectListBox
               files={rejectFiles}
-              onDownload={handleDownloadReject}
+              onDownload={downloadCsvFromServer}
               onDelete={handleDeleteReject}
             />
           </div>
 
-          <div>
+          <div className="mt-4">
             <p className={`mb-1 ${textStyles.default}`}>Fichier exemple</p>
             <Button variant="default" onClick={handleExportSampleFile}>
               <p className={textStyles.defaultWhite}>Télécharger</p>
@@ -272,9 +239,9 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
                   )}
                 </div>
                 <Button
-                  variant={importedFile ? 'disabled' : 'default'}
                   type="button"
-                  onClick={!importedFile ? handleImportFile : undefined}
+                  variant={!importedFile ? 'default' : 'disabled'}
+                  onClick={handleImportFile}
                   disabled={!!importedFile}
                 >
                   <p className={textStyles.defaultWhite}>Importer</p>
@@ -293,34 +260,17 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
 
             <div className="flex justify-center pt-2">
               <Button
-                variant={!importedFile ? 'disabled' : 'default'}
                 type="submit"
+                variant={!importedFile || isProcessing ? 'disabled' : 'default'}
                 disabled={!importedFile || isProcessing}
               >
                 <p className={textStyles.defaultWhite}>
-                  {isProcessing ? 'En cours...' : 'Traiter'}
+                  {isProcessing ? 'En cours…' : 'Traiter'}
                 </p>
               </Button>
             </div>
           </form>
         </Card>
-
-        {alertMessage && (
-          <div className="mt-4">
-            <Card variant={alertType} className="w-full">
-              <div className="flex items-center">
-                <p className="flex-1">{alertMessage}</p>
-                <Button
-                  variant="cancel_action_sq"
-                  onClick={() => setAlertMessage('')}
-                  className="ml-2 transition-transform duration-200 hover:scale-110"
-                >
-                  <XIcon size={20} />
-                </Button>
-              </div>
-            </Card>
-          </div>
-        )}
       </div>
     </div>
   );

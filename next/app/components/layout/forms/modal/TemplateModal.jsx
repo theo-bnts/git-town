@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import useAuthToken from '@/app/hooks/useAuthToken';
 import getEnseignementUnits from '@/app/services/api/enseignementUnit/getEnseignementUnits';
 import getTemplateMilestones from '@/app/services/api/templates/id/milestone/getTemplateMilestones';
@@ -9,6 +9,7 @@ import saveTemplateMilestone from '@/app/services/api/templates/id/milestone/sav
 import deleteTemplateMilestone from '@/app/services/api/templates/id/milestone/id/deleteTemplateMilestone';
 import { MilestoneListBox } from '@/app/components/ui/listbox';
 import FormModal from '@/app/components/ui/modal/FormModal';
+import { useNotification } from '@/app/context/NotificationContext';
 
 export default function TemplateModal({
   isOpen,
@@ -17,46 +18,63 @@ export default function TemplateModal({
   onSave,
 }) {
   const token = useAuthToken();
+  const notify = useNotification();
 
   const [unitOptions, setUnitOptions] = useState([]);
   const [originalMilestones, setOriginalMilestones] = useState([]);
   const [currentMilestones, setCurrentMilestones] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
-    if (isOpen && token) {
-      getEnseignementUnits(token).then(units =>
+    if (!isOpen || !token) return;
+    (async () => {
+      try {
+        const units = await getEnseignementUnits(token);
         setUnitOptions(
-          units.map(u => ({ id: u.Id, value: u.Initialism, full: u }))
-        )
-      );
-    }
-  }, [isOpen, token]);
+          units.map(u => ({
+            id: u.Id,
+            value: u.Initialism,
+            full: u,
+          }))
+        );
+      } catch (err) {
+        notify('Erreur lors du chargement des UE', 'error');
+      }
+    })();
+  }, [isOpen, token, notify]);
 
   useEffect(() => {
-    if (isOpen && token && initialData.Id) {
-      getTemplateMilestones(initialData.Id, token).then(list => {
+    if (!isOpen || !token) {
+      setOriginalMilestones([]);
+      setCurrentMilestones([]);
+      return;
+    }
+    if (!initialData.Id) return;
+
+    (async () => {
+      try {
+        const list = await getTemplateMilestones(initialData.Id, token);
         const norm = list.map(m => ({
-          id:  m.Id,
+          id: m.Id,
           Title: m.Title,
           Date: m.Date,
           value: `${m.Title} – ${m.Date}`,
         }));
         setOriginalMilestones(norm);
         setCurrentMilestones(norm);
-      });
-    } else if (isOpen) {
-      setOriginalMilestones([]);
-      setCurrentMilestones([]);
-    }
-  }, [isOpen, token, initialData.Id]);
+      } catch (err) {
+        notify('Erreur lors du chargement des milestones', 'error');
+      }
+    })();
+  }, [isOpen, token, initialData.Id, notify]);
 
   const fields = useMemo(() => [
     {
       name: 'UE',
       options: unitOptions,
-      value: unitOptions.find(o => o.id === initialData.EnseignementUnit?.Id) || null,
+      value:
+        unitOptions.find(o => o.id === initialData.EnseignementUnit?.Id) ||
+        null,
     },
     {
       name: 'Année',
@@ -66,95 +84,101 @@ export default function TemplateModal({
       name: 'Milestones',
       value: currentMilestones,
       render: (value, onChange) => (
-        <MilestoneListBox
-          items={value}
-          onChange={newItems => onChange(newItems)}
-        />
+        <MilestoneListBox items={value} onChange={onChange} />
       ),
     },
   ], [initialData, unitOptions, currentMilestones]);
 
-  const validate = v => {
-    const e = {};
-    if (!v.UE?.id) e.UE = 'Sélectionnez une UE.';
-    if (!v.Année) e.Année = 'L’année est requise.';
-    else if (!/^\d{4}$/.test(v.Année)) e.Année = 'Année invalide.';
-    return e;
-  };
+  function validate(values) {
+    const errs = {};
+    if (!values.UE?.id) errs.UE = 'Sélectionnez une UE.';
+    if (!values.Année) errs.Année = 'L’année est requise.';
+    else if (!/^\d{4}$/.test(values.Année)) errs.Année = 'Année invalide.';
+    return errs;
+  }
 
-  const handleSubmit = async v => {
-    const validationErrors = validate(v);
-    if (Object.keys(validationErrors).length) {
-      setErrors(validationErrors);
+  const handleSubmit = async values => {
+    const errs = validate(values);
+    if (Object.keys(errs).length) {
+      setFieldErrors(errs);
       return;
     }
-    setErrors({});
+    setFieldErrors({});
 
-    let tplId = initialData.Id;
-    if (!tplId) {
-      const tplData = {
-        EnseignementUnit: { Id: v.UE.id },
-        Year: parseInt(v.Année, 10),
-      };
-      const created = await saveTemplate(null, tplData, token);
-      tplId = created.Id;
-    } else {
-      const patch = {};
-      if (v.UE.id !== initialData.EnseignementUnit?.Id) {
-        patch.EnseignementUnit = { Id: v.UE.id };
-      }
-      if (parseInt(v.Année, 10) !== initialData.Year) {
-        patch.Year = parseInt(v.Année, 10);
-      }
-      if (Object.keys(patch).length) {
-        await saveTemplate(tplId, patch, token);
-      }
-    }
-
-    const allMs = Array.isArray(v.Milestones) ? v.Milestones : [];
-    const kept = allMs.filter(m => originalMilestones.some(o => o.id === m.id));
-    const added = allMs.filter(m => !originalMilestones.some(o => o.id === m.id));
-    const removed = originalMilestones.filter(o =>
-      !allMs.some(m => m.id === o.id)
-    );
-
-    await Promise.all(
-      removed.map(m => deleteTemplateMilestone(tplId, m.id, token))
-    );
-
-    await Promise.all(
-      added.map(m => {
-        let title, date;
-        if (m.Title && m.Date) {
-          ({ Title: title, Date: date } = m);
-        } else {
-          [ title = '', date = '' ] = typeof m.value === 'string'
-            ? m.value.split(' – ')
-            : [];
-        }
-        return saveTemplateMilestone(
-          tplId,
+    try {
+      let tplId = initialData.Id;
+      if (!tplId) {
+        const created = await saveTemplate(
           null,
-          { Title: title.trim(), Date: date.trim() },
+          {
+            EnseignementUnit: { Id: values.UE.id },
+            Year: +values.Année,
+          },
           token
         );
-      })
-    );
+        tplId = created.Id;
+      } else {
+        const patch = {};
+        if (values.UE.id !== initialData.EnseignementUnit?.Id) {
+          patch.EnseignementUnit = { Id: values.UE.id };
+        }
+        if (+values.Année !== initialData.Year) {
+          patch.Year = +values.Année;
+        }
+        if (Object.keys(patch).length) {
+          await saveTemplate(tplId, patch, token);
+        }
+      }
 
-    await Promise.all(
-      kept.map(m => {
-        const orig = originalMilestones.find(o => o.id === m.id);
-        const diff = {};
-        if (orig.Title !== m.Title) diff.Title = m.Title;
-        if (orig.Date  !== m.Date)  diff.Date  = m.Date;
-        return Object.keys(diff).length
-          ? saveTemplateMilestone(tplId, m.id, diff, token)
-          : Promise.resolve();
-      })
-    );
+      const all = Array.isArray(values.Milestones) ? values.Milestones : [];
+      const kept = all.filter(m =>
+        originalMilestones.some(o => o.id === m.id)
+      );
+      const added = all.filter(
+        m => !originalMilestones.some(o => o.id === m.id)
+      );
+      const removed = originalMilestones.filter(
+        o => !all.some(m => m.id === o.id)
+      );
 
-    onSave();
-    onClose();
+      await Promise.all([
+        ...removed.map(m =>
+          deleteTemplateMilestone(tplId, m.id, token)
+        ),
+        ...added.map(m => {
+          const [Title = '', Date = ''] = typeof m.value === 'string'
+            ? m.value.split(' – ')
+            : [m.Title, m.Date];
+          return saveTemplateMilestone(
+            tplId,
+            null,
+            { Title: Title.trim(), Date: Date.trim() },
+            token
+          );
+        }),
+        ...kept.map(m => {
+          const orig = originalMilestones.find(o => o.id === m.id);
+          const diff = {};
+          if (orig.Title !== m.Title) diff.Title = m.Title;
+          if (orig.Date !== m.Date) diff.Date = m.Date;
+          return Object.keys(diff).length
+            ? saveTemplateMilestone(tplId, m.id, diff, token)
+            : Promise.resolve();
+        }),
+      ]);
+
+      notify(
+        initialData.Id
+          ? 'Template mis à jour avec succès'
+          : 'Template créé avec succès',
+        'success'
+      );
+      onSave();
+      onClose();
+    } catch (err) {
+      console.error(err);
+      notify(err.message || 'Une erreur est survenue', 'error');
+    }
   };
 
   return (
@@ -167,9 +191,7 @@ export default function TemplateModal({
         updatedAt: initialData.UpdatedAt,
       }}
       fields={fields}
-      errors={errors}
-      apiError={apiError}
-      onClearApiError={() => setApiError('')}
+      errors={fieldErrors}
       onClose={onClose}
       onSubmit={handleSubmit}
     />

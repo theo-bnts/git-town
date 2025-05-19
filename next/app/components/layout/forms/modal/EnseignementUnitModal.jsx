@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import useAuthToken from '@/app/hooks/useAuthToken';
 import saveEnseignementUnit from '@/app/services/api/enseignementUnit/saveEnseignementUnit';
 import FormModal from '@/app/components/ui/modal/FormModal';
+import { useNotification } from '@/app/context/NotificationContext';
 
 export default function EnseignementUnitModal({
   isOpen,
@@ -12,57 +13,59 @@ export default function EnseignementUnitModal({
   onSave,
 }) {
   const token = useAuthToken();
-  const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState('');
+  const notify = useNotification();
 
-  const fields = useMemo(
-    () => [
-      { name: 'Sigle', value: initialData.Initialism || '' },
-      { name: 'Nom', value: initialData.Name || '' },
-    ],
-    [initialData]
-  );
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  const validate = (v) => {
-    const e = {};
-    if (!v.Sigle) e.Sigle = 'Le sigle est obligatoire.';
-    if (!v.Nom) e.Nom = 'Le nom est obligatoire.';
-    return e;
-  };
+  const fields = useMemo(() => [
+    { name: 'Sigle', value: initialData.Initialism || '' },
+    { name: 'Nom', value: initialData.Name || '' },
+  ], [initialData]);
 
-  const handleSubmit = async (v) => {
-    const e = validate(v);
-    if (Object.keys(e).length) {
-      setErrors(e);
+  function validate(values) {
+    const errs = {};
+    if (!values.Sigle) errs.Sigle = 'Le sigle est obligatoire.';
+    if (!values.Nom) errs.Nom = 'Le nom est obligatoire.';
+    return errs;
+  }
+
+  const handleSubmit = async (values) => {
+    const errs = validate(values);
+    if (Object.keys(errs).length) {
+      setFieldErrors(errs);
       return;
     }
-    setErrors({});
+    setFieldErrors({});
 
     let payload;
     if (initialData.Id) {
       payload = {};
-      if (v.Sigle !== initialData.Initialism) { 
-        payload.Initialism = v.Sigle;
-      }
-
-      if (v.Nom !== initialData.Name) {
-        payload.Name = v.Nom;
-      }
-
+      if (values.Sigle !== initialData.Initialism) payload.Initialism = values.Sigle;
+      if (values.Nom !== initialData.Name ) payload.Name = values.Nom;
       if (Object.keys(payload).length === 0) {
         onClose();
         return;
       }
     } else {
-      payload = { Initialism: v.Sigle, Name: v.Nom };
+      payload = {
+        Initialism: values.Sigle,
+        Name: values.Nom,
+      };
     }
 
     try {
       await saveEnseignementUnit(initialData.Id || null, payload, token);
+      notify(
+        initialData.Id
+          ? 'UE mise à jour avec succès'
+          : 'Nouvelle UE créée avec succès',
+        'success'
+      );
       onSave();
       onClose();
     } catch (err) {
-      setApiError(err.message);
+      console.error(err);
+      notify(err.message || 'Échec de la sauvegarde de l’UE', 'error');
     }
   };
 
@@ -76,9 +79,7 @@ export default function EnseignementUnitModal({
         updatedAt: initialData.UpdatedAt,
       }}
       fields={fields}
-      errors={errors}
-      apiError={apiError}
-      onClearApiError={() => setApiError('')}
+      errors={fieldErrors}
       onClose={onClose}
       onSubmit={handleSubmit}
     />
