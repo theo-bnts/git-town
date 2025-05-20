@@ -12,12 +12,15 @@ import getRejectFiles from '@/app/services/logic/csv/rejects/getRejectFile';
 import deleteRejectFile from '@/app/services/logic/csv/rejects/deleteRejectsFile';
 import { useNotification } from '@/app/context/NotificationContext';
 import useAuthToken from '@/app/hooks/useAuthToken';
+import getPromotions from '@/app/services/api/promotions/getPromotions';
+import ComboBox from '@/app/components/ui/combobox/ComboBox';
 
 export default function ImportUserModal({ isOpen, onClose, onImport }) {
   const fileInputRef = useRef(null);
   const notify = useNotification();
   const token = useAuthToken();
-
+  const [promoOpts, setPromoOpts] = useState([]);
+  const [selectedPromo, setSelectedPromo] = useState(null);
   const [importedFile, setImportedFile] = useState(null);
   const [usersToProcess, setUsersToProcess] = useState([]);
   const [isValidated, setIsValidated] = useState(false);
@@ -26,16 +29,30 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
   const [rejectFiles, setRejectFiles] = useState([]);
 
   useEffect(() => {
-    if (isOpen) refreshRejects();
-    else clearFile();
-  }, [isOpen]);
+    if (isOpen && token) {
+      getPromotions(token)
+        .then(arr =>
+          setPromoOpts(
+            arr.map(p => ({
+              id: p.Id,
+              value: `${p.Diploma.Initialism} ${p.PromotionLevel.Initialism} - ${p.Year}`.replace('–', '-'),
+              full: p
+            }))
+          )
+        )
+        .catch(() => notify('Erreur lors du chargement des promotions', 'error'));
+      refreshRejects();
+    } else {
+      clearFile();
+      setSelectedPromo(null);
+    }
+  }, [isOpen, token]);
 
   async function refreshRejects() {
     try {
       const files = await getRejectFiles();
       setRejectFiles(files);
-    } catch (err) {
-      console.error(err);
+    } catch {
       notify('Impossible de charger les rejets', 'error');
     }
   }
@@ -85,7 +102,7 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
   async function handleDeleteReject(filename) {
     try {
       await deleteRejectFile(filename);
-      setRejectFiles(files => files.filter((f) => f !== filename));
+      setRejectFiles(files => files.filter(f => f !== filename));
       notify(`Fichier de Rejets : "${filename}" supprimé`, 'success');
     } catch {
       notify('Échec de la suppression', 'error');
@@ -95,12 +112,10 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
   async function handleFileChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!file.name.endsWith('.csv')) {
       notify('Veuillez sélectionner un CSV', 'error');
       return;
     }
-
     const { isValid, users, rejectCsv } = await processCsvFile(file);
     if (!isValid) {
       try {
@@ -114,7 +129,6 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
       clearFile();
       return;
     }
-
     setImportedFile(file);
     setUsersToProcess(users);
     setIsValidated(true);
@@ -139,25 +153,31 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
       notify('Rien à traiter', 'error');
       return;
     }
-
+    if (!selectedPromo?.id) {
+      notify('Veuillez sélectionner une promotion', 'error');
+      return;
+    }
     setIsProcessing(true);
     setProgress(0);
     const total = usersToProcess.length;
     const rejected = [];
-
     for (let i = 0; i < total; i++) {
       try {
-        await saveUser(null, usersToProcess[i], token);
+        const created = await saveUser(null, usersToProcess[i], token);
+        const newId = created?.Id || created?.id;
+        if (!newId) throw new Error('Création utilisateur sans identifiant');
+        if (usersToProcess[i].Role?.Keyword === 'student') {
+          await saveUser(newId, { Promotions: [selectedPromo.id] }, token);
+        }
       } catch (err) {
         rejected.push({ ...usersToProcess[i], reason: err.message });
       }
       setProgress(Math.round(((i + 1) / total) * 100));
     }
-
     if (rejected.length > 0) {
       let csv = 'EMAIL_ADDRESS,FULL_NAME,ROLE_KEYWORD,REASON\n';
       rejected.forEach(r => {
-        const sanitize = (s) => `"${(s || '').replace(/"/g, '""')}"`;
+        const sanitize = s => `"${(s || '').replace(/"/g, '""')}"`;
         csv += [
           sanitize(r.EmailAddress),
           sanitize(r.FullName),
@@ -177,7 +197,6 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
       notify('Tous les utilisateurs ont été créés', 'success');
       await refreshRejects();
     }
-
     setIsProcessing(false);
     clearFile();
     onImport?.();
@@ -195,7 +214,6 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
               <XIcon size={24} />
             </Button>
           </div>
-
           <input
             type="file"
             ref={fileInputRef}
@@ -203,7 +221,15 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
             accept=".csv"
             style={{ display: 'none' }}
           />
-
+          <div className="mt-4">
+            <p className={`mb-1 ${textStyles.default}`}>Promotion</p>
+            <ComboBox
+              placeholder="Sélectionner promotion"
+              options={promoOpts}
+              value={selectedPromo}
+              onSelect={setSelectedPromo}
+            />
+          </div>
           <div className="mt-4">
             <p className={`mb-1 ${textStyles.default}`}>Anciens rejets</p>
             <RejectListBox
@@ -212,14 +238,12 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
               onDelete={handleDeleteReject}
             />
           </div>
-
           <div className="mt-4">
             <p className={`mb-1 ${textStyles.default}`}>Fichier exemple</p>
             <Button variant="default" onClick={handleExportSampleFile}>
               <p className={textStyles.defaultWhite}>Télécharger</p>
             </Button>
           </div>
-
           <form onSubmit={handleValidate} className="space-y-4 mt-4">
             <div>
               <p className={`mb-1 ${textStyles.default}`}>Fichier à importer</p>
@@ -248,7 +272,6 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
                 </Button>
               </div>
             </div>
-
             {isProcessing && (
               <div className="w-full bg-gray-300 rounded-full h-2.5 mt-2">
                 <div
@@ -257,7 +280,6 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
                 />
               </div>
             )}
-
             <div className="flex justify-center pt-2">
               <Button
                 type="submit"
