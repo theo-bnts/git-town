@@ -3,17 +3,12 @@
 import { useMemo, useState, useEffect } from 'react';
 import useAuthToken from '@/app/hooks/useAuthToken';
 import getPromotions from '@/app/services/api/promotions/getPromotions';
+import getRoles from '@/app/services/api/roles/getRoles';
 import saveUser from '@/app/services/api/users/saveUser';
 import { isEmailValid } from '@/app/services/validators';
 import { PromotionListBox } from '@/app/components/ui/listbox';
 import FormModal from '@/app/components/ui/modal/FormModal';
 import { useNotification } from '@/app/context/NotificationContext';
-
-const roleOptions = [
-  { id: 'administrator', value: 'Administrateur' },
-  { id: 'teacher', value: 'Enseignant' },
-  { id: 'student', value: 'Étudiant' },
-];
 
 const formatLabel = (p) =>
   `${p.Diploma.Initialism} ${p.PromotionLevel.Initialism} - ${p.Year}`;
@@ -29,28 +24,47 @@ export default function UserModal({
 
   const [promoOpts, setPromoOpts] = useState([]);
   const [selectedPromos, setSelectedPromos] = useState([]);
+  const [roleOptions, setRoleOptions] = useState([]);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
 
   useEffect(() => {
-    if (!isOpen || !token) return;
+    if (!isOpen || !token) {
+      if (!isOpen) {
+        setPromoOpts([]);
+        setRoleOptions([]);
+      }
+      return;
+    }
+    setIsLoadingOptions(true);
     (async () => {
       try {
-        const arr = await getPromotions(token);
+        const [proms, roles] = await Promise.all([
+          getPromotions(token),
+          getRoles(token),
+        ]);
         setPromoOpts(
-          arr.map((p) => ({
+          proms.map((p) => ({
             id: p.Id,
             value: formatLabel(p).replace('–', '-'),
             full: p,
           }))
         );
+        setRoleOptions(
+          roles.map((r) => ({ id: r.Keyword, value: r.Name }))
+        );
       } catch (err) {
-        notify('Erreur lors du chargement des promotions', 'error');
+        console.error(err);
+        notify(err.message || 'Erreur lors du chargement des options', 'error');
+      } finally {
+        setIsLoadingOptions(false);
       }
     })();
   }, [isOpen, token, notify]);
 
   useEffect(() => {
-    if (!isOpen || promoOpts.length === 0) return;
+    if (!isOpen || promoOpts.length === 0 || roleOptions.length === 0) return;
+
     const initialLabels = Array.isArray(initialData.promotions)
       ? initialData.promotions.map((str) => str.replace('–', '-'))
       : [];
@@ -61,8 +75,8 @@ export default function UserModal({
 
   const initialRole = useMemo(
     () =>
-      roleOptions.find((r) => r.value === initialData.Role?.Name) || null,
-    [initialData.Role]
+      roleOptions.find((r) => r.id === initialData.Role?.Keyword) || null,
+    [initialData.Role, roleOptions]
   );
 
   const fields = useMemo(
@@ -82,14 +96,14 @@ export default function UserModal({
         ),
       },
     ],
-    [initialData, initialRole, promoOpts, selectedPromos]
+    [initialData, initialRole, promoOpts, selectedPromos, roleOptions]
   );
 
   function validate(v) {
     const e = {};
     if (!v.Nom?.trim()) e.Nom = 'Le nom est obligatoire.';
     if (!v.Email?.trim()) e.Email = "L'email est obligatoire.";
-    else if (!isEmailValid(v.Email)) e.Email = "Format d'email invalide.";
+    else if (!isEmailValid(v.Email)) e.Email = 'Format d\'email invalide.';
     if (!v.Rôle?.id) e.Rôle = 'Veuillez sélectionner un rôle.';
     return e;
   }
@@ -114,18 +128,13 @@ export default function UserModal({
       : [];
 
     const payload = {};
-    if (v.Nom.trim() !== initialData.FullName) {
-      payload.FullName = v.Nom.trim();
-    }
-    if (v.Email.trim() !== initialData.EmailAddress) {
+    if (v.Nom.trim() !== initialData.FullName) payload.FullName = v.Nom.trim();
+    if (v.Email.trim() !== initialData.EmailAddress)
       payload.EmailAddress = v.Email.trim();
-    }
-    if (v.Rôle.id !== initialData.Role?.Keyword) {
+    if (v.Rôle.id !== initialData.Role?.Keyword)
       payload.Role = { Keyword: v.Rôle.id };
-    }
-    if (JSON.stringify(origIds) !== JSON.stringify(newIds)) {
+    if (JSON.stringify(origIds) !== JSON.stringify(newIds))
       payload.Promotions = newIds;
-    }
 
     if (initialData.Id && Object.keys(payload).length === 0) {
       onClose();
@@ -163,6 +172,7 @@ export default function UserModal({
       errors={fieldErrors}
       onClose={onClose}
       onSubmit={handleSubmit}
+      isLoading={isLoadingOptions}
     />
   );
 }

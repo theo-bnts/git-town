@@ -1,19 +1,10 @@
-'use client';
-
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import useAuthToken from '@/app/hooks/useAuthToken';
 import savePromotions from '@/app/services/api/promotions/savePromotions';
+import getDiplomas from '@/app/services/api/diplomas/getDiplomas';
+import getPromotionLevels from '@/app/services/api/promotion-levels/getPromotionLevels';
 import FormModal from '@/app/components/ui/modal/FormModal';
 import { useNotification } from '@/app/context/NotificationContext';
-
-const diplomaOptions = [
-  { id: 'MIAGE', value: 'MIAGE' },
-];
-
-const levelOptions = [
-  { id: 'M1', value: 'M1' },
-  { id: 'M2', value: 'M2' },
-];
 
 export default function PromotionModal({
   isOpen,
@@ -24,7 +15,43 @@ export default function PromotionModal({
   const token = useAuthToken();
   const notify = useNotification();
 
+  const [diplomaOptions, setDiplomaOptions] = useState([]);
+  const [levelOptions, setLevelOptions] = useState([]);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
+
+  // Fetch diploma and level options when modal opens, only if token is ready
+  useEffect(() => {
+    if (!isOpen || !token) {
+      // reset options when modal is closed or no token
+      if (!isOpen) {
+        setDiplomaOptions([]);
+        setLevelOptions([]);
+      }
+      return;
+    }
+    setIsLoadingOptions(true);
+
+    (async () => {
+      try {
+        const [diplomas, levels] = await Promise.all([
+          getDiplomas(token),
+          getPromotionLevels(token),
+        ]);
+        setDiplomaOptions(
+          diplomas.map((d) => ({ id: d.Initialism, value: d.Initialism }))
+        );
+        setLevelOptions(
+          levels.map((l) => ({ id: l.Initialism, value: l.Initialism }))
+        );
+      } catch (err) {
+        console.error(err);
+        notify(err.message || 'Erreur lors du chargement des options', 'error');
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    })();
+  }, [isOpen, token, notify]);
 
   const fields = useMemo(() => [
     {
@@ -47,7 +74,7 @@ export default function PromotionModal({
       name: 'Année',
       value: initialData.Year?.toString() || '',
     },
-  ], [initialData]);
+  ], [initialData, diplomaOptions, levelOptions]);
 
   function validate(values) {
     const errs = {};
@@ -126,6 +153,7 @@ export default function PromotionModal({
       errors={fieldErrors}
       onClose={onClose}
       onSubmit={handleSubmit}
+      isLoading={isLoadingOptions}
     />
   );
 }

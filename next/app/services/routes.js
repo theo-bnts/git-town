@@ -66,3 +66,11 @@ export const repositoriesRoute = () =>
 export const repositoryRoute = (repoId) =>
   `${process.env.NEXT_PUBLIC_API_URL}/repositories/${repoId}`;
 
+export const diplomasRoute = () =>
+  `${process.env.NEXT_PUBLIC_API_URL}/diplomas`;
+
+export const promotionLevelsRoute = () =>
+  `${process.env.NEXT_PUBLIC_API_URL}/promotion-levels`;
+
+export const rolesRoute = () =>
+  `${process.env.NEXT_PUBLIC_API_URL}/roles`;
