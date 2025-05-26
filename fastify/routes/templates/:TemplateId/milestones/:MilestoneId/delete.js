@@ -1,5 +1,3 @@
-import { DateTime } from 'luxon';
-
 import AuthorizationMiddleware from '../../../../../entities/tools/Middleware/AuthorizationMiddleware.js';
 import GitHubApp from '../../../../../entities/tools/GitHub/GitHubApp.js';
 import Milestone from '../../../../../entities/Milestone.js';
@@ -59,9 +57,6 @@ export default async function route(app) {
 
           const concernedGitHubMilestone = gitHubMilestones.find((gitHubMilestone) => (
             gitHubMilestone.Title === milestone.Title
-            && DateTime
-              .fromJSDate(gitHubMilestone.Date)
-              .hasSame(DateTime.fromJSDate(milestone.Date), 'day')
           ));
 
           if (concernedGitHubMilestone !== undefined) {

@@ -40,8 +40,7 @@ export default class GitHubRepositories {
     await this.App.Octokit.rest.repos.createInOrg({
       org: organizationName,
       name,
-      homepage:
-        `${process.env.FRONTEND_BASE_URL}${process.env.FRONTEND_REPOSITORIES_ENDPOINT}/${name}`,
+      homepage: process.env.FRONTEND_BASE_URL,
       private: true,
     });
   }
@@ -359,58 +358,60 @@ export default class GitHubRepositories {
       return [];
     }
 
-    const commits = response.data;
+    const contributions = response.data;
 
-    return commits.map((userContributions) => {
-      const firstWeekIndex = userContributions.weeks.findIndex((week) => week.c !== 0);
-      const lastWeekIndex = userContributions.weeks.findLastIndex((week) => week.c !== 0);
+    return contributions
+      .filter((userContributions) => userContributions.author !== null)
+      .map((userContributions) => {
+        const firstWeekIndex = userContributions.weeks.findIndex((week) => week.c !== 0);
+        const lastWeekIndex = userContributions.weeks.findLastIndex((week) => week.c !== 0);
 
-      const firstDayOfFirstWeek = DateTime
-        .fromSeconds(userContributions.weeks[firstWeekIndex].w, { zone: 'UTC' })
-        .plus({ days: 1 })
-        .toJSDate();
-      const firstDayOfLastWeek = DateTime
-        .fromSeconds(userContributions.weeks[lastWeekIndex].w, { zone: 'UTC' })
-        .plus({ days: 1 })
-        .toJSDate();
+        const firstDayOfFirstWeek = DateTime
+          .fromSeconds(userContributions.weeks[firstWeekIndex].w, { zone: 'UTC' })
+          .plus({ days: 1 })
+          .toJSDate();
+        const firstDayOfLastWeek = DateTime
+          .fromSeconds(userContributions.weeks[lastWeekIndex].w, { zone: 'UTC' })
+          .plus({ days: 1 })
+          .toJSDate();
 
-      const commitCounts = userContributions.weeks
-        .slice(firstWeekIndex, lastWeekIndex + 1)
-        .map((week, index) => {
-          const todaySunday = week.c;
-          const nextSunday = userContributions.weeks[firstWeekIndex + index + 1] !== undefined
-            ? userContributions.weeks[firstWeekIndex + index + 1].c
-            : 0;
+        const commitCounts = userContributions.weeks
+          .slice(firstWeekIndex, lastWeekIndex + 1)
+          .map((week, index) => {
+            const todaySunday = week.c;
+            const nextSunday = userContributions.weeks[firstWeekIndex + index + 1] !== undefined
+              ? userContributions.weeks[firstWeekIndex + index + 1].c
+              : 0;
 
-          return week.c - todaySunday + nextSunday;
-        });
+            return week.c - todaySunday + nextSunday;
+          });
 
-      const linesCounts = userContributions.weeks
-        .slice(firstWeekIndex, lastWeekIndex + 1)
-        .map((week) => ({
-          Additions: week.a,
-          Deletions: Math.abs(week.d),
-        }));
+        const linesCounts = userContributions.weeks
+          .slice(firstWeekIndex, lastWeekIndex + 1)
+          .map((week) => ({
+            Additions: week.a,
+            Deletions: Math.abs(week.d),
+          }));
 
-      return {
-        User: {
-          Id: userContributions.author.id,
-        },
-        Commits: {
-          Weekly: {
-            FirstDayOfFirstWeek: firstDayOfFirstWeek,
-            FirstDayOfLastWeek: firstDayOfLastWeek,
-            Counts: commitCounts,
+        return {
+          User: {
+            Id: userContributions.author.id,
           },
-        },
-        Lines: {
-          Weekly: {
-            FirstDayOfFirstWeek: firstDayOfFirstWeek,
-            FirstDayOfLastWeek: firstDayOfLastWeek,
-            Counts: linesCounts,
+          Commits: {
+            Weekly: {
+              FirstDayOfFirstWeek: firstDayOfFirstWeek,
+              FirstDayOfLastWeek: firstDayOfLastWeek,
+              Counts: commitCounts,
+            },
           },
-        },
-      };
-    });
+          Lines: {
+            Weekly: {
+              FirstDayOfFirstWeek: firstDayOfFirstWeek,
+              FirstDayOfLastWeek: firstDayOfLastWeek,
+              Counts: linesCounts,
+            },
+          },
+        };
+      });
   }
 }
