@@ -361,7 +361,7 @@ export default class GitHubRepositories {
     const contributions = response.data;
 
     return contributions
-      .filter(userContributions => userContributions.author !== null)
+      .filter((userContributions) => userContributions.author !== null)
       .map((userContributions) => {
         const firstWeekIndex = userContributions.weeks.findIndex((week) => week.c !== 0);
         const lastWeekIndex = userContributions.weeks.findLastIndex((week) => week.c !== 0);
