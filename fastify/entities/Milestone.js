@@ -89,6 +89,19 @@ export default class Milestone {
     return row.count === 1n;
   }
 
+  static async isTemplateInserted(template) {
+    const [row] = await DatabasePool.EnvironmentInstance.query(
+      /* sql */ `
+        SELECT COUNT(*) AS count
+        FROM public.milestone
+        WHERE template_id = $1::uuid
+      `,
+      [template.Id],
+    );
+
+    return row.count > 0;
+  }
+
   static async isTemplateAndTitleInserted(template, title) {
     const [row] = await DatabasePool.EnvironmentInstance.query(
       /* sql */ `
@@ -167,5 +180,17 @@ export default class Milestone {
       row.title,
       row.date,
     ));
+  }
+
+  static async replicate(sourceTemplate, targetTemplate) {
+    await DatabasePool.EnvironmentInstance.query(
+      /* sql */ `
+        INSERT INTO public.milestone (template_id, title, date)
+        SELECT $1::uuid, title, date
+        FROM public.milestone
+        WHERE template_id = $2::uuid
+      `,
+      [targetTemplate.Id, sourceTemplate.Id],
+    );
   }
 }
