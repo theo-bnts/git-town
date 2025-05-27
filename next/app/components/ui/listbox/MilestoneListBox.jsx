@@ -59,7 +59,7 @@ function MilestoneInner() {
           return (
             <div className="flex flex-col">
               <span className="font-medium">{item.Title}</span>
-              <span className="text-sm text-gray-500">{`${d}-${m}-${y}`}</span>
+              <span className="text-sm text-gray-500">{`${d}/${m}/${y}`}</span>
             </div>
           );
         }}

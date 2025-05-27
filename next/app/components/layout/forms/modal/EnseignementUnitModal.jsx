@@ -30,6 +30,7 @@ export default function EnseignementUnitModal({
   }
 
   const handleSubmit = async (values) => {
+    values.Sigle = values.Sigle.trim().toUpperCase();
     const errs = validate(values);
     if (Object.keys(errs).length) {
       setFieldErrors(errs);

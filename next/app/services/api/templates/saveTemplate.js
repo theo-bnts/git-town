@@ -14,7 +14,7 @@ import { templateRoute, templatesRoute } from '@/app/services/routes';
  * @throws {Error} - En cas d'erreur lors de l'enregistrement.
  */
 export default async function saveTemplate(templateId, payload, token) {
-  const url    = templateId ? templateRoute(templateId) : templatesRoute();
+  const url = templateId ? templateRoute(templateId) : templatesRoute();
   const method = templateId ? 'PATCH' : 'PUT';
 
   const res = await fetch(url, {

@@ -22,10 +22,8 @@ export default function PromotionModal({
   const [fieldErrors, setFieldErrors] = useState({});
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
 
-  // Fetch diploma and level options when modal opens, only if token is ready
   useEffect(() => {
     if (!isOpen || !token) {
-      // reset options when modal is closed or no token
       if (!isOpen) {
         setDiplomaOptions([]);
         setLevelOptions([]);

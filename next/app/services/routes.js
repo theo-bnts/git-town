@@ -27,6 +27,12 @@ export const githubInviteRoute = (userId) =>
 export const userPromotionsRoute = (userId) =>
   `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/promotions`;
 
+export const userRepositoryRoute = (userId) =>
+  `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/repositories`;
+
+export const delUserRepositoryRoute = (userId, repoId) =>
+  `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/repositories/${repoId}`;
+
 export const promotionsRoute = () =>
   `${process.env.NEXT_PUBLIC_API_URL}/promotions`;
 
@@ -65,6 +71,9 @@ export const repositoriesRoute = () =>
 
 export const repositoryRoute = (repoId) =>
   `${process.env.NEXT_PUBLIC_API_URL}/repositories/${repoId}`;
+
+export const repositoryUsersRoute = (repoId) =>
+  `${process.env.NEXT_PUBLIC_API_URL}/repositories/${repoId}/users`;
 
 export const diplomasRoute = () =>
   `${process.env.NEXT_PUBLIC_API_URL}/diplomas`;

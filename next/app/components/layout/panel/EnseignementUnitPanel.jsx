@@ -1,3 +1,5 @@
+'use client';
+
 import CrudPanel from './CrudPanel';
 import getUnits from '@/app/services/api/enseignementUnit/getEnseignementUnits';
 import deleteUnit from '@/app/services/api/enseignementUnit/id/deleteEnseignementUnit';

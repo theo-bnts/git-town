@@ -49,6 +49,7 @@ export const API_ERRORS = {
     default: "(409) : Conflit de requête.",
   },
   422: {
+    //Unprocessable Entity: "(422) : Entité non traitable.",
     default: "(422) : Conflit, essayez de quitter l'organisation si vous êtes déjà dedans et de la rejoindre à nouveau.",
   },
   429: {
