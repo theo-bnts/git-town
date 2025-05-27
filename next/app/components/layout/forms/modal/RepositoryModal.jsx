@@ -4,49 +4,91 @@ import { useState, useEffect, useMemo } from 'react';
 import useAuthToken from '@/app/hooks/useAuthToken';
 import { useNotification } from '@/app/context/NotificationContext';
 
+import getTemplates from '@/app/services/api/templates/getTemplates';
+import getPromotions from '@/app/services/api/promotions/getPromotions';
 import getUsers from '@/app/services/api/users/getUsers';
 import getUsersRepository from '@/app/services/api/repositories/id/getUsersRepository';
+import saveRepositories from '@/app/services/api/repositories/saveRepositories';
 import putUserRepository from '@/app/services/api/users/id/repositories/putUserRepository';
 import deleteUserRepository from '@/app/services/api/users/id/repositories/deleteUserRepository';
 
 import FormModal from '@/app/components/ui/modal/FormModal';
 import StudentListBox from '@/app/components/ui/listbox/StudentListBox';
 
-/**
- * Modal permettant d'associer / désassocier des étudiants à un dépôt.
- *
- * @param {boolean} isOpen
- * @param {object} repository - dépôt courant (min. { Id, Template, ...})
- * @param {function} onClose
- * @param {function} onSave - callback pour rafraîchir la vue après modification
- */
-export default function RepositoryModal({ isOpen, repository, onClose, onSave }) {
+export default function RepositoryModal({
+  isOpen,
+  initialData = {},
+  onClose,
+  onSave,
+}) {
   const token = useAuthToken();
   const notify = useNotification();
 
+  const [templateOpts, setTemplateOpts] = useState([]);
+  const [promotionOpts, setPromotionOpts] = useState([]);
+  const [tutorOpts, setTutorOpts] = useState([]);
   const [studentOptions, setStudentOptions] = useState([]);
+
   const [selectedStudents, setSelectedStudents] = useState([]);
-  const [fieldErrors, setFieldErrors] = useState({});
+  const [originalStudents, setOriginalStudents] = useState([]);
+
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const repository = initialData;
 
   useEffect(() => {
-    if (!isOpen || !token || !repository?.Id) {
+    if (!isOpen || !token) {
       if (!isOpen) {
+        setTemplateOpts([]);
+        setPromotionOpts([]);
+        setTutorOpts([]);
         setStudentOptions([]);
         setSelectedStudents([]);
+        setOriginalStudents([]);
       }
       return;
     }
-    setIsLoadingOptions(true);
 
+    setIsLoadingOptions(true);
     (async () => {
       try {
-        const [allUsers, repoStudents] = await Promise.all([
+        const [tpls, proms, users, repoStudents] = await Promise.all([
+          getTemplates(token),
+          getPromotions(token),
           getUsers(token),
-          getUsersRepository(repository.Id, token),
+          repository?.Id
+            ? getUsersRepository(repository.Id, token)
+            : Promise.resolve([]),
         ]);
 
-        const studentOpts = allUsers
+        setTemplateOpts(
+          tpls.map((t) => ({
+            id: t.Id,
+            value: `${t.EnseignementUnit.Initialism} – ${t.Year}`.replace('–', '-'),
+            full: t,
+          }))
+        );
+
+        setPromotionOpts(
+          proms.map((p) => ({
+            id: p.Id,
+            value: `${p.Diploma.Initialism} ${p.PromotionLevel.Initialism} – ${p.Year}`.replace('–', '-'),
+            full: p,
+          }))
+        );
+
+        setTutorOpts(
+          users
+            .filter((u) => u.Role?.Keyword !== 'student')
+            .map((u) => ({
+              id: u.Id,
+              value: u.FullName,
+              full: u,
+            }))
+        );
+
+        const studentOpts = users
           .filter((u) => u.Role?.Keyword === 'student')
           .map((u) => ({
             id: u.Id,
@@ -59,17 +101,34 @@ export default function RepositoryModal({ isOpen, repository, onClose, onSave })
           .map((stu) => studentOpts.find((o) => o.id === stu.Id))
           .filter(Boolean);
         setSelectedStudents(preSelected);
+        setOriginalStudents(preSelected);
       } catch (err) {
         console.error(err);
-        notify(err.message || 'Erreur lors du chargement des étudiants', 'error');
+        notify(err.message || 'Erreur lors du chargement des options', 'error');
       } finally {
         setIsLoadingOptions(false);
       }
     })();
   }, [isOpen, token, repository?.Id, notify]);
 
+  const initTemplateOpt = useMemo(
+    () => templateOpts.find((o) => o.id === repository.Template?.Id) || null,
+    [templateOpts, repository.Template]
+  );
+  const initPromotionOpt = useMemo(
+    () => promotionOpts.find((o) => o.id === repository.Promotion?.Id) || null,
+    [promotionOpts, repository.Promotion]
+  );
+  const initTutorOpt = useMemo(
+    () => tutorOpts.find((o) => o.id === repository.User?.Id) || null,
+    [tutorOpts, repository.User]
+  );
+
   const fields = useMemo(
     () => [
+      { name: 'Template', options: templateOpts, value: initTemplateOpt },
+      { name: 'Promotion', options: promotionOpts, value: initPromotionOpt },
+      { name: 'Tuteur', options: tutorOpts, value: initTutorOpt },
       {
         name: 'Étudiants',
         value: selectedStudents,
@@ -82,15 +141,24 @@ export default function RepositoryModal({ isOpen, repository, onClose, onSave })
         ),
       },
     ],
-    [selectedStudents, studentOptions]
+    [
+      templateOpts,
+      promotionOpts,
+      tutorOpts,
+      studentOptions,
+      initTemplateOpt,
+      initPromotionOpt,
+      initTutorOpt,
+      selectedStudents,
+    ]
   );
 
-  function validate(v) {
-    const e = {};
-    if (!Array.isArray(v.Étudiants) || v.Étudiants.length === 0) {
-      e.Étudiants = 'Sélectionnez au moins un étudiant.';
-    }
-    return e;
+  function validate(values) {
+    const errs = {};
+    if (!values.Template?.id) errs.Template = 'Sélectionnez un template.';
+    if (!values.Promotion?.id) errs.Promotion = 'Sélectionnez une promotion.';
+    if (!values.Tuteur?.id) errs.Tuteur = 'Sélectionnez un tuteur.';
+    return errs;
   }
 
   const handleSubmit = async (values) => {
@@ -101,41 +169,77 @@ export default function RepositoryModal({ isOpen, repository, onClose, onSave })
     }
     setFieldErrors({});
 
-    const origIds = selectedStudents.map((s) => s.id).sort();
-    const newIds = (Array.isArray(values.Étudiants) ? values.Étudiants : []).map((s) => s.id).sort();
+    let repoPayload = {};
+    if (!repository.Id) {
+      repoPayload = {
+        Template: { Id: values.Template.id },
+        Promotion: { Id: values.Promotion.id },
+        User: { Id: values.Tuteur.id },
+      };
+    } else {
+      if (values.Template.id !== repository.Template?.Id)
+        repoPayload.Template = { Id: values.Template.id };
+      if (values.Promotion.id !== repository.Promotion?.Id)
+        repoPayload.Promotion = { Id: values.Promotion.id };
+      if (values.Tuteur.id !== repository.User?.Id)
+        repoPayload.User = { Id: values.Tuteur.id };
+    }
 
-    const toAdd = newIds.filter((id) => !origIds.includes(id));
-    const toRemove = origIds.filter((id) => !newIds.includes(id));
+    const origIds = originalStudents.map((s) => s.id).sort();
+    const newIds = (values.Étudiants || []).map((s) => s.id).sort();
 
-    if (toAdd.length === 0 && toRemove.length === 0) {
+    const toAdd = newIds .filter((id) => !origIds.includes(id));
+    const toRemove = origIds.filter((id) => !newIds .includes(id));
+
+    if (
+      (repository.Id && Object.keys(repoPayload).length === 0) &&
+      toAdd.length === 0 &&
+      toRemove.length === 0
+    ) {
       onClose();
       return;
     }
 
+    setIsLoadingOptions(true);
     try {
-      await Promise.all([
-        ...toAdd.map((userId) =>
-          putUserRepository(userId, { Repository: { Id: repository.Id } }, token)
-        ),
-        ...toRemove.map((userId) => deleteUserRepository(userId, token)),
-      ]);
+      let repoId = repository.Id;
+      if (Object.keys(repoPayload).length > 0) {
+        const saved = await saveRepositories(repoId || null, repoPayload, token);
+        repoId = saved.Id;
+      }
 
-      notify('Liste des étudiants mise à jour', 'success');
+      if (repoId && (toAdd.length || toRemove.length)) {
+        await Promise.all([
+          ...toAdd.map((userId) =>
+            putUserRepository(userId, { Repository: { Id: repoId } }, token)
+          ),
+          ...toRemove.map((userId) => deleteUserRepository(userId, token)),
+        ]);
+      }
+
+      notify(
+        repository.Id
+          ? 'Dépôt mis à jour avec succès'
+          : 'Nouveau dépôt créé avec succès',
+        'success'
+      );
       onSave();
       onClose();
     } catch (err) {
       console.error(err);
-      notify(err.message || 'Erreur lors de la mise à jour', 'error');
+      notify(err.message || 'Erreur lors de l’enregistrement du dépôt', 'error');
+    } finally {
+      setIsLoadingOptions(false);
     }
   };
 
-  if (!repository?.Id) return null;
+  if (!isOpen) return null;
 
   return (
     <FormModal
-      formKey={`${repository.Id}-${isOpen}`}
+      formKey={`${repository.Id || 'new'}-${isOpen}`}
       isOpen={isOpen}
-      title={`Étudiants du dépôt ${repository.Template?.EnseignementUnit?.Initialism || ''}`}
+      title={repository.Id ? 'Modifier le dépôt' : 'Nouveau dépôt'}
       metadata={{
         createdAt: repository.CreatedAt,
         updatedAt: repository.UpdatedAt,
