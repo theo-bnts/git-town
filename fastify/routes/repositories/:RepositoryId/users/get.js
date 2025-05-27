@@ -34,7 +34,7 @@ export default async function route(app) {
       await ParametersMiddleware.assertRepositoryIdInserted(request);
     },
     handler: async (request) => {
-      const { RepositoryId: repositoryId } = request;
+      const { RepositoryId: repositoryId } = request.params;
 
       const repository = await Repository.fromId(repositoryId);
 
