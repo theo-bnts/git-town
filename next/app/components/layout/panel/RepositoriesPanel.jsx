@@ -5,12 +5,12 @@ import CrudPanel from './CrudPanel';
 
 import getRepositories from '@/app/services/api/repositories/getRepositories';
 import deleteRepository from '@/app/services/api/repositories/id/deleteRepository';
-//import getUsersRepository from '@/app/services/api/repositories/id/getUsersRepository';
+import getUsersRepository from '@/app/services/api/repositories/id/getUsersRepository';
 
 import RepositoryModal from '@/app/components/layout/forms/modal/RepositoryModal';
 
 const columns = [
-  //{ key: 'students', title: 'Étudiants', sortable: false },
+  { key: 'students', title: 'Étudiants', sortable: false },
   { key: 'tutor', title: 'Tuteur', sortable: true },
   { key: 'ue', title: 'UE', sortable: true },
   { key: 'year', title: 'Année', sortable: true },
@@ -23,14 +23,14 @@ async function fetchRepositoriesWithStudents(token) {
 
   return Promise.all(
     repositories.map(async (repo) => {
-    //  const students = await getUsersRepository(repo.Id, token);
-    //  const studentNames = Array.isArray(students)
-    //    ? students.map((s) => s.FullName).sort()
-    //    : [];
+      const students = await getUsersRepository(repo.Id, token);
+      const studentNames = Array.isArray(students)
+        ? students.map((s) => s.FullName).sort()
+        : [];
 
       return {
         ...repo,
-        //studentNames: [],
+        studentNames,
       };
     }),
   );
@@ -38,7 +38,7 @@ async function fetchRepositoriesWithStudents(token) {
 
 const mapRepositoryToRow = (repo) => ({
   raw: repo,
-  //students: repo.studentNames,
+  students: repo.studentNames,
   tutor: repo.User?.FullName || 'N/A',
   ue: `${repo.Template.EnseignementUnit.Name} (${repo.Template.EnseignementUnit.Initialism})`,
   year: repo.Template.Year,
