@@ -2,11 +2,12 @@
 
 import React from 'react';
 import Card from '@/app/components/ui/Card';
+import { textStyles } from "@/app/styles/tailwindStyles";
 
 /**
  * Affiche une carte de chargement pour les statistiques
  */
-export default function LoadingCard({ fromCache }) {
+export default function LoadingCard() {
   return (
     <div className="flex items-center justify-center w-full h-full">
       <Card variant="default" className="p-6 mx-auto max-w-md">
@@ -18,20 +19,13 @@ export default function LoadingCard({ fromCache }) {
             <span className="ml-4 text-lg">Chargement des statistiques</span>
           </div>
           
-          <p className="text-center text-sm text-gray-600">
+          <p className={textStyles.subtle}>
             Récupération des données du dépôt en cours...
           </p>
           
-          <p className="text-center text-xs text-gray-500">
+          <p className={textStyles.verySubtle}>
             Le premier chargement peut prendre jusqu'à une minute.
-            Les chargements suivants seront beaucoup plus rapides.
           </p>
-
-          {fromCache && (
-            <p className="text-center text-xs text-green-600 mt-2">
-              Récupération des données depuis le cache...
-            </p>
-          )}
         </div>
       </Card>
     </div>

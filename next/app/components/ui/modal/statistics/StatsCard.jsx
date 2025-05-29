@@ -6,7 +6,7 @@ import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import { 
   LanguagesSection,
-  ContributionsTable,
+  ContributionsTable, 
   ContributionCard
 } from '@/app/components/ui/modal/statistics';
 import InfoTooltip from '@/app/components/ui/InfoTooltip';
@@ -17,11 +17,9 @@ import { STATISTICS_CONFIG } from '@/app/config/config';
  */
 export default function StatsCard({ formattedStats, onClose }) {
   const [showInfo, setShowInfo] = useState(false);
-  
-  const { globalStats, teamStats, userStats, languages } = formattedStats || {};
-  
-  const shouldShowGlobalStats = Boolean(globalStats);
-  
+  const { teamStats, languages, globalStats, userStats } = formattedStats || {};
+  const hasGlobalStats = Boolean(globalStats);
+
   return (
     <Card variant="default" className="p-3 lg:p-4 w-full h-full">
       <div className="space-y-4 lg:space-y-6">
@@ -57,7 +55,7 @@ export default function StatsCard({ formattedStats, onClose }) {
         <LanguagesSection languages={languages} />
         
         <div className="w-full overflow-x-hidden">
-          {shouldShowGlobalStats ? (
+          {hasGlobalStats ? (
             <ContributionCard
               userData={{
                 user: { FullName: "Équipe complète" },

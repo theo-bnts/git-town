@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Graph from '@/app/components/ui/Graph';
+import Graph from '@/app/components/ui/graph';
 import { useCommitsGraphData } from '@/app/hooks/statistics/statsHooks';
 import { deltaQualifier } from '@/app/utils/deltaUtils';
 

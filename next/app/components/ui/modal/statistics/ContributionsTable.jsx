@@ -42,7 +42,6 @@ export default function ContributionsTable({ userStats = [], teamStats }) {
   const { columns, tableData } = useMemo(() => {
     const columns = getTableColumns();
     
-    // Convertir les données utilisateur au format du tableau
     const userData = userStats.map(({ user, stats }) => ({
       name: user?.FullName || '',
       merges: stats.merges,
@@ -55,7 +54,6 @@ export default function ContributionsTable({ userStats = [], teamStats }) {
 
     let data = [...userData];
     
-    // Ajouter les statistiques d'équipe en bas du tableau
     if (data.length > 0 && teamStats) {
       data.push({
         name: <span className="font-bold">Équipe complète</span>,

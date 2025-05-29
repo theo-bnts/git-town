@@ -8,24 +8,24 @@ export function useFormattedStats(rawStats) {
   return useMemo(() => {
     if (!rawStats) return null;
     
-    // Vérifie si les stats globales sont présentes
     const hasGlobalData = Boolean(
       rawStats?.Global?.Commits?.Weekly?.Counts && 
       rawStats?.Global?.Lines?.Weekly?.Counts
     );
     
-    // Récupère ou génère les stats globales
     const globalStats = hasGlobalData 
       ? rawStats.Global 
       : generateGlobalStatsFromUsers(rawStats?.Users);
     
-    // Calcule les statistiques globales
     const teamStats = calculateStats(globalStats, { 
       isTeam: true, 
       users: rawStats?.Users 
     });
     
-    // Calcule les statistiques par utilisateur et inclut les données brutes
+    if (teamStats) {
+      teamStats.membersCount = Array.isArray(rawStats?.Users) ? rawStats.Users.length : 0;
+    }
+    
     const userStats = (rawStats?.Users || []).map(user => ({
       user: user.User,
       stats: calculateStats(user),

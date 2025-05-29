@@ -3,6 +3,7 @@
 import React from 'react';
 import { CommitsGraph } from '@/app/components/ui/modal/statistics';
 import Tag from '@/app/components/ui/Tag';
+import { cardStyles, textStyles } from '@/app/styles/tailwindStyles';
 
 /**
  * Carte affichant les contributions d'un utilisateur ou de l'équipe
@@ -24,13 +25,11 @@ export default function ContributionCard({ userData, isTeam = false }) {
     : user?.EmailAddress || "";
   
   return (
-    <div className={`rounded-lg border border-gray-200 bg-white p-4 shadow-sm
-      ${isTeam ? 'border-[var(--selected-color)]' : ''}`}
-    >
+    <div className={cardStyles.contributionCard}>
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-lg font-medium">{displayName}</h3>
-          <p className="text-sm text-gray-500">{subtitle}</p>
+          <h3 className={textStyles.sectionTitle}>{displayName}</h3>
+          <p className={textStyles.hint}>{subtitle}</p>
         </div>
         
         <div className="flex flex-wrap gap-2 justify-end">
