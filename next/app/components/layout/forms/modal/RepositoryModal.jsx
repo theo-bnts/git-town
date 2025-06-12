@@ -65,7 +65,7 @@ export default function RepositoryModal({
         setTemplateOpts(
           tpls.map((t) => ({
             id: t.Id,
-            value: `${t.EnseignementUnit.Initialism} – ${t.Year}`.replace('–', '-'),
+            value: `${t.EnseignementUnit.Initialism} - ${t.Year}`,
             full: t,
           }))
         );
@@ -73,7 +73,7 @@ export default function RepositoryModal({
         setPromotionOpts(
           proms.map((p) => ({
             id: p.Id,
-            value: `${p.Diploma.Initialism} ${p.PromotionLevel.Initialism} – ${p.Year}`.replace('–', '-'),
+            value: `${p.Diploma.Initialism} ${p.PromotionLevel.Initialism} - ${p.Year}`,
             full: p,
           }))
         );
@@ -126,7 +126,7 @@ export default function RepositoryModal({
 
   const fields = useMemo(
     () => [
-      { name: 'Template', options: templateOpts, value: initTemplateOpt },
+      { name: 'Modèle', options: templateOpts, value: initTemplateOpt },
       { name: 'Promotion', options: promotionOpts, value: initPromotionOpt },
       { name: 'Tuteur', options: tutorOpts, value: initTutorOpt },
       {
@@ -155,9 +155,12 @@ export default function RepositoryModal({
 
   function validate(values) {
     const errs = {};
-    if (!values.Template?.id) errs.Template = 'Sélectionnez un template.';
-    if (!values.Promotion?.id) errs.Promotion = 'Sélectionnez une promotion.';
-    if (!values.Tuteur?.id) errs.Tuteur = 'Sélectionnez un tuteur.';
+    if (!values['Modèle']?.id)
+      errs['Modèle'] = 'Sélectionnez un modèle.';
+    if (!values['Promotion']?.id)
+      errs['Promotion'] = 'Sélectionnez une promotion.';
+    if (!values['Tuteur']?.id)
+      errs['Tuteur'] = 'Sélectionnez un tuteur.';
     return errs;
   }
 
@@ -169,30 +172,36 @@ export default function RepositoryModal({
     }
     setFieldErrors({});
 
+    const modele = values['Modèle'];
+    const promotion = values['Promotion'];
+    const tuteur = values['Tuteur'];
+    const etudiants = values['Étudiants'] || [];
+
     let repoPayload = {};
     if (!repository.Id) {
       repoPayload = {
-        Template: { Id: values.Template.id },
-        Promotion: { Id: values.Promotion.id },
-        User: { Id: values.Tuteur.id },
+        Template: { Id: modele.id },
+        Promotion: { Id: promotion.id },
+        User: { Id: tuteur.id },
       };
     } else {
-      if (values.Template.id !== repository.Template?.Id)
-        repoPayload.Template = { Id: values.Template.id };
-      if (values.Promotion.id !== repository.Promotion?.Id)
-        repoPayload.Promotion = { Id: values.Promotion.id };
-      if (values.Tuteur.id !== repository.User?.Id)
-        repoPayload.User = { Id: values.Tuteur.id };
+      if (modele.id !== repository.Template?.Id)
+        repoPayload.Template = { Id: modele.id };
+      if (promotion.id !== repository.Promotion?.Id)
+        repoPayload.Promotion = { Id: promotion.id };
+      if (tuteur.id !== repository.User?.Id)
+        repoPayload.User = { Id: tuteur.id };
     }
 
     const origIds = originalStudents.map((s) => s.id).sort();
-    const newIds = (values.Étudiants || []).map((s) => s.id).sort();
+    const newIds = etudiants.map((s) => s.id).sort();
 
-    const toAdd = newIds .filter((id) => !origIds.includes(id));
-    const toRemove = origIds.filter((id) => !newIds .includes(id));
+    const toAdd = newIds.filter((id) => !origIds.includes(id));
+    const toRemove = origIds.filter((id) => !newIds.includes(id));
 
     if (
-      (repository.Id && Object.keys(repoPayload).length === 0) &&
+      repository.Id &&
+      Object.keys(repoPayload).length === 0 &&
       toAdd.length === 0 &&
       toRemove.length === 0
     ) {
@@ -213,7 +222,9 @@ export default function RepositoryModal({
           ...toAdd.map((userId) =>
             putUserRepository(userId, { Repository: { Id: repoId } }, token)
           ),
-          ...toRemove.map((userId) => deleteUserRepository(userId, token)),
+          ...toRemove.map((userId) =>
+            deleteUserRepository(userId, repoId, token)
+          ),
         ]);
       }
 

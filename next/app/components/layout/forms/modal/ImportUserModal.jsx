@@ -71,12 +71,12 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
   }
 
   function handleExportSampleFile() {
-    const link = document.createElement('a');
-    link.href = '/api/csv/sample/';
-    link.download = 'sample.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const a = document.createElement('a');
+    a.href = '/api/csv/sample/users';
+    a.download = 'sampleImportUsers.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   async function uploadRejectsCsvToServer(_, csvContent) {
@@ -207,9 +207,9 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
   return (
     <div className="fixed inset-0 bg-[var(--popup-color)] flex items-center justify-center z-50">
       <div className="w-[300px]">
-        <Card variant="default" className="relative p-6">
+        <Card variant="default" className="relative p-6 space-y-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold">Import CSV</h3>
+            <h3 className="text-lg font-bold">Import utilisateurs</h3>
             <Button variant="action_icon_warn" onClick={onClose}>
               <XIcon size={24} />
             </Button>

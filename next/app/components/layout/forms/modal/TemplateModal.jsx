@@ -169,8 +169,8 @@ export default function TemplateModal({
 
       notify(
         initialData.Id
-          ? 'Template mis à jour avec succès'
-          : 'Template créé avec succès',
+          ? 'Modèle mis à jour avec succès'
+          : 'Modèle créé avec succès',
         'success'
       );
       onSave();
@@ -185,7 +185,7 @@ export default function TemplateModal({
     <FormModal
       formKey={`${initialData.Id || 'new'}-${isOpen}`}
       isOpen={isOpen}
-      title={initialData.Id ? 'Modifier le template' : 'Nouveau template'}
+      title={initialData.Id ? 'Modifier le Modèle' : 'Nouveau modèle'}
       metadata={{
         createdAt: initialData.CreatedAt,
         updatedAt: initialData.UpdatedAt,

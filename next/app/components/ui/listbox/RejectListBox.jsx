@@ -34,29 +34,3 @@ export default function RejectListBox({ files = [], onDownload, onDelete }) {
     </div>
   );
 }
-
-/*
-// app/components/ui/listbox/RejectListBox.jsx
-'use client';
-
-import React from 'react';
-import { DownloadIcon } from '@primer/octicons-react';
-import ListBoxProvider from '@/app/components/ui/listbox/ListBoxProvider';
-import ListBoxArea from '@/app/components/ui/listbox/ListBoxArea';
-
-export default function RejectListBox({ files = [], onDownload, onDelete }) {
-  // on convertit chaque nom de fichier en item { id, value }
-  const items = files.map((name) => ({ id: name, value: name }));
-
-  return (
-    <ListBoxProvider items={items} onChange={() => {}}>
-      <ListBoxArea
-        renderChip={(item) => <span className="truncate">{item.value}</span>}
-        onEdit={(item) => onDownload(item.value)}     // bouton download
-        onRemove={(item) => onDelete(item.value)}     // bouton poubelle
-        editIcon={DownloadIcon}                       // icône « télécharger »
-      />
-    </ListBoxProvider>
-  );
-}
-*/

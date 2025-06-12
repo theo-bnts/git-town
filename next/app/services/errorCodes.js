@@ -46,6 +46,9 @@ export const API_ERRORS = {
     YEAR_UNEDITABLE_WHILE_LINKED_TO_REPOSITORIES: "(409) : Année non modifiable car liée à des dépôts.",
     EMAIL_ADDRESS_DOMAIN_MISMATCH: "(409) : Nom de domaine de l’adresse e-mail renseigné non autorisé pour le rôle sélectionné.",
     DUPLICATE_NAME: "(409) : Nom déjà utilisé.",
+    YEAR_MISMATCH: "(409) : Les années des champs sélectionnés ne coincident pas.",
+    HAS_REPOSITORIES: "(409) : L’entité a des dépôts associés.",
+    HAS_USER_REPOSITORY: "(409) : L’utilisateur a des dépôts associés.",
     default: "(409) : Conflit de requête.",
   },
   422: {
