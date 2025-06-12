@@ -51,7 +51,7 @@ export default async function route(app) {
       }
 
       if (user.GitHubOrganizationMember) {
-        GitHubApp.EnvironmentInstance.Repositories.removeMember(repository.GitHubId, user.GitHubId);
+        GitHubApp.EnvironmentInstance.Repositories.removeMember(repository.Id, user.GitHubId);
       }
 
       const userRepository = await UserRepository.fromUserAndRepository(user, repository);
