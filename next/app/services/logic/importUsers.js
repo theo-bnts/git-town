@@ -1,5 +1,3 @@
-// app/services/logic/importUsers.js
-
 export async function processCsvFile(file) {
   const validRoles = ['student', 'teacher', 'administrator'];
   const text = await file.text();

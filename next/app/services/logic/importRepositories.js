@@ -1,17 +1,3 @@
-// next/app/services/logic/importRepositories.js
-// -------------------------------------------------
-// Front‑end CSV validator & parser for bulk repository creation.
-// Expose a named export `parseRepositoriesCsv(file)`.
-// -------------------------------------------------
-
-/**
- * parseRepositoriesCsv(file: File)
- * - Reads a CSV file where each row describes one repository.
- * - Each row must contain at least one non-student email (tutor)
- *   and at least one student email (domain: etud.u-picardie.fr).
- * - Returns { isValid: boolean, repositories: Array, rejectCsv: string }
- *   where repositories = [{ tutorEmail, studentEmails: [] }, ...]
- */
 export async function parseRepositoriesCsv(file) {
   const text = await file.text();
   const lines = text.split(/\r?\n/);
@@ -25,7 +11,6 @@ export async function parseRepositoriesCsv(file) {
     const studentEmails = cells.filter(e => /^[^@]+@etud\.u-picardie\.fr$/.test(e));
 
     if (tutorEmails.length < 1 || studentEmails.length < 1) {
-      // invalid: missing tutor or student
       rejectRows.push(line);
       continue;
     }
