@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UploadIcon } from '@primer/octicons-react';
+import { UploadIcon, MarkGithubIcon } from '@primer/octicons-react';
 import Button from '@/app/components/ui/Button';
 import CrudPanel from './CrudPanel';
 
@@ -90,6 +90,25 @@ export default function UsersPanel() {
           ),
         }}
         toolbarButtons={[importButton]}
+        extraActionsFactory={(row) => {
+          const gitId = row.raw.GitHubId;
+          if (!gitId) return [];
+          return [
+            {
+              icon: <MarkGithubIcon size={16} />,
+              onClick: async () => {
+                try {
+                  const res = await fetch(`https://api.github.com/user/${gitId}`);
+                  if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+                  const data = await res.json();
+                  window.open(data.html_url, '_blank');
+                } catch (err) {
+                  console.error('Impossible de récupérer le profil GitHub :', err);
+                }
+              },
+            },
+          ];
+        }}
       />
 
       {importOpen && (
