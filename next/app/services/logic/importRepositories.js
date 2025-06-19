@@ -42,5 +42,5 @@ export async function parseRepositoriesCsv(file) {
     rejectCsv = rejectRows.join('\n');
   }
 
-  return { isValid, repositories, rejectCsv };
+  return { isValid, rows: repositories, rejectCsv };
 }

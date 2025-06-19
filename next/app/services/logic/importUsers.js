@@ -111,10 +111,5 @@ export async function processCsvFile(file) {
     rejectLines.push(`Ligne ${err.line} - ${segments.join(' ; ')}`);
   }
 
-  return {
-    isValid: errors.length === 0,
-    users,
-    errors,
-    rejectCsv: rejectLines.join('\n')
-  };
+  return {isValid: errors.length === 0, rows: users, rejectCsv: rejectLines.join('\n')};
 }
