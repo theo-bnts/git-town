@@ -7,55 +7,47 @@ import { DashIcon, XIcon } from '@primer/octicons-react';
 import { textStyles, listboxStyles } from '@/app/styles/tailwindStyles';
 import { processCsvFile } from '@/app/services/logic/importUsers';
 import saveUser from '@/app/services/api/users/saveUser';
-import RejectListBox from '@/app/components/ui/listbox/RejectListBox';
-import getRejectFiles from '@/app/services/logic/csv/rejects/getRejectFile';
-import deleteRejectFile from '@/app/services/logic/csv/rejects/deleteRejectsFile';
-import { useNotification } from '@/app/context/NotificationContext';
-import useAuthToken from '@/app/hooks/useAuthToken';
 import getPromotions from '@/app/services/api/promotions/getPromotions';
 import ComboBox from '@/app/components/ui/combobox/ComboBox';
+import RejectListBox from '@/app/components/ui/listbox/RejectListBox';
+import useAuthToken from '@/app/hooks/useAuthToken';
+import { useNotification } from '@/app/context/NotificationContext';
+import useCsvRejects from '@/app/hooks/useCsvRejects';
 
 export default function ImportUserModal({ isOpen, onClose, onImport }) {
-  const fileInputRef = useRef(null);
-  const notify = useNotification();
   const token = useAuthToken();
+  const notify = useNotification();
+  const fileInputRef = useRef(null);
+
+  const { files: rejectFiles, saveRejectCsv, deleteRejectFile, download } = useCsvRejects('users');
+
   const [promoOpts, setPromoOpts] = useState([]);
   const [selectedPromo, setSelectedPromo] = useState(null);
+
   const [importedFile, setImportedFile] = useState(null);
   const [usersToProcess, setUsersToProcess] = useState([]);
   const [isValidated, setIsValidated] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [rejectFiles, setRejectFiles] = useState([]);
 
   useEffect(() => {
     if (isOpen && token) {
       getPromotions(token)
-        .then(arr =>
+        .then(proms => {
           setPromoOpts(
-            arr.map(p => ({
+            proms.map(p => ({
               id: p.Id,
               value: `${p.Diploma.Initialism} ${p.PromotionLevel.Initialism} - ${p.Year}`.replace('–', '-'),
               full: p
             }))
-          )
-        )
+          );
+        })
         .catch(() => notify('Erreur lors du chargement des promotions', 'error'));
-      refreshRejects();
     } else {
       clearFile();
       setSelectedPromo(null);
     }
   }, [isOpen, token]);
-
-  async function refreshRejects() {
-    try {
-      const files = await getRejectFiles();
-      setRejectFiles(files);
-    } catch {
-      notify('Impossible de charger les rejets', 'error');
-    }
-  }
 
   function clearFile() {
     setImportedFile(null);
@@ -66,49 +58,6 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
-  function handleImportFile() {
-    fileInputRef.current?.click();
-  }
-
-  function handleExportSampleFile() {
-    const a = document.createElement('a');
-    a.href = '/api/csv/sample/users';
-    a.download = 'sampleImportUsers.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
-
-  async function uploadRejectsCsvToServer(_, csvContent) {
-    const res = await fetch('/api/csv/rejects/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ csvContent })
-    });
-    if (!res.ok) throw new Error('Erreur lors de l’enregistrement des rejets');
-    return (await res.json()).fileName;
-  }
-
-  function downloadCsvFromServer(filename) {
-    const url = `/api/csv/rejects/${encodeURIComponent(filename)}`;
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
-
-  async function handleDeleteReject(filename) {
-    try {
-      await deleteRejectFile(filename);
-      setRejectFiles(files => files.filter(f => f !== filename));
-      notify(`Fichier de Rejets : "${filename}" supprimé`, 'success');
-    } catch {
-      notify('Échec de la suppression', 'error');
-    }
-  }
-
   async function handleFileChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -116,51 +65,37 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
       notify('Veuillez sélectionner un CSV', 'error');
       return;
     }
+
     const { isValid, users, rejectCsv } = await processCsvFile(file);
     if (!isValid) {
       try {
-        const name = await uploadRejectsCsvToServer(undefined, rejectCsv);
-        downloadCsvFromServer(name);
-        await refreshRejects();
+        await saveRejectCsv(rejectCsv);
+        notify('Fichier rejeté: données invalides', 'error');
+        clearFile();
+        return;
       } catch {
         notify('Erreur lors de l’enregistrement du rejet', 'error');
       }
-      notify('Fichier rejeté: données invalides', 'error');
-      clearFile();
-      return;
     }
+
     setImportedFile(file);
     setUsersToProcess(users);
     setIsValidated(true);
     notify('CSV valide, prêt à être traité', 'success');
   }
 
-  function handleRemoveFile() {
-    clearFile();
-  }
-
   async function handleValidate(e) {
     e.preventDefault();
-    if (!token) {
-      notify('Vous devez être authentifié pour importer', 'error');
-      return;
-    }
-    if (!importedFile) {
-      notify('Aucun fichier sélectionné', 'error');
-      return;
-    }
-    if (!isValidated || usersToProcess.length === 0) {
-      notify('Rien à traiter', 'error');
-      return;
-    }
-    if (!selectedPromo?.id) {
-      notify('Veuillez sélectionner une promotion', 'error');
-      return;
-    }
+    if (!token) return notify('Vous devez être authentifié pour importer', 'error');
+    if (!importedFile) return notify('Aucun fichier sélectionné', 'error');
+    if (!isValidated || usersToProcess.length === 0) return notify('Rien à traiter', 'error');
+    if (!selectedPromo?.id) return notify('Veuillez sélectionner une promotion', 'error');
+
     setIsProcessing(true);
     setProgress(0);
     const total = usersToProcess.length;
     const rejected = [];
+
     for (let i = 0; i < total; i++) {
       try {
         const created = await saveUser(null, usersToProcess[i], token);
@@ -174,6 +109,7 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
       }
       setProgress(Math.round(((i + 1) / total) * 100));
     }
+
     if (rejected.length > 0) {
       let csv = 'EMAIL_ADDRESS,FULL_NAME,ROLE_KEYWORD,REASON\n';
       rejected.forEach(r => {
@@ -186,20 +122,31 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
         ].join(',') + '\n';
       });
       try {
-        const name = await uploadRejectsCsvToServer(undefined, csv);
-        downloadCsvFromServer(name);
-        await refreshRejects();
+        await saveRejectCsv(csv);
+        notify('Traitement terminé : certains utilisateurs ont échoué', 'error');
       } catch {
         notify('Erreur lors de l’enregistrement du rejet', 'error');
       }
-      notify('Traitement terminé : certains utilisateurs ont échoué', 'error');
     } else {
       notify('Tous les utilisateurs ont été créés', 'success');
-      await refreshRejects();
+      onImport?.();
     }
+
     setIsProcessing(false);
     clearFile();
-    onImport?.();
+  }
+
+  function handleRemoveFile() {
+    clearFile();
+  }
+
+  function handleExportSampleFile() {
+    const a = document.createElement('a');
+    a.href = '/api/csv/sample/users';
+    a.download = 'sampleImportUsers.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   if (!isOpen) return null;
@@ -214,13 +161,7 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
               <XIcon size={24} />
             </Button>
           </div>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept=".csv"
-            style={{ display: 'none' }}
-          />
+
           <div className="mt-4">
             <p className={`mb-1 ${textStyles.default}`}>Promotion</p>
             <ComboBox
@@ -230,21 +171,31 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
               onSelect={setSelectedPromo}
             />
           </div>
+
           <div className="mt-4">
             <p className={`mb-1 ${textStyles.default}`}>Anciens rejets</p>
             <RejectListBox
               files={rejectFiles}
-              onDownload={downloadCsvFromServer}
-              onDelete={handleDeleteReject}
+              onDownload={download}
+              onDelete={deleteRejectFile}
             />
           </div>
+
           <div className="mt-4">
             <p className={`mb-1 ${textStyles.default}`}>Fichier exemple</p>
             <Button variant="default" onClick={handleExportSampleFile}>
               <p className={textStyles.defaultWhite}>Télécharger</p>
             </Button>
           </div>
+
           <form onSubmit={handleValidate} className="space-y-4 mt-4">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".csv"
+              style={{ display: 'none' }}
+            />
             <div>
               <p className={`mb-1 ${textStyles.default}`}>Fichier à importer</p>
               <div className={`flex flex-col space-y-2 ${listboxStyles.default}`}>
@@ -265,13 +216,14 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
                 <Button
                   type="button"
                   variant={!importedFile ? 'default' : 'disabled'}
-                  onClick={handleImportFile}
+                  onClick={() => fileInputRef.current?.click()}
                   disabled={!!importedFile}
                 >
                   <p className={textStyles.defaultWhite}>Importer</p>
                 </Button>
               </div>
             </div>
+
             {isProcessing && (
               <div className="w-full bg-gray-300 rounded-full h-2.5 mt-2">
                 <div
@@ -280,6 +232,7 @@ export default function ImportUserModal({ isOpen, onClose, onImport }) {
                 />
               </div>
             )}
+
             <div className="flex justify-center pt-2">
               <Button
                 type="submit"
