@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import fsPromises from 'fs/promises';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import getUser from '@/app/services/api/users/id/getUser';
 import { getRejectsDir } from '../../[type]/route';
@@ -32,18 +31,24 @@ export async function GET(request, { params }) {
   const { type, filename } = params;
   const filePath = path.join(getRejectsDir(type), filename);
 
-  if (!fs.existsSync(filePath)) {
-    return NextResponse.json({ error: 'Fichier introuvable.' }, { status: 404 });
+  try {
+    // On essaie directement de lire le fichier
+    const raw = await fs.readFile(filePath, 'utf8');
+    const content = '\uFEFF' + raw;
+    return new NextResponse(content, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+      },
+    });
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return NextResponse.json({ error: 'Fichier introuvable.' }, { status: 404 });
+    }
+    // autre erreur IO
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
-
-  const content = '\uFEFF' + await fsPromises.readFile(filePath, 'utf8');
-  return new NextResponse(content, {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': `attachment; filename='${filename}'`,
-    },
-  });
 }
 
 export async function DELETE(request, { params }) {
@@ -53,10 +58,13 @@ export async function DELETE(request, { params }) {
   const { type, filename } = params;
   const filePath = path.join(getRejectsDir(type), filename);
 
-  if (!fs.existsSync(filePath)) {
-    return NextResponse.json({ error: 'Fichier introuvable.' }, { status: 404 });
+  try {
+    await fs.unlink(filePath);
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return NextResponse.json({ error: 'Fichier introuvable.' }, { status: 404 });
+    }
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
-
-  await fsPromises.unlink(filePath);
-  return NextResponse.json({ success: true }, { status: 200 });
 }
