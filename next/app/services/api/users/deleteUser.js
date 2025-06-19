@@ -19,20 +19,8 @@ export default async function deleteUser(userId, token) {
     },
   });
   
-  const text = await res.text();
-  const data = text ? JSON.parse(text) : {};
-  
   if (!res.ok) {
-    if (data.error === 'HAS_REPOSITORIES') {
-      return Promise.reject(
-        new Error(
-          "Impossible de supprimer l'utilisateur car il possède encore des dépôts associés. " +
-          "Veuillez d'abord supprimer ces associations."
-        )
-      );
-    }
-    return Promise.reject(handleApiError(res, data));
+    const data = await res.json();
+    throw handleApiError(res, data);
   }
-  
-  return data;
 }

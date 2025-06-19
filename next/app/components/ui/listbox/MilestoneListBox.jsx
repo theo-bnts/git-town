@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
 import { listboxStyles, textStyles } from '@/app/styles/tailwindStyles';
-
 import ListBoxProvider from '@/app/components/ui/listbox/ListBoxProvider';
 import ListBoxArea from '@/app/components/ui/listbox/ListBoxArea';
 import useListBox from '@/app/components/ui/listbox/useListBox';
@@ -34,8 +33,8 @@ function MilestoneInner() {
   };
 
   const validate = () => {
-    if (!title.trim() || !/^\d{2}-\d{2}-\d{4}$/.test(date)) {
-      setError('Titre & date JJ-MM-AAAA requis.');
+    if (!title.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      setError('Titre et date requis.');
       return false;
     }
     return true;
@@ -43,9 +42,7 @@ function MilestoneInner() {
 
   const save = () => {
     if (!validate()) return;
-    const [d, m, y] = date.split('-');
-    const data = { Title: title.trim(), Date: `${y}-${m}-${d}` };
-
+    const data = { Title: title.trim(), Date: date };
     if (editingId) {
       updateItem(editingId, data);
     } else {
@@ -57,35 +54,47 @@ function MilestoneInner() {
   return (
     <>
       <ListBoxArea
-        renderChip={(item) => (
-          <div className="flex flex-col">
-            <span className="font-medium">{item.Title}</span>
-            <span className="text-sm text-gray-500">{item.Date}</span>
-          </div>
-        )}
+        renderChip={(item) => {
+          const [y, m, d] = item.Date.split('-');
+          return (
+            <div className="flex flex-col">
+              <span className="font-medium">{item.Title}</span>
+              <span className="text-sm text-gray-500">{`${d}/${m}/${y}`}</span>
+            </div>
+          );
+        }}
         onEdit={(item) => {
           setEditingId(item.id);
           setTitle(item.Title);
-          const [y, m, d] = item.Date.split('-');
-          setDate(`${d}-${m}-${y}`);
+          setDate(item.Date);
         }}
       />
 
-      <div className="space-y-2 pt-2">
-        <Input variant="default" placeholder="Nom milestone" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <Input variant="default" placeholder="JJ-MM-AAAA" value={date} onChange={(e) => setDate(e.target.value)} />
-        {error && <p className="text-sm text-red-600">{error}</p>}
+      <Input
+        variant="default"
+        placeholder="Nom milestone"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+      <Input
+        variant="default"
+        type="date"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+      />
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <div className="flex justify-center space-x-2">
-          <Button type="button" variant="default" onClick={save}>
-            <p className={textStyles.defaultWhite}>{editingId ? 'Mettre à jour' : 'Ajouter'}</p>
+      <div className="flex justify-center space-x-2">
+        <Button type="button" variant="default" onClick={save}>
+          <p className={textStyles.defaultWhite}>
+            {editingId ? 'Mettre à jour' : 'Ajouter'}
+          </p>
+        </Button>
+        {editingId && (
+          <Button type="button" variant="default" onClick={reset}>
+            <p className={textStyles.defaultWhite}>Annuler</p>
           </Button>
-          {editingId && (
-            <Button type="button" variant="default" onClick={reset}>
-              <p className={textStyles.defaultWhite}>Annuler</p>
-            </Button>
-          )}
-        </div>
+        )}
       </div>
     </>
   );

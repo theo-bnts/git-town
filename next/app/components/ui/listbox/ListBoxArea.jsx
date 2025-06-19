@@ -1,3 +1,4 @@
+// app/components/ui/listbox/ListBoxArea.jsx
 'use client';
 
 import React from 'react';
@@ -6,14 +7,21 @@ import useListBox from '@/app/components/ui/listbox/useListBox';
 import ListBoxItem from '@/app/components/ui/listbox/ListBoxItem';
 import { listboxStyles } from '@/app/styles/tailwindStyles';
 
-export default function ListBoxArea({ renderChip, onEdit }) {
+export default function ListBoxArea({
+  renderChip,
+  onEdit,
+  onRemove,
+  editIcon
+}) {
   const { items, removeItem } = useListBox();
-  const sorted = [...items]
-    .sort((a, b) => (a.value || '')
-    .localeCompare(b.value || ''));
+  const sorted = [...items].sort((a, b) =>
+    (a.value || '').localeCompare(b.value || '')
+  );
 
   return (
-    <div className={`flex flex-col bg-white border border-gray-200 rounded-[12.5px] overflow-hidden ${listboxStyles?.default ?? ''}`}>
+    <div
+      className={`flex flex-col bg-white border border-gray-200 rounded-[12.5px] overflow-hidden ${listboxStyles?.default ?? ''}`}
+    >
       <div className="max-h-[160px] overflow-y-auto">
         {sorted.length === 0 ? (
           <Card variant="empty_list">
@@ -26,7 +34,11 @@ export default function ListBoxArea({ renderChip, onEdit }) {
               item={item}
               renderChip={renderChip}
               onEdit={onEdit ? () => onEdit(item) : undefined}
-              onRemove={() => removeItem(item.id ?? idx)}
+              onRemove={() => {
+                removeItem(item.id ?? idx);
+                if (onRemove) onRemove(item);
+              }}
+              editIcon={editIcon}
             />
           ))
         )}

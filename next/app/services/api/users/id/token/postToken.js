@@ -1,6 +1,6 @@
 // app/services/api/users/id/token/postToken.js
-import { tokenRoute } from "@/app/services/routes";
-import { handleApiError } from "@/app/services/errorHandler";
+import { tokenRoute } from '@/app/services/routes';
+import { handleApiError } from '@/app/services/errorHandler';
 
 /**
  * Connexion de l’utilisateur pour récupérer un token.
@@ -14,9 +14,11 @@ import { handleApiError } from "@/app/services/errorHandler";
 export default async function postToken(userId, password) {
   const url = tokenRoute(userId);
   const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ Password: password.trim() }),
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      Password: password.trim() 
+    }),
   });
   const data = await res.json();
 

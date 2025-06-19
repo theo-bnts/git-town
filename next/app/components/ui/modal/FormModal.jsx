@@ -12,10 +12,9 @@ import ListBox from '@/app/components/ui/listbox/ListBox';
 import Input from '@/app/components/ui/Input';
 
 import { MetadataCard } from '@/app/components/ui/modal/MetadataCard';
-import { ErrorCard } from '@/app/components/ui/modal/ErrorCard';
 import { FieldWrapper } from '@/app/components/ui/modal/FieldWrapper';
 
-import { textStyles } from "@/app/styles/tailwindStyles";
+import { textStyles } from '@/app/styles/tailwindStyles';
 
 export default function FormModal({
     formKey,
@@ -123,9 +122,6 @@ export default function FormModal({
               </div>
             </form>
           </Card>
-          <div className="mt-2">
-            <ErrorCard message={apiError} onClear={onClearApiError} />
-          </div>
         </div>
       </div>
     );

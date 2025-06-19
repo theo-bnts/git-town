@@ -1,4 +1,3 @@
-// app/login/authorize/AuthorizePageContent.jsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -6,12 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
 import postOAuthCode from '@/app/services/api/users/id/github/postOAuthCode';
-
 import { getCookie } from '@/app/services/cookies';
 
-import gittownhublogo from '../../../public/assets/pictures/gittownhub.svg';
-import miageLogo from '../../../public/assets/pictures/miage.png';
+import gittownhublogo from '../../../public/assets/pictures/git-townhub.svg';
+import miageLogo from '../../../public/assets/pictures/miage.svg';
 import LinkOrgForm from '@/app/components/layout/forms/github/LinkOrgForm';
+
+import { useNotification } from '@/app/context/NotificationContext';
 
 export default function AuthorizePageContent() {
   const searchParams = useSearchParams();
@@ -21,6 +21,8 @@ export default function AuthorizePageContent() {
   const [githubLinked, setGithubLinked] = useState(!code);
   const [error, setError] = useState(null);
 
+  const notify = useNotification();
+
   useEffect(() => {
     async function linkAccount() {
       const userId = await getCookie('userId');
@@ -29,20 +31,23 @@ export default function AuthorizePageContent() {
       if (code && userId && token) {
         try {
           await postOAuthCode(userId, code, token);
+          notify('Compte GitHub lié !', 'success');
           setGithubLinked(true);
         } catch (err) {
+          notify('Erreur lors de la liaison avec GitHub. Veuillez réessayer.', 'error');
           router.replace('/login/link');
         }
       } else if (!userId || !token) {
-        setError("Informations de connexion manquantes. Veuillez vous reconnecter.");
+        notify("Informations de connexion manquantes. Veuillez vous reconnecter.", 'error');
+        setError("Connexion invalide");
       }
     }
     linkAccount();
-  }, [code, router]);
+  }, [code, router, notify]);
 
   useEffect(() => {
     if (error) {
-      router.replace("/login/link");
+      router.replace('/login/link');
     }
   }, [error, router]);
 
@@ -73,7 +78,7 @@ export default function AuthorizePageContent() {
               <LinkOrgForm router={router} />
             ) : (
               <div className="text-center">
-                <p>En cours de liaison avec GitHub...</p>
+                <p>En cours de liaison avec GitHub…</p>
               </div>
             )}
           </div>

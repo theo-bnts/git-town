@@ -1,12 +1,14 @@
-// app/hooks/useCrudData.js
 import { useState, useCallback, useEffect } from 'react';
 
 import useAuthToken from '@/app/hooks/useAuthToken';
+
+import { useNotification } from '@/app/context/NotificationContext';
 
 export default function useCrudData({ fetchFn, deleteFn, mapToRow }) {
   const token = useAuthToken();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const notify = useNotification();
 
   const refresh = useCallback(() => {
     if (!token) return;
@@ -14,7 +16,7 @@ export default function useCrudData({ fetchFn, deleteFn, mapToRow }) {
     fetchFn(token)
       .then(items => items.map(mapToRow))
       .then(setData)
-      .catch(err => alert(`Erreur : ${err.message}`))
+      .catch(err => notify(`Erreur lors du chargement des données : ${err.message}`, 'error'))
       .finally(() => setLoading(false));
   }, [token, fetchFn, mapToRow]);
 
@@ -27,7 +29,8 @@ export default function useCrudData({ fetchFn, deleteFn, mapToRow }) {
       await deleteFn(id, token);
       await refresh();
     } catch (err) {
-      alert(`Suppression impossible : ${err.message}`);
+      notify(`Erreur lors de la suppression : ${err.message}`, 'error');
+      await refresh();
     }
   }, [token, deleteFn, refresh]);
 

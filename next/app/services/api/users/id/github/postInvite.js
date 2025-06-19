@@ -1,6 +1,6 @@
 // app/services/users/id/github/postInvite.jsx
-import { githubInviteRoute } from "@/app/services/routes";
-import { handleApiError } from "@/app/services/errorHandler";
+import { githubInviteRoute } from '@/app/services/routes';
+import { handleApiError } from '@/app/services/errorHandler';
 
 /**
  * Envoi d’une invitation à rejoindre l’organisation GitHub.
@@ -14,7 +14,7 @@ import { handleApiError } from "@/app/services/errorHandler";
 export default async function postInvite(userId, token) {
   const url = githubInviteRoute(userId);
   const res = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
     },
