@@ -1,17 +1,17 @@
 // middleware.js
 
-import { NextResponse } from "next/server";
-import { userRoute } from "@/app/services/routes";
-import { encodeUserInfo } from "@/app/services/auth";
+import { NextResponse } from 'next/server';
+import { userRoute } from '@/app/services/routes';
+import { encodeUserInfo } from '@/app/services/auth';
 
 export async function middleware(request) {
-  const tokenValue = request.cookies.get("token")?.value;
-  const userIdValue = request.cookies.get("userId")?.value;
+  const tokenValue = request.cookies.get('token')?.value;
+  const userIdValue = request.cookies.get('userId')?.value;
 
   if (tokenValue && userIdValue) {
     try {
       const apiResponse = await fetch(userRoute(userIdValue), {
-        method: "GET",
+        method: 'GET',
         headers: { Authorization: `Bearer ${tokenValue}` },
       });
 
@@ -24,31 +24,31 @@ export async function middleware(request) {
         });
 
         const nextResponse = NextResponse.next();
-        nextResponse.cookies.set("userInfo", serializedUserInfo, {
+        nextResponse.cookies.set('userInfo', serializedUserInfo, {
           httpOnly: true,
-          path: "/",
-          sameSite: "lax",
+          path: '/',
+          sameSite: 'lax',
         });
 
         if (!userData.GitHubId) {
           if (
-            request.nextUrl.pathname === "/login/authorize" &&
-            request.nextUrl.searchParams.get("code")
+            request.nextUrl.pathname === '/login/authorize' &&
+            request.nextUrl.searchParams.get('code')
           ) {
             return nextResponse;
-          } else if (request.nextUrl.pathname !== "/login/link") {
-            return NextResponse.redirect(new URL("/login/link", request.url));
+          } else if (request.nextUrl.pathname !== '/login/link') {
+            return NextResponse.redirect(new URL('/login/link', request.url));
           }
         } else {
           if (!userData.GitHubOrganizationMember) {
-            if (request.nextUrl.pathname !== "/login/authorize") {
+            if (request.nextUrl.pathname !== '/login/authorize') {
               return NextResponse.redirect(
-                new URL("/login/authorize", request.url)
+                new URL('/login/authorize', request.url)
               );
             }
           } else {
-            if (request.nextUrl.pathname.startsWith("/login")) {
-              return NextResponse.redirect(new URL("/", request.url));
+            if (request.nextUrl.pathname.startsWith('/login')) {
+              return NextResponse.redirect(new URL('/', request.url));
             }
           }
         }
@@ -56,28 +56,28 @@ export async function middleware(request) {
         return nextResponse;
       } else {
         const redirectResponse = NextResponse.redirect(
-          new URL("/login", request.url)
+          new URL('/login', request.url)
         );
-        ["token", "userId", "userInfo"].forEach((cookieName) => {
-          redirectResponse.cookies.delete(cookieName, { path: "/" });
+        ['token', 'userId', 'userInfo'].forEach((cookieName) => {
+          redirectResponse.cookies.delete(cookieName, { path: '/' });
         });
         return redirectResponse;
       }
     } catch (fetchError) {
       const errorRedirectResponse = NextResponse.redirect(
-        new URL("/login", request.url)
+        new URL('/login', request.url)
       );
-      ["token", "userId", "userInfo"].forEach((cookieName) => {
-        errorRedirectResponse.cookies.delete(cookieName, { path: "/" });
+      ['token', 'userId', 'userInfo'].forEach((cookieName) => {
+        errorRedirectResponse.cookies.delete(cookieName, { path: '/' });
       });
       return errorRedirectResponse;
     }
-  } else if (request.nextUrl.pathname !== "/login") {
+  } else if (request.nextUrl.pathname !== '/login') {
     const loginRedirectResponse = NextResponse.redirect(
-      new URL("/login", request.url)
+      new URL('/login', request.url)
     );
-    ["token", "userId", "userInfo"].forEach((cookieName) => {
-      loginRedirectResponse.cookies.delete(cookieName, { path: "/" });
+    ['token', 'userId', 'userInfo'].forEach((cookieName) => {
+      loginRedirectResponse.cookies.delete(cookieName, { path: '/' });
     });
     return loginRedirectResponse;
   }
@@ -87,6 +87,6 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    "/((?!api/cookies|_next/static|assets/pictures|favicon.ico).*)",
+    '/((?!api/cookies|_next/static|assets/pictures|favicon.ico).*)',
   ],
 };

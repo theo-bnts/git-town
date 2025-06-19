@@ -1,6 +1,6 @@
 // app/services/users/id/github/postOAuthCode.jsx
-import { githubOAuthRoute } from "@/app/services/routes";
-import { handleApiError } from "@/app/services/errorHandler";
+import { githubOAuthRoute } from '@/app/services/routes';
+import { handleApiError } from '@/app/services/errorHandler';
 
 /**
  * Lie un compte GitHub au compte utilisateur.
@@ -15,9 +15,9 @@ import { handleApiError } from "@/app/services/errorHandler";
 export default async function postOAuthCode(userId, code, token) {
   const url = githubOAuthRoute(userId);
   const res = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ OAuthCode: code.trim() }),

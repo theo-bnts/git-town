@@ -1,4 +1,3 @@
-// app/login/authorize/AuthorizePageContent.jsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -48,7 +47,7 @@ export default function AuthorizePageContent() {
 
   useEffect(() => {
     if (error) {
-      router.replace("/login/link");
+      router.replace('/login/link');
     }
   }, [error, router]);
 

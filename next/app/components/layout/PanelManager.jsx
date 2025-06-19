@@ -11,17 +11,17 @@ import RepositoriesPanel from '@/app/components/layout/panel/RepositoriesPanel';
 
 export default function PanelManager({ fullName, role }) {
   const navbarItems = [
-    { label: "Dépots", component: RepositoriesPanel },
-    { label: "Promotions", component: PromotionPanel },
-    { label: "Utilisateurs", component: UsersPanel },
-    { label: "Modèles", component: TemplatePanel },
-    { label: "UE", component: EnseignementUnitPanel },
+    { label: 'Dépots', component: RepositoriesPanel },
+    { label: 'Promotions', component: PromotionPanel },
+    { label: 'Utilisateurs', component: UsersPanel },
+    { label: 'Modèles', component: TemplatePanel },
+    { label: 'UE', component: EnseignementUnitPanel },
   ];
 
   const allowedByRole = {
     administrator: navbarItems.map(item => item.label),
-    teacher: ["Utilisateurs", "Dépots"],
-    student: ["Dépots"],
+    teacher: ['Utilisateurs', 'Dépots'],
+    student: ['Dépots'],
   };
 
   const navItems = navbarItems.filter(item =>
@@ -36,8 +36,8 @@ export default function PanelManager({ fullName, role }) {
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const ActivePanelComponent = navItems.find(

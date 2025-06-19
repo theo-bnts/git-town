@@ -1,5 +1,4 @@
-// /app/services/errorHandler.js
-import { API_ERRORS } from "@/app/services/errorCodes";
+import { API_ERRORS } from '@/app/services/errorCodes';
 
 /**
  * Gestion des erreurs API

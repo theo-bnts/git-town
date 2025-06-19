@@ -14,7 +14,7 @@ import Input from '@/app/components/ui/Input';
 import { MetadataCard } from '@/app/components/ui/modal/MetadataCard';
 import { FieldWrapper } from '@/app/components/ui/modal/FieldWrapper';
 
-import { textStyles } from "@/app/styles/tailwindStyles";
+import { textStyles } from '@/app/styles/tailwindStyles';
 
 export default function FormModal({
     formKey,

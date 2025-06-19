@@ -1,5 +1,5 @@
 import { userRepositoryRoute } from '@/app/services/routes';
-import { handleApiError } from "@/app/services/errorHandler";
+import { handleApiError } from '@/app/services/errorHandler';
 
 /**
  * Ajoute un dépôt à un utilisateur.
@@ -14,9 +14,9 @@ import { handleApiError } from "@/app/services/errorHandler";
 export default async function putUserRepository(userId, repository, token) {
   const endpoint = userRepositoryRoute(userId);
   const res = await fetch(endpoint, {
-    method: "PUT",
+    method: 'PUT',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(repository),

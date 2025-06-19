@@ -1,4 +1,3 @@
-// app/login/link/page.jsx
 'use client';
 
 import Image from 'next/image';

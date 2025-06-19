@@ -1,6 +1,6 @@
 // app/services/api/users/id/repositories/deleteUserRepository.js
-import { delUserRepositoryRoute } from "@/app/services/routes";
-import { handleApiError } from "@/app/services/errorHandler";
+import { delUserRepositoryRoute } from '@/app/services/routes';
+import { handleApiError } from '@/app/services/errorHandler';
 
 /**
  * Supprime le lien entre un utilisateur et un dépôt.
@@ -15,7 +15,7 @@ import { handleApiError } from "@/app/services/errorHandler";
 export default async function deleteUserRepository(userId, repoId, token) {
   const endpoint = delUserRepositoryRoute(userId, repoId);
   const res = await fetch(endpoint, {
-    method: "DELETE",
+    method: 'DELETE',
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {

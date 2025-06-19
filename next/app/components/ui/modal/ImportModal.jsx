@@ -15,12 +15,9 @@ export default function ImportModal({
   title,
   onClose,
   onImport,
-  // champs dynamiques
-  fields = [], // [{ label, options, value, onSelect, placeholder? }]
-  // parsing & traitement métier
-  csvParser,      // async (File) => { isValid, rows, rejectCsv }
-  processRows,    // async (rows, setProgress) => Array<rejectObj>
-  // config
+  fields = [],
+  csvParser,
+  processRows,
   rejectType,
   sampleFileName,
 }) {
@@ -82,7 +79,6 @@ export default function ImportModal({
       const rejects = await processRows(rowsData, setProgress);
 
       if (rejects.length) {
-        // reconstruction sécurisée du CSV de rejets
         const header = Object.keys(rejects[0]);
         const lines = [header.join(',')];
         const q = s => `"${String(s).replace(/"/g, '""')}"`;
@@ -117,7 +113,6 @@ export default function ImportModal({
             </Button>
           </header>
 
-          {/* champs dynamiques */}
           {fields.map(({ label, placeholder = label, options, value, onSelect }) => (
             <div key={label}>
               <p className={`mb-1 ${textStyles.default}`}>{label}</p>
@@ -130,7 +125,6 @@ export default function ImportModal({
             </div>
           ))}
 
-          {/* anciens rejets */}
           <div>
             <p className={`mb-1 ${textStyles.default}`}>Anciens rejets</p>
             <RejectListBox
@@ -140,7 +134,6 @@ export default function ImportModal({
             />
           </div>
 
-          {/* échantillon */}
           {sampleFileName && (
             <div>
               <p className={`mb-1 ${textStyles.default}`}>Fichier exemple</p>
@@ -156,7 +149,6 @@ export default function ImportModal({
             </div>
           )}
 
-          {/* sélection du CSV */}
           <input
             type="file"
             ref={fileInputRef}
@@ -194,7 +186,6 @@ export default function ImportModal({
             </div>
           </div>
 
-          {/* barre de progression */}
           {isProcessing && (
             <div className="w-full bg-gray-300 rounded-full h-2.5 mt-2">
               <div
@@ -204,7 +195,6 @@ export default function ImportModal({
             </div>
           )}
 
-          {/* bouton de traitement */}
           <div className="flex justify-center pt-2">
             <Button
               type="button"

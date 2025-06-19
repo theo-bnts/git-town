@@ -28,29 +28,26 @@ async function ensureAdmin(request) {
 }
 
 export async function GET(request, { params }) {
-  // 1) Autorisation
   const forbidden = await ensureAdmin(request);
-  if (forbidden) return forbidden;
+  if (forbidden) 
+    return forbidden;
 
-  // 2) Validation du segment dynamique
   const { kind } = await params;
   const fileName = FILES[kind];
   if (!fileName) {
     return NextResponse.json({ error: 'Type inconnu' }, { status: 404 });
   }
 
-  // 3) Lecture et envoi du fichier
   try {
     const filePath = path.join(process.cwd(), 'public', 'assets', 'res', fileName);
     let content = await fs.readFile(filePath, 'utf8');
 
-    // BOM pour Excel/LibreOffice
     content = '\uFEFF' + content;
 
     return new NextResponse(content, {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="${fileName}"`,
+        'Content-Disposition': `attachment; filename='${fileName}'`,
       },
     });
   } catch (err) {

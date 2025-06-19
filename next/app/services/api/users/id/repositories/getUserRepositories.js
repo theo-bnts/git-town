@@ -1,5 +1,5 @@
 import { userRepositoryRoute } from '@/app/services/routes';
-import { handleApiError } from "@/app/services/errorHandler";
+import { handleApiError } from '@/app/services/errorHandler';
 
 /**
  * Récupère les dépôts d'un utilisateur.
@@ -13,7 +13,7 @@ import { handleApiError } from "@/app/services/errorHandler";
 export default async function getUserRepositories(userId, token) {
   const endpoint = userRepositoryRoute(userId);
   const res = await fetch(endpoint, {
-    method: "GET",
+    method: 'GET',
     headers: { Authorization: `Bearer ${token}` },
   });
 
