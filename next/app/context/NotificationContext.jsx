@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { NotificationCard } from '@/app/components/ui/modal/NotificationCard';
+import { NotificationCard } from '@/app/components/ui/NotificationCard';
 
 const NotificationContext = createContext({ notify: () => {} });
 
