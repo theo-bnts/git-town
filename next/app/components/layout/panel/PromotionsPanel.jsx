@@ -11,7 +11,7 @@ const columns = [
   { key: 'level', title: 'Niveau', sortable: true },
 ];
 
-const mapPromotionToRow = (promo) => ({
+const mapPromotionToRow = promo => ({
   raw: promo,
   year: promo.Year,
   diploma: promo.Diploma
@@ -34,6 +34,10 @@ export default function PromotionsPanel() {
         confirmMessage: promo => (
           <>Voulez-vous vraiment supprimer la promotion de <strong>{promo.Diploma?.Initialism} {promo.PromotionLevel?.Name} – {promo.Year}</strong> ?</>
         ),
+      }}
+      actionTypes={['edit', 'duplicate', 'delete']}
+      actionHandlers={{
+        duplicate: row => console.log('Duplicate promotion:', row.raw),
       }}
     />
   );

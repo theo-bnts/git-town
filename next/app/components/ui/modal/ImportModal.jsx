@@ -105,84 +105,79 @@ export default function ImportModal({
   return (
     <div className="fixed inset-0 bg-[var(--popup-color)] flex items-center justify-center z-50">
       <div className="w-[300px]">
-        <Card variant="default" className="relative p-6 space-y-4">
-          <header className="flex items-center justify-between">
-            <h3 className="text-lg font-bold">{title}</h3>
-            <Button variant="action_icon_warn" onClick={onClose}>
-              <XIcon size={24} />
-            </Button>
-          </header>
+        <Card variant="default" className="relative p-6">
+          <div className="space-y-4">
+            <header className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">{title}</h3>
+              <Button variant="action_icon_warn" onClick={onClose}>
+                <XIcon size={24} />
+              </Button>
+            </header>
 
-          {fields.map(({ label, placeholder = label, options, value, onSelect }) => (
-            <div key={label}>
-              <p className={`mb-1 ${textStyles.default}`}>{label}</p>
-              <ComboBox
-                placeholder={placeholder}
-                options={options}
-                value={value}
-                onSelect={onSelect}
+            {fields.map(({ label, placeholder = label, options, value, onSelect }) => (
+              <div key={label} className="space-y-1">
+                <p className={textStyles.default}>{label}</p>
+                <ComboBox
+                  placeholder={placeholder}
+                  options={options}
+                  value={value}
+                  onSelect={onSelect}
+                />
+              </div>
+            ))}
+
+            <div className="space-y-1">
+              <p className={textStyles.default}>Anciens rejets</p>
+              <RejectListBox
+                files={rejectFiles}
+                onDownload={download}
+                onDelete={deleteRejectFile}
               />
             </div>
-          ))}
 
-          <div>
-            <p className={`mb-1 ${textStyles.default}`}>Anciens rejets</p>
-            <RejectListBox
-              files={rejectFiles}
-              onDownload={download}
-              onDelete={deleteRejectFile}
-            />
-          </div>
-
-          {sampleFileName && (
-            <div>
-              <p className={`mb-1 ${textStyles.default}`}>Fichier exemple</p>
-              <a
-                href={`/assets/res/${sampleFileName}`}
-                download={sampleFileName}
-                className="block"
-              >
-                <Button variant="default">
-                  <p className={textStyles.defaultWhite}>Télécharger</p>
-                </Button>
-              </a>
-            </div>
-          )}
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept=".csv"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-          <div>
-            <p className={`mb-1 ${textStyles.default}`}>Fichier à importer</p>
-            <div className={`flex flex-col space-y-2 ${listboxStyles.default}`}>
-              <div className="max-h-[80px] overflow-y-auto border rounded-[12.5px]">
-                {importedFile ? (
-                  <div className="flex items-center justify-between p-2">
-                    <span className={textStyles.default}>{importedFile.name}</span>
-                    <Button variant="action_icon_warn" onClick={reset}>
-                      <DashIcon size={16} />
-                    </Button>
-                  </div>
-                ) : (
-                  <Card variant="empty_list">
-                    <p className="text-center text-gray-600">
-                      Aucun fichier sélectionné.
-                    </p>
-                  </Card>
-                )}
+            {sampleFileName && (
+              <div className="space-y-1">
+                <p className={textStyles.default}>Fichier exemple</p>
+                <a
+                  href={`/assets/res/${sampleFileName}`}
+                  download={sampleFileName}
+                  className="block"
+                >
+                  <Button variant="default">
+                    <p className={textStyles.defaultWhite}>Télécharger</p>
+                  </Button>
+                </a>
               </div>
-              <Button
-                type="button"
-                variant={!importedFile ? 'default' : 'disabled'}
-                onClick={() => fileInputRef.current?.click()}
-                disabled={!!importedFile}
-              >
-                <p className={textStyles.defaultWhite}>Importer</p>
-              </Button>
+            )}
+
+            <div className="space-y-1">
+              <p className={textStyles.default}>Fichier à importer</p>
+              <div className={`flex flex-col space-y-2 ${listboxStyles.default}`}>
+                <div className="max-h-[80px] overflow-y-auto border rounded-[12.5px]">
+                  {importedFile ? (
+                    <div className="flex items-center justify-between p-2">
+                      <span className={textStyles.default}>{importedFile.name}</span>
+                      <Button variant="action_icon_warn" onClick={reset}>
+                        <DashIcon size={16} />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Card variant="empty_list">
+                      <p className="text-center text-gray-600">
+                        Aucun fichier sélectionné.
+                      </p>
+                    </Card>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant={!importedFile ? 'default' : 'disabled'}
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={!!importedFile}
+                >
+                  <p className={textStyles.defaultWhite}>Importer</p>
+                </Button>
+              </div>
             </div>
           </div>
 

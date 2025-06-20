@@ -84,6 +84,12 @@ export default function RepositoriesPanel() {
           ),
         }}
         toolbarButtons={[importButton]}
+        actionTypes={['edit', 'github', 'archive', 'duplicate', 'comment']}
+        actionHandlers={{
+          archive: row => console.log('Archive repo:', row.raw),
+          duplicate: row => console.log('Duplicate repo:', row.raw),
+          comment: row => console.log('Comment repo:', row.raw),
+        }}
       />
 
       {importOpen && (

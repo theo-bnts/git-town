@@ -27,6 +27,7 @@ export default function UEPanel() {
       modalProps={{
         confirmMessage: unit => <>Voulez-vous supprimer <strong>{unit.Initialism}</strong> ?</>,
       }}
+      actionTypes={['edit', 'delete']}
     />
   );
 }

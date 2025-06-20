@@ -22,7 +22,7 @@ async function fetchTemplatesWithCount(token) {
   );
 }
 
-const mapTemplateToRow = (tpl) => ({
+const mapTemplateToRow = tpl => ({
   raw: tpl,
   year: tpl.Year,
   ue: `${tpl.EnseignementUnit.Name} (${tpl.EnseignementUnit.Initialism})`,
@@ -41,6 +41,10 @@ export default function TemplatePanel() {
         confirmMessage: tpl => (
           <>Supprimer le template <strong>{`${tpl.EnseignementUnit.Name} (${tpl.EnseignementUnit.Initialism}) — ${tpl.Year}`}</strong> ?</>
         ),
+      }}
+      actionTypes={['edit', 'duplicate', 'delete']}
+      actionHandlers={{
+        duplicate: row => console.log('Duplicate template:', row.raw),
       }}
     />
   );

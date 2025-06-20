@@ -1,7 +1,8 @@
+// UsersPanel.jsx
 'use client';
 
 import { useState } from 'react';
-import { UploadIcon, MarkGithubIcon } from '@primer/octicons-react';
+import { UploadIcon } from '@primer/octicons-react';
 import Button from '@/app/components/ui/Button';
 import CrudPanel from './CrudPanel';
 
@@ -13,18 +14,16 @@ import UserModal from '@/app/components/layout/forms/modal/UserModal';
 import ImportUserModal from '@/app/components/layout/forms/modal/ImportUserModal';
 
 const columns = [
-  { key: 'name', title: 'Nom', sortable: true },
-  { key: 'email', title: 'E-mail universitaire', sortable: true },
-  { key: 'role', title: 'Rôle', sortable: true },
-  { key: 'promotions', title: 'Promotion(s)', sortable: true },
+  { key: 'name',       title: 'Nom',               sortable: true },
+  { key: 'email',      title: 'E-mail universitaire', sortable: true },
+  { key: 'role',       title: 'Rôle',              sortable: true },
+  { key: 'promotions', title: 'Promotion(s)',      sortable: true },
 ];
 
-const mapPromotion = (promo) => {
-  if (promo.Diploma && promo.PromotionLevel) {
-    return `${promo.Diploma.Initialism} ${promo.PromotionLevel.Initialism} – ${promo.Year}`;
-  }
-  return '';
-};
+const mapPromotion = promo =>
+  promo.Diploma && promo.PromotionLevel
+    ? `${promo.Diploma.Initialism} ${promo.PromotionLevel.Initialism} – ${promo.Year}`
+    : '';
 
 async function fetchUsersWithPromos(token) {
   const users = await getUsers(token);
@@ -45,19 +44,19 @@ async function fetchUsersWithPromos(token) {
   );
 }
 
-const mapUserToRow = (u) => ({
+const mapUserToRow = u => ({
   raw: {
     ...u.raw,
     promotions: u.promotions,
   },
-  name: u.name,
-  email: u.email,
-  role: u.role,
+  name:       u.name,
+  email:      u.email,
+  role:       u.role,
   promotions: u.promotions,
 });
 
 export default function UsersPanel() {
-  const [importOpen, setImportOpen] = useState(false);
+  const [importOpen,  setImportOpen]  = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleImport = () => {
@@ -90,25 +89,10 @@ export default function UsersPanel() {
           ),
         }}
         toolbarButtons={[importButton]}
-        extraActionsFactory={(row) => {
-          const gitId = row.raw.GitHubId;
-          if (!gitId) return [];
-          return [
-            {
-              icon: <MarkGithubIcon size={16} />,
-              onClick: async () => {
-                try {
-                  const res = await fetch(`https://api.github.com/user/${gitId}`);
-                  if (!res.ok) throw new Error(`GitHub API ${res.status}`);
-                  const data = await res.json();
-                  window.open(data.html_url, '_blank');
-                } catch (err) {
-                  console.error('Impossible de récupérer le profil GitHub :', err);
-                }
-              },
-            },
-          ];
-        }}
+        // affiche github **seulement** si row.raw.GitHubId est défini
+        actionTypes={row =>
+          ['edit', 'delete', ...(row.raw.GitHubId ? ['github'] : [])]
+        }
       />
 
       {importOpen && (
