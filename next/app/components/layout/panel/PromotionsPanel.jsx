@@ -35,7 +35,7 @@ export default function PromotionsPanel() {
           <>Voulez-vous vraiment supprimer la promotion de <strong>{promo.Diploma?.Initialism} {promo.PromotionLevel?.Name} – {promo.Year}</strong> ?</>
         ),
       }}
-      actionTypes={['edit', 'duplicate', 'delete']}
+      actionTypes={['edit', 'delete', 'duplicate']}
       actionHandlers={{
         duplicate: row => console.log('Duplicate promotion:', row.raw),
       }}

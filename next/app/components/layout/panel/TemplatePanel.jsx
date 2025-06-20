@@ -42,7 +42,7 @@ export default function TemplatePanel() {
           <>Supprimer le template <strong>{`${tpl.EnseignementUnit.Name} (${tpl.EnseignementUnit.Initialism}) — ${tpl.Year}`}</strong> ?</>
         ),
       }}
-      actionTypes={['edit', 'duplicate', 'delete']}
+      actionTypes={['edit', 'delete', 'duplicate']}
       actionHandlers={{
         duplicate: row => console.log('Duplicate template:', row.raw),
       }}

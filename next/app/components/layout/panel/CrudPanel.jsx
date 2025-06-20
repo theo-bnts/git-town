@@ -1,3 +1,4 @@
+// app/components/layout/crud/CrudPanel.jsx
 'use client';
 
 import React, { useState } from 'react';
@@ -91,15 +92,17 @@ export default function CrudPanel({
 
   const buildActions = row => {
     const types = typeof actionTypes === 'function' ? actionTypes(row) : actionTypes;
-    return types.map(type => {
-      const regist = ACTION_REGISTRY[type];
-      if (!regist) return null;
-      const { icon, handler: defaultHandler, variant } = regist;
-      const handler = actionHandlers[type]
-        ? () => actionHandlers[type](row, helpers)
-        : () => defaultHandler(row, helpers);
-      return { icon, onClick: handler, variant };
-    }).filter(Boolean);
+    return types
+      .map(type => {
+        const regist = ACTION_REGISTRY[type];
+        if (!regist) return null;
+        const { icon, handler: defaultHandler, variant } = regist;
+        const handler = actionHandlers[type]
+          ? () => actionHandlers[type](row, helpers)
+          : () => defaultHandler(row, helpers);
+        return { icon, onClick: handler, variant };
+      })
+      .filter(Boolean);
   };
 
   const rows = loading
