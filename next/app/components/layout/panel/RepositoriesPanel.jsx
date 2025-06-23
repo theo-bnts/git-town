@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UploadIcon, DashIcon, CheckIcon, PencilIcon, ArchiveIcon, DuplicateIcon, CommentIcon, MarkGithubIcon } from '@primer/octicons-react';
+import { UploadIcon, DashIcon, CheckIcon, PencilIcon, ArchiveIcon, DuplicateIcon, CommentIcon, FileZipIcon, MarkGithubIcon } from '@primer/octicons-react';
 
 import Button from '@/app/components/ui/Button';
 import CrudPanel from './CrudPanel';
@@ -45,7 +45,7 @@ async function fetchRepositoriesWithStudents(token) {
 const mapRepositoryToRow = (repo) => ({
   raw: repo,
   students: repo.studentNames,
-  tutor: repo.User?.FullName || 'N/A',
+  tutor: repo.User?.FullName || '',
   ue: `${repo.Template.EnseignementUnit.Name} (${repo.Template.EnseignementUnit.Initialism})`,
   year: repo.Template.Year,
   diploma: repo.Promotion?.Diploma
@@ -92,6 +92,11 @@ export default function RepositoriesPanel() {
     {
       icon: <CommentIcon size={16} />,
       onClick: () => console.log('Comment repo:', row.raw),
+      variant: 'action_sq',
+    },
+    {
+      icon: <FileZipIcon size={16} />,
+      onClick: () => window.open(`https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}/archive/HEAD.zip`, '_blank'),
       variant: 'action_sq',
     },
     {
