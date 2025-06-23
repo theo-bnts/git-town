@@ -1,6 +1,6 @@
 import { fetchWithAuth } from '@/app/services/auth';
 import { repositoryStatisticsRoute } from '@/app/services/routes';
-import { handleApiError } from '@/app/services/errorHandler';
+import { handleApiError, handleNetworkError } from '@/app/services/errorHandler';
 import { API_ERRORS } from '@/app/services/errorCodes';
 
 /**
@@ -14,7 +14,7 @@ export async function fetchRepositoryStatistics(repositoryId, options = {}) {
 
   if (!repositoryId) {
     const error = new Error(API_ERRORS[400].INVALID_REPOSITORY_ID);
-    error.code = API_ERRORS[400].INVALID_REPOSITORY_ID;
+    error.code = "INVALID_REPOSITORY_ID";
     throw error;
   }
 
@@ -31,26 +31,12 @@ export async function fetchRepositoryStatistics(repositoryId, options = {}) {
         // Si le parsing échoue, on garde data vide
       }
 
-      const error = handleApiError(res, data);
-      
-      if (res.status === 409 && 
-          (data?.code === 'NO_GITHUB_DATA' || data?.code === 'PENDING_STATISTICS')) {
-        error.code = API_ERRORS[409][data.code];
-      }
-      
-      throw error;
+      throw handleApiError(res, data);
     }
     
     const data = await res.json();
     return data;
   } catch (error) {
-    if (error.name === 'AbortError') throw error;
-    
-    if (error.message && error.message.includes('504') && !error.code) {
-      error.code = "504";
-      error.message = API_ERRORS[504].default;
-    }
-    
-    throw error;
+    throw handleNetworkError(error);
   }
 }
