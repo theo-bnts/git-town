@@ -1,5 +1,6 @@
 'use client';
 
+import { PencilIcon, TrashIcon, DuplicateIcon } from '@primer/octicons-react';
 import CrudPanel from './CrudPanel';
 import getPromotions from '@/app/services/api/promotions/getPromotions';
 import deletePromotion from '@/app/services/api/promotions/id/deletePromotion';
@@ -22,6 +23,24 @@ const mapPromotionToRow = promo => ({
     : '',
 });
 
+const actionsForRow = (row, helpers) => [
+  {
+    icon: <PencilIcon size={16} />,
+    onClick: () => helpers.edit(row),
+    variant: 'action_sq',
+  },
+  {
+    icon: <TrashIcon size={16} />,
+    onClick: () => helpers.del(row),
+    variant: 'action_sq_warn',
+  },
+  {
+    icon: <DuplicateIcon size={16} />,
+    onClick: () => console.log('Duplicate promotion:', row.raw),
+    variant: 'action_sq',
+  },
+];
+
 export default function PromotionsPanel() {
   return (
     <CrudPanel
@@ -35,10 +54,7 @@ export default function PromotionsPanel() {
           <>Voulez-vous vraiment supprimer la promotion de <strong>{promo.Diploma?.Initialism} {promo.PromotionLevel?.Name} – {promo.Year}</strong> ?</>
         ),
       }}
-      actionTypes={['edit', 'delete', 'duplicate']}
-      actionHandlers={{
-        duplicate: row => console.log('Duplicate promotion:', row.raw),
-      }}
+      actionsForRow={actionsForRow}
     />
   );
 }

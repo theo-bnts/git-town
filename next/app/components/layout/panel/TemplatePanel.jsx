@@ -1,5 +1,6 @@
 'use client';
 
+import { PencilIcon, TrashIcon, DuplicateIcon } from '@primer/octicons-react';
 import CrudPanel from './CrudPanel';
 import getTemplates from '@/app/services/api/templates/getTemplates';
 import getTemplateMilestones from '@/app/services/api/templates/id/milestone/getTemplateMilestones';
@@ -29,6 +30,24 @@ const mapTemplateToRow = tpl => ({
   milestones: tpl.milestoneCount,
 });
 
+const actionsForRow = (row, helpers) => [
+  {
+    icon: <PencilIcon size={16} />,
+    onClick: () => helpers.edit(row),
+    variant: 'action_sq',
+  },
+  {
+    icon: <TrashIcon size={16} />,
+    onClick: () => helpers.del(row),
+    variant: 'action_sq_warn',
+  },
+  {
+    icon: <DuplicateIcon size={16} />,
+    onClick: () => console.log('Duplicate template:', row.raw),
+    variant: 'action_sq',
+  },
+];
+
 export default function TemplatePanel() {
   return (
     <CrudPanel
@@ -42,10 +61,7 @@ export default function TemplatePanel() {
           <>Supprimer le template <strong>{`${tpl.EnseignementUnit.Name} (${tpl.EnseignementUnit.Initialism}) — ${tpl.Year}`}</strong> ?</>
         ),
       }}
-      actionTypes={['edit', 'delete', 'duplicate']}
-      actionHandlers={{
-        duplicate: row => console.log('Duplicate template:', row.raw),
-      }}
+      actionsForRow={actionsForRow}
     />
   );
 }

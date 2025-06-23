@@ -1,14 +1,19 @@
 'use client';
+
 import { useState } from 'react';
-import { UploadIcon, DashIcon, CheckIcon } from '@primer/octicons-react';
+import { UploadIcon, DashIcon, CheckIcon, PencilIcon, ArchiveIcon, DuplicateIcon, CommentIcon, MarkGithubIcon } from '@primer/octicons-react';
+
 import Button from '@/app/components/ui/Button';
 import CrudPanel from './CrudPanel';
 import ConfirmCard from '@/app/components/ui/ConfirmCard';
+
 import getRepositories from '@/app/services/api/repositories/getRepositories';
 import archiveRepository from '@/app/services/api/repositories/id/archiveRepository';
 import getUsersRepository from '@/app/services/api/repositories/id/getUsersRepository';
+
 import RepositoryModal from '@/app/components/layout/forms/modal/RepositoryModal';
 import ImportRepositoriesModal from '@/app/components/layout/forms/modal/importRepositoriesModal';
+
 import { getCookie } from '@/app/services/cookies';
 import { useNotification } from '@/app/context/NotificationContext';
 
@@ -60,13 +65,40 @@ export default function RepositoriesPanel() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toArchive, setToArchive] = useState(null);
   const notify = useNotification();
-  const ORG = process.env.NEXT_PUBLIC_GITHUB_ORGANISATION_NAME;
 
   const importBtn = (
     <Button key="import" variant="default_sq" onClick={() => setImportOpen(true)}>
       <UploadIcon size={24} className="text-white" />
     </Button>
   );
+
+  const actionsForRow = (row, helpers) => [
+    {
+      icon: <PencilIcon size={16} />,
+      onClick: () => helpers.edit(row),
+      variant: 'action_sq',
+    },
+    {
+      icon: <ArchiveIcon size={16} />,
+      onClick: () => { setToArchive(row.raw); setConfirmOpen(true); },
+      variant: 'action_sq_warn',
+    },
+    {
+      icon: <DuplicateIcon size={16} />,
+      onClick: () => console.log('Duplicate repo:', row.raw),
+      variant: 'action_sq',
+    },
+    {
+      icon: <CommentIcon size={16} />,
+      onClick: () => console.log('Comment repo:', row.raw),
+      variant: 'action_sq',
+    },
+    {
+      icon: <MarkGithubIcon size={16} />,
+      onClick: () => window.open(`https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}`, '_blank'),
+      variant: 'action_sq',
+    },
+  ];
 
   return (
     <>
@@ -82,13 +114,7 @@ export default function RepositoriesPanel() {
           ),
         }}
         toolbarButtons={[importBtn]}
-        actionTypes={['edit', 'archive', 'duplicate', 'comment', 'github']}
-        actionHandlers={{
-          github: (row) => window.open(`https://github.com/${ORG}/${row.raw.Id}`, '_blank'),
-          archive: (row) => { setToArchive(row.raw); setConfirmOpen(true); },
-          duplicate: (row) => console.log('Duplicate repo:', row.raw),
-          comment: (row) => console.log('Comment repo:', row.raw),
-        }}
+        actionsForRow={actionsForRow}
       />
       {importOpen && (
         <ImportRepositoriesModal

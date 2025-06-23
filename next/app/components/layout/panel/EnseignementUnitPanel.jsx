@@ -1,5 +1,6 @@
 'use client';
 
+import { PencilIcon, TrashIcon } from '@primer/octicons-react';
 import CrudPanel from './CrudPanel';
 import getUnits from '@/app/services/api/enseignementUnit/getEnseignementUnits';
 import deleteUnit from '@/app/services/api/enseignementUnit/id/deleteEnseignementUnit';
@@ -16,6 +17,19 @@ const mapUnitToRow = unit => ({
   name: unit.Name,
 });
 
+const actionsForRow = (row, helpers) => [
+  {
+    icon: <PencilIcon size={16} />,
+    onClick: () => helpers.edit(row),
+    variant: 'action_sq',
+  },
+  {
+    icon: <TrashIcon size={16} />,
+    onClick: () => helpers.del(row),
+    variant: 'action_sq_warn',
+  },
+];
+
 export default function UEPanel() {
   return (
     <CrudPanel
@@ -27,7 +41,7 @@ export default function UEPanel() {
       modalProps={{
         confirmMessage: unit => <>Voulez-vous supprimer <strong>{unit.Initialism}</strong> ?</>,
       }}
-      actionTypes={['edit', 'delete']}
+      actionsForRow={actionsForRow}
     />
   );
 }

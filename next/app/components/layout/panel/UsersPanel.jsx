@@ -1,10 +1,7 @@
 'use client';
+
 import { useState } from 'react';
-import {
-  UploadIcon,
-  CheckIcon,
-  XIcon,
-} from '@primer/octicons-react';
+import { UploadIcon, PencilIcon, TrashIcon, MarkGithubIcon, CheckIcon, XIcon } from '@primer/octicons-react';
 import Button from '@/app/components/ui/Button';
 import CrudPanel from './CrudPanel';
 import getUsers from '@/app/services/api/users/getUsers';
@@ -43,10 +40,10 @@ async function fetchUsersWithPromos(token) {
         promotions,
         githubLinked: u.GitHubId
           ? <CheckIcon key={`link-${u.Id}`} size={16} className="text-[var(--accent-color)]" />
-          : <XIcon     key={`link-${u.Id}`} size={16} className="text-[var(--warn-color)]" />,
+          : <XIcon key={`link-${u.Id}`} size={16} className="text-[var(--warn-color)]" />,
         orgMember: u.GitHubOrganizationMember
           ? <CheckIcon key={`org-${u.Id}`} size={16} className="text-[var(--accent-color)]" />
-          : <XIcon     key={`org-${u.Id}`} size={16} className="text-[var(--warn-color)]" />,
+          : <XIcon key={`org-${u.Id}`} size={16} className="text-[var(--warn-color)]" />,
       };
     })
   );
@@ -61,6 +58,26 @@ const mapUserToRow = (u) => ({
   githubLinked: u.githubLinked,
   orgMember: u.orgMember,
 });
+
+const actionsForRow = (row, helpers) => [
+  {
+    icon: <PencilIcon size={16} />,
+    onClick: () => helpers.edit(row),
+    variant: 'action_sq',
+  },
+  {
+    icon: <TrashIcon size={16} />,
+    onClick: () => helpers.del(row),
+    variant: 'action_sq_warn',
+  },
+  ...(row.raw.GitHubId
+    ? [{
+        icon: <MarkGithubIcon size={16} />,
+        onClick: () => window.open(`https://github.com/${row.raw.GitHubId}`, '_blank'),
+        variant: 'action_sq',
+      }]
+    : []),
+];
 
 export default function UsersPanel() {
   const [importOpen, setImportOpen] = useState(false);
@@ -89,7 +106,7 @@ export default function UsersPanel() {
           ),
         }}
         toolbarButtons={[importButton]}
-        actionTypes={(row) => ['edit', 'delete', ...(row.raw.GitHubId ? ['github'] : [])]}
+        actionsForRow={actionsForRow}
       />
       {importOpen && (
         <ImportUserModal
