@@ -73,4 +73,7 @@ export const API_ERRORS = {
   500: {
     default: '(500) : Erreur interne du serveur contactez l\'administrateur.',
   },
+  504: {
+    default: '(504) : Délai d\'attente dépassé.',
+  },
 };

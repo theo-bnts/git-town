@@ -16,6 +16,7 @@ export default function CrudPanel({
   ModalComponent,
   modalProps = {},
   toolbarButtons = [],
+  customActions,
 }) {
   const { data, loading, refresh, remove } = useCrudData({ fetchFn, deleteFn, mapToRow });
 
@@ -25,22 +26,29 @@ export default function CrudPanel({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  const actionsFactory = (row) => [
-    {
-      icon: <PencilIcon size={16} />,
-      onClick: () => {
-        setSelectedItem(row.raw);
-        setIsModalOpen(true);
+  const actionsFactory = (row) => {
+    const defaultActions = [
+      {
+        icon: <PencilIcon size={16} />,
+        onClick: () => {
+          setSelectedItem(row.raw);
+          setIsModalOpen(true);
+        },
       },
-    },
-    {
-      icon: <TrashIcon size={16} />,
-      onClick: () => {
-        setItemToDelete(row.raw);
-        setIsConfirmOpen(true);
+      {
+        icon: <TrashIcon size={16} />,
+        onClick: () => {
+          setItemToDelete(row.raw);
+          setIsConfirmOpen(true);
+        },
       },
-    },
-  ];
+    ];
+    
+    // Ajouter les actions personnalisées si elles existent
+    const additionalActions = customActions ? customActions(row) : [];
+    
+    return [...defaultActions, ...additionalActions];
+  };
 
   return (
     <>

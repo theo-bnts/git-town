@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { UploadIcon } from '@primer/octicons-react';
+import { UploadIcon, GraphIcon } from '@primer/octicons-react';
 import Button from '@/app/components/ui/Button';
 import CrudPanel from './CrudPanel';
+import { NotificationCard } from '@/app/components/ui/modal/NotificationCard';
 
 import getRepositories from '@/app/services/api/repositories/getRepositories';
 import deleteRepository from '@/app/services/api/repositories/id/deleteRepository';
@@ -11,6 +12,7 @@ import getUsersRepository from '@/app/services/api/repositories/id/getUsersRepos
 
 import RepositoryModal from '@/app/components/layout/forms/modal/RepositoryModal';
 import ImportRepositoriesModal from '@/app/components/layout/forms/modal/importRepositoriesModal';
+import RepositoryStatsModal from '@/app/components/ui/modal/statistics/RepositoryStatsModal';
 
 const columns = [
   { key: 'students', title: 'Étudiants', sortable: true },
@@ -51,10 +53,32 @@ const mapRepositoryToRow = repo => ({
 export default function RepositoriesPanel() {
   const [importOpen, setImportOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+  const [selectedRepoId, setSelectedRepoId] = useState(null);
+  const [statsErrorMessage, setStatsErrorMessage] = useState(null);
 
   const handleImport = () => {
     setImportOpen(false);
     setRefreshKey(k => k + 1);
+  };
+  
+  const handleOpenStats = (repoId) => {
+    setSelectedRepoId(repoId);
+    setStatsModalOpen(true);
+    setStatsErrorMessage(null);
+  };
+
+  const handleCloseStatsModal = () => {
+    setStatsModalOpen(false);
+    setSelectedRepoId(null);
+  };
+
+  const handleStatsError = (message) => {
+    setStatsErrorMessage(message);
+  };
+
+  const clearStatsErrorMessage = () => {
+    setStatsErrorMessage(null);
   };
 
   const importButton = (
@@ -66,9 +90,21 @@ export default function RepositoriesPanel() {
       <UploadIcon size={24} className="text-white" />
     </Button>
   );
+  
+  const customActions = (row) => [{
+    icon: <GraphIcon size={16} />,
+    onClick: () => handleOpenStats(row.raw.Id),
+    title: 'Voir les statistiques'
+  }];
 
   return (
     <>
+      <NotificationCard 
+        message={statsErrorMessage}
+        type="warn"
+        onClear={clearStatsErrorMessage}
+      />
+      
       <CrudPanel
         key={refreshKey}
         columns={columns}
@@ -76,6 +112,7 @@ export default function RepositoriesPanel() {
         deleteFn={deleteRepository}
         mapToRow={mapRepositoryToRow}
         ModalComponent={RepositoryModal}
+        customActions={customActions}
         modalProps={{
           confirmMessage: repo => (
             <>Voulez-vous vraiment supprimer le dépôt&nbsp;
@@ -91,6 +128,15 @@ export default function RepositoriesPanel() {
           isOpen={importOpen}
           onClose={() => setImportOpen(false)}
           onImport={handleImport}
+        />
+      )}
+      
+      {statsModalOpen && selectedRepoId && (
+        <RepositoryStatsModal
+          isOpen={statsModalOpen}
+          onClose={handleCloseStatsModal}
+          repositoryId={selectedRepoId}
+          onError={handleStatsError}
         />
       )}
     </>

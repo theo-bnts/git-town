@@ -31,33 +31,26 @@ export async function fetchRepositoryStatistics(repositoryId, options = {}) {
         // Si le parsing échoue, on garde data vide
       }
 
-      const errorCodes = {
-        404: API_ERRORS[404].STATISTICS_NOT_FOUND,
-        403: API_ERRORS[403].NOT_REPOSITORY_MEMBER,
-        423: API_ERRORS[423].ARCHIVED
-      };
-
-      if (errorCodes[res.status]) {
-        const error = handleApiError(res, data);
-        error.code = errorCodes[res.status];
-        throw error;
-      } 
+      const error = handleApiError(res, data);
       
-      if (res.status === 409) {
-        if (data?.code === 'NO_GITHUB_DATA' || data?.code === 'PENDING_STATISTICS') {
-          const error = handleApiError(res, data);
-          error.code = API_ERRORS[409][data.code];
-          throw error;
-        }
+      if (res.status === 409 && 
+          (data?.code === 'NO_GITHUB_DATA' || data?.code === 'PENDING_STATISTICS')) {
+        error.code = API_ERRORS[409][data.code];
       }
-
-      throw handleApiError(res, data);
+      
+      throw error;
     }
     
     const data = await res.json();
     return data;
   } catch (error) {
     if (error.name === 'AbortError') throw error;
+    
+    if (error.message && error.message.includes('504') && !error.code) {
+      error.code = "504";
+      error.message = API_ERRORS[504].default;
+    }
+    
     throw error;
   }
 }
