@@ -1,7 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { UploadIcon, PencilIcon, TrashIcon, MarkGithubIcon, CheckIcon, XIcon } from '@primer/octicons-react';
+import {
+  UploadIcon,
+  PencilIcon,
+  TrashIcon,
+  MarkGithubIcon,
+  CheckIcon,
+  XIcon,
+} from '@primer/octicons-react';
 import Button from '@/app/components/ui/Button';
 import CrudPanel from './CrudPanel';
 import getUsers from '@/app/services/api/users/getUsers';
@@ -9,6 +16,7 @@ import getUserPromotions from '@/app/services/api/users/getUserPromotions';
 import deleteUser from '@/app/services/api/users/deleteUser';
 import UserModal from '@/app/components/layout/forms/modal/UserModal';
 import ImportUserModal from '@/app/components/layout/forms/modal/ImportUserModal';
+import { useNotification } from '@/app/context/NotificationContext';
 
 const columns = [
   { key: 'name', title: 'Nom', sortable: true },
@@ -59,38 +67,54 @@ const mapUserToRow = (u) => ({
   orgMember: u.orgMember,
 });
 
-const actionsForRow = (row, helpers) => [
-  {
-    icon: <PencilIcon size={16} />,
-    onClick: () => helpers.edit(row),
-    variant: 'action_sq',
-  },
-  {
-    icon: <TrashIcon size={16} />,
-    onClick: () => helpers.del(row),
-    variant: 'action_sq_warn',
-  },
-  ...(row.raw.GitHubId
-    ? [{
-        icon: <MarkGithubIcon size={16} />,
-        onClick: () => window.open(`https://github.com/${row.raw.GitHubId}`, '_blank'),
-        variant: 'action_sq',
-      }]
-    : []),
-];
-
 export default function UsersPanel() {
+  const notify = useNotification();
   const [importOpen, setImportOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
   const handleImport = () => {
     setImportOpen(false);
     setRefreshKey((k) => k + 1);
   };
+
   const importButton = (
     <Button key="import" variant="default_sq" onClick={() => setImportOpen(true)}>
       <UploadIcon size={24} className="text-white" />
     </Button>
   );
+
+  const actions = (row, helpers) => [
+    {
+      icon: <PencilIcon size={16} />,
+      onClick: () => helpers.edit(row),
+      variant: 'action_sq',
+    },
+    {
+      icon: <TrashIcon size={16} />,
+      onClick: () => helpers.del(row),
+      variant: 'action_sq_warn',
+    },
+    ...(row.raw.GitHubId
+      ? [{
+          icon: <MarkGithubIcon size={16} />,
+          onClick: async () => {
+            try {
+              const res = await fetch(`https://api.github.com/user/${row.raw.GitHubId}`);
+              if (!res.ok) {
+                notify('Erreur lors de la récupération du compte GitHub', 'error');
+                return;
+              }
+              const data = await res.json();
+              window.open(`https://github.com/${data.login}`, '_blank');
+            } catch {
+              notify('Erreur lors de la récupération du compte GitHub', 'error');
+            }
+          },
+          variant: 'action_sq',
+        }]
+      : []),
+  ];
+
   return (
     <>
       <CrudPanel
@@ -106,7 +130,7 @@ export default function UsersPanel() {
           ),
         }}
         toolbarButtons={[importButton]}
-        actionsForRow={actionsForRow}
+        actions={actions}
       />
       {importOpen && (
         <ImportUserModal

@@ -23,7 +23,7 @@ const mapPromotionToRow = promo => ({
     : '',
 });
 
-const actionsForRow = (row, helpers) => [
+const actions = (row, helpers) => [
   {
     icon: <PencilIcon size={16} />,
     onClick: () => helpers.edit(row),
@@ -54,7 +54,7 @@ export default function PromotionsPanel() {
           <>Voulez-vous vraiment supprimer la promotion de <strong>{promo.Diploma?.Initialism} {promo.PromotionLevel?.Name} – {promo.Year}</strong> ?</>
         ),
       }}
-      actionsForRow={actionsForRow}
+      actions={actions}
     />
   );
 }

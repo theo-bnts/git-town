@@ -17,7 +17,7 @@ const mapUnitToRow = unit => ({
   name: unit.Name,
 });
 
-const actionsForRow = (row, helpers) => [
+const actions = (row, helpers) => [
   {
     icon: <PencilIcon size={16} />,
     onClick: () => helpers.edit(row),
@@ -41,7 +41,7 @@ export default function UEPanel() {
       modalProps={{
         confirmMessage: unit => <>Voulez-vous supprimer <strong>{unit.Initialism}</strong> ?</>,
       }}
-      actionsForRow={actionsForRow}
+      actions={actions}
     />
   );
 }

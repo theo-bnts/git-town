@@ -15,7 +15,7 @@ export default function CrudPanel({
   mapToRow,
   ModalComponent,
   modalProps = {},
-  actionsForRow = () => [],
+  actions = () => [],
   toolbarButtons = [],
 }) {
   const { data, loading, refresh, remove } = useCrudData({ fetchFn, deleteFn, mapToRow });
@@ -34,7 +34,7 @@ export default function CrudPanel({
 
   const rows = loading
     ? Array.from({ length: 3 }).map((_, i) => ({ skeleton: true, key: i }))
-    : data.map((r) => ({ ...r, actions: actionsForRow(r, helpers) }));
+    : data.map((r) => ({ ...r, actions: actions(r, helpers) }));
 
   return (
     <>

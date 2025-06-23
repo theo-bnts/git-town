@@ -30,7 +30,7 @@ const mapTemplateToRow = tpl => ({
   milestones: tpl.milestoneCount,
 });
 
-const actionsForRow = (row, helpers) => [
+const actions = (row, helpers) => [
   {
     icon: <PencilIcon size={16} />,
     onClick: () => helpers.edit(row),
@@ -61,7 +61,7 @@ export default function TemplatePanel() {
           <>Supprimer le template <strong>{`${tpl.EnseignementUnit.Name} (${tpl.EnseignementUnit.Initialism}) — ${tpl.Year}`}</strong> ?</>
         ),
       }}
-      actionsForRow={actionsForRow}
+      actions={actions}
     />
   );
 }
