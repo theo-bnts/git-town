@@ -1,9 +1,6 @@
 'use client';
-
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { normalizeString } from '@/app/utils/stringUtils';
-
 import ComboBox from '@/app/components/ui/combobox/ComboBox';
 import EmptyTableCard from '@/app/components/layout/table/EmptyTableCard';
 import TableHeader from '@/app/components/layout/table/TableHeader';
@@ -11,131 +8,90 @@ import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
 
 export default function Table({ columns, data, toolbarContents }) {
-  const [visibleCount, setVisibleCount] = useState(0);
-  const [sortColumn, setSortColumn] = useState(null);
-  const [sortOrder, setSortOrder] = useState('asc');
-  const [filterValues, setFilterValues] = useState({});
+  const [visible, setVisible] = useState(0);
+  const [sortCol, setSortCol] = useState(null);
+  const [order, setOrder] = useState('asc');
+  const [filters, setFilters] = useState({});
+  const ref = useRef(null);
+  const sent = useRef(null);
+  const rowH = 50;
 
-  const containerRef = useRef(null);
-  const sentinelRef = useRef(null);
-  const rowHeight = 50;
-
-  const processedData = useMemo(() => {
-    let filtered = data.filter((row) => {
-      return Object.entries(filterValues).every(([key, filterValue]) => {
-        if (!filterValue || filterValue === "") return true;
-        const cellValue = row[key];
-        if (!cellValue) return false;
-        if (typeof cellValue === "string") {
-          return normalizeString(cellValue)
-            .includes(normalizeString(filterValue));
-        }
-        return cellValue === filterValue;
-      });
-    });
-    if (sortColumn) {
-      filtered.sort((a, b) => {
-        if (!sortColumn) return 0;
-        return sortOrder === "asc"
-          ? a[sortColumn] > b[sortColumn]
-            ? 1
-            : -1
-          : a[sortColumn] < b[sortColumn]
-          ? 1
-          : -1;
-      });
-    }
-    return filtered;
-  }, [data, filterValues, sortColumn, sortOrder]);
-
-  const loadMoreRows = () => {
-    if (containerRef.current) {
-      const containerHeight = containerRef.current.clientHeight;
-      const rowsToAdd = Math.ceil(containerHeight / rowHeight);
-      setVisibleCount(
-        (prev) => Math.min(processedData.length, prev + rowsToAdd)
-      );
-    }
-  };
-
-  useEffect(() => {
-    if (containerRef.current) {
-      const containerHeight = containerRef.current.clientHeight;
-      const initialRows = Math.ceil(containerHeight / rowHeight);
-      setVisibleCount(initialRows);
-    }
-  }, [containerRef, processedData]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const lastEntry = entries[0];
-        if (lastEntry.isIntersecting) loadMoreRows();
-      },
-      { threshold: 0.1, rootMargin: '0px 0px 20px 0px' }
+  const filtered = useMemo(() => {
+    let d = data.filter((r) =>
+      Object.entries(filters).every(([k, f]) => {
+        if (!f) return true;
+        const c = r[k];
+        if (!c) return false;
+        if (typeof c === 'string')
+          return normalizeString(c).includes(normalizeString(f));
+        return false;
+      }),
     );
-    if (sentinelRef.current) {
-      observer.observe(sentinelRef.current);
-    }
-    return () => observer.disconnect();
-  }, [sentinelRef, processedData, visibleCount]);
+    if (sortCol)
+      d.sort((a, b) =>
+        order === 'asc' ? (a[sortCol] > b[sortCol] ? 1 : -1) : a[sortCol] < b[sortCol] ? 1 : -1,
+      );
+    return d;
+  }, [data, filters, sortCol, order]);
 
-  const handleSort = (columnKey) => {
-    const newOrder = (sortColumn === columnKey && sortOrder === 'asc')
-      ? 'desc'
-      : 'asc';
-    setSortColumn(columnKey);
-    setSortOrder(newOrder);
-  };
-
-  const handleFilterChange = (columnKey, value) => {
-    setFilterValues(prev => ({ ...prev, [columnKey]: value }));
-    if (containerRef.current) {
-      const containerHeight = containerRef.current.clientHeight;
-      const initialRows = Math.ceil(containerHeight / rowHeight);
-      setVisibleCount(initialRows);
+  const load = () => {
+    if (ref.current) {
+      const h = ref.current.clientHeight;
+      setVisible((p) => Math.min(filtered.length, p + Math.ceil(h / rowH)));
     }
   };
 
-  const filterComboboxes = columns
-    .filter(col => col.key !== 'actions')
-    .map(col => {
-      const allValues = data.reduce((acc, row) => {
-        const cellValue = row[col.key];
-        if (!cellValue) return acc;
-        if (typeof cellValue === 'string') {
-          const tokens = cellValue
-            .split(/[,\;\/]+/)
-            .map(token => token.trim())
-            .filter(token => token);
-          return acc.concat(tokens);
+  useEffect(() => {
+    if (ref.current) setVisible(Math.ceil(ref.current.clientHeight / rowH));
+  }, [ref, filtered]);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver((e) => e[0].isIntersecting && load(), {
+      threshold: 0.1,
+      rootMargin: '0px 0px 20px 0px',
+    });
+    if (sent.current) obs.observe(sent.current);
+    return () => obs.disconnect();
+  }, [sent, filtered, visible]);
+
+  const onSort = (k) => {
+    setSortCol(k);
+    setOrder(sortCol === k && order === 'asc' ? 'desc' : 'asc');
+  };
+  const onFilter = (k, v) => {
+    setFilters((p) => ({ ...p, [k]: v }));
+    if (ref.current) setVisible(Math.ceil(ref.current.clientHeight / rowH));
+  };
+
+  const filtersUI = columns
+    .filter((c) => c.key !== 'actions')
+    .map((c) => {
+      const vals = data.reduce((a, r) => {
+        const cell = r[c.key];
+        if (!cell) return a;
+        if (typeof cell === 'string') {
+          return a.concat(
+            cell
+              .split(/[,\;\/]+/)
+              .map((t) => t.trim())
+              .filter(Boolean),
+          );
         }
-        return acc.concat(cellValue);
+        if (Array.isArray(cell) && cell.every((v) => typeof v === 'string'))
+          return a.concat(cell);
+        return a;
       }, []);
-      const uniqueValues = Array.from(new Set(allValues));
-      const comboOptions = uniqueValues.map(option => ({
-        id: option,
-        value: option,
-      }));
-      const selectedValue = filterValues[col.key] || '';
+      const uniq = [...new Set(vals)];
+      const opts = uniq.map((v) => ({ id: v, value: v }));
+      const sel = filters[c.key] || '';
       return (
         <ComboBox
-          key={col.key}
-          placeholder={`${col.title}`}
-          options={comboOptions}
-          value={selectedValue
-            ? { id: selectedValue, value: selectedValue }
-            : null
-          }
-          onSelect={(selectedOption) =>
-            handleFilterChange(col.key, selectedOption
-              ? selectedOption.value
-              : ''
-            )
-          }
-          onInputChange={(inputValue) =>
-            handleFilterChange(col.key, inputValue)
-          }
+          key={c.key}
+          placeholder={c.title}
+          options={opts}
+          value={sel ? { id: sel, value: sel } : null}
+          onSelect={(o) => onFilter(c.key, o ? o.value : '')}
+          onInputChange={(v) => onFilter(c.key, v)}
         />
       );
     });
@@ -144,30 +100,20 @@ export default function Table({ columns, data, toolbarContents }) {
     <>
       <TableToolbar>
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
-          <div className="flex items-center gap-4">
-            {toolbarContents}
-          </div>
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filterComboboxes}
-          </div>
+          <div className="flex items-center gap-4">{toolbarContents}</div>
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">{filtersUI}</div>
         </div>
       </TableToolbar>
-  
-      <div ref={containerRef} className="overflow-x-auto overflow-y-auto w-full h-full">
+      <div ref={ref} className="overflow-x-auto overflow-y-auto w-full h-full">
         <table>
-          <TableHeader
-            columns={columns}
-            onSort={handleSort}
-            sortColumn={sortColumn}
-            sortOrder={sortOrder}
-          />
+          <TableHeader columns={columns} onSort={onSort} sortColumn={sortCol} sortOrder={order} />
           <tbody>
-            {processedData.length > 0 ? (
+            {filtered.length ? (
               <>
-                {processedData.slice(0, visibleCount).map((row, index) => (
-                  <TableRow key={index} rowData={row} columns={columns} />
+                {filtered.slice(0, visible).map((r, i) => (
+                  <TableRow key={i} rowData={r} columns={columns} />
                 ))}
-                <tr ref={sentinelRef}>
+                <tr ref={sent}>
                   <td colSpan={columns.length} />
                 </tr>
               </>
