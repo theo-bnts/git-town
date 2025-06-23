@@ -4,8 +4,8 @@ import AuthorizationMiddleware from '../../../../entities/tools/Middleware/Autho
 import GitHubApp from '../../../../entities/tools/GitHub/GitHubApp.js';
 import Milestone from '../../../../entities/Milestone.js';
 import ParametersMiddleware from '../../../../entities/tools/Middleware/ParametersMiddleware.js';
-import Template from '../../../../entities/Template.js';
 import Repository from '../../../../entities/Repository.js';
+import Template from '../../../../entities/Template.js';
 
 export default async function route(app) {
   app.route({
@@ -85,15 +85,31 @@ export default async function route(app) {
       );
 
       const repositories = await Repository.fromTemplate(template);
+      
+      const nonArchivedRepositories = repositories.filter((repository) => (
+        repository.ArchivedAt === null
+      ));
 
       await Promise.all(
-        repositories.map(async (repository) => (
-          GitHubApp.EnvironmentInstance.Milestones.add(
+        nonArchivedRepositories.map(async (repository) => {
+          const gitHubMilestones = await GitHubApp.EnvironmentInstance.Milestones.get(
             repository.Id,
-            milestone.Title,
-            milestone.Date,
-          )
-        )),
+          );
+
+          const concernedGitHubMilestone = gitHubMilestones.find((gitHubMilestone) => (
+            gitHubMilestone.Title === milestone.Title
+          ));
+
+          if (concernedGitHubMilestone === undefined) {
+            return GitHubApp.EnvironmentInstance.Milestones.add(
+              repository.Id,
+              milestone.Title,
+              milestone.Date,
+            );
+          }
+
+          return Promise.resolve();
+        }),
       );
 
       await milestone.insert();
