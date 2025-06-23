@@ -76,7 +76,8 @@ export default function RepositoriesPanel() {
     {
       icon: <PencilIcon size={16} />,
       onClick: () => helpers.edit(row),
-      variant: 'action_sq',
+      variant: row.raw.ArchivedAt ? 'action_sq_disabled' : 'action_sq',
+      disabled: Boolean(row.raw.ArchivedAt),
     },
     {
       icon: <ArchiveIcon size={16} />,

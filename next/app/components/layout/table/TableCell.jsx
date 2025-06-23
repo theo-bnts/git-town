@@ -44,6 +44,7 @@ export default function TableCell({ value, columnKey }) {
                   key={index}
                   onClick={action.onClick}
                   variant={action.variant}
+                  disabled={action.disabled}
                 >
                   {action.icon}
                 </Button>

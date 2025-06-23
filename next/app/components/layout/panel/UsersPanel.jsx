@@ -94,10 +94,10 @@ export default function UsersPanel() {
       onClick: () => helpers.del(row),
       variant: 'action_sq_warn',
     },
-    ...(row.raw.GitHubId
-      ? [{
-          icon: <MarkGithubIcon size={16} />,
-          onClick: async () => {
+    {
+      icon: <MarkGithubIcon size={16} />,
+      onClick: row.raw.GitHubId
+        ? async () => {
             try {
               const res = await fetch(`https://api.github.com/user/${row.raw.GitHubId}`);
               if (!res.ok) {
@@ -109,10 +109,11 @@ export default function UsersPanel() {
             } catch {
               notify('Erreur lors de la récupération du compte GitHub', 'error');
             }
-          },
-          variant: 'action_sq',
-        }]
-      : []),
+          }
+        : undefined,
+      variant: row.raw.GitHubId ? 'action_sq' : 'action_sq_disabled',
+      disabled: Boolean(!row.raw.GitHubId),
+    },
   ];
 
   return (
