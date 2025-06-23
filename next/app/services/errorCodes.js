@@ -60,11 +60,10 @@ export const API_ERRORS = {
     default: '(409) : Conflit de requête.',
   },
   422: {
-    //Unprocessable Entity: '(422) : Entité non traitable.',
-    default: '(422) : Conflit, essayez de quitter l’organisation si vous êtes déjà dedans et de la rejoindre à nouveau.',
+    default: '(422) : Conflit entre GitHub et GitTown, veuillez contacter l\'administrateur.',
   },
   423: {
-    ARCHIVED: '(423) : Le dépôt est archivé et ne peut pas être consulté.',
+    ARCHIVED: '(423) : Le dépôt est archivé et ne peut pas être modifié.',
     default: '(423) : Ressource verrouillée.',
   },
   429: {
