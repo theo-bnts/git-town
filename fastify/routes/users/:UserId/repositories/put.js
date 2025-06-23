@@ -60,13 +60,17 @@ export default async function route(app) {
         throw { statusCode: 404, error: 'UNKNOWN_REPOSITORY_ID' };
       }
 
+      const repository = await Repository.fromId(repositoryId);
+
+      if (repository.ArchivedAt !== null) {
+        throw { statusCode: 423, error: 'ARCHIVED' };
+      }
+
       const user = await User.fromId(userId);
 
       if (user.Role.Keyword !== 'student') {
         throw { statusCode: 409, error: 'NOT_STUDENT_ROLE' };
       }
-
-      const repository = await Repository.fromId(repositoryId);
 
       if (!await UserPromotion.isUserAndPromotionInserted(user, repository.Promotion)) {
         throw { statusCode: 409, error: 'NOT_IN_REPOSITORY_PROMOTION' };
