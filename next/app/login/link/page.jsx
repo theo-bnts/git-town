@@ -1,10 +1,9 @@
-// app/login/link/page.jsx
 'use client';
 
 import Image from 'next/image';
 
-import gittownhublogo from '../../../public/assets/pictures/gittownhub.svg';
-import miageLogo from '../../../public/assets/pictures/miage.png';
+import gittownhublogo from '../../../public/assets/pictures/git-townhub.svg';
+import miageLogo from '../../../public/assets/pictures/miage.svg';
 
 import LinkGitForm from '@/app/components/layout/forms/github/LinkGitForm';
 

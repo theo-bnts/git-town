@@ -1,5 +1,5 @@
-import { temporaryCodeRoute } from "@/app/services/routes";
-import { handleApiError } from "@/app/services/errorHandler";
+import { temporaryCodeRoute } from '@/app/services/routes';
+import { handleApiError } from '@/app/services/errorHandler';
 
 /**
  * Demande la génération d’un code temporaire pour l’inscription.
@@ -11,7 +11,10 @@ import { handleApiError } from "@/app/services/errorHandler";
  */
 export default async function postTemporaryCode(userId) {
   const url = temporaryCodeRoute(userId);
-  const res = await fetch(url, { method: "POST" });
+  const res = await fetch(url, 
+    { 
+      method: 'POST' 
+    });
   const data = await res.json();
 
   if (res.ok) return data;

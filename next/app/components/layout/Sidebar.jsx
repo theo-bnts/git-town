@@ -1,10 +1,10 @@
 'use client';
 
-import React from "react";
-import { textStyles } from "@/app/styles/tailwindStyles";
-import Card from "@/app/components/ui/Card";
+import React from 'react';
+import { textStyles } from '@/app/styles/tailwindStyles';
+import Card from '@/app/components/ui/Card';
 
-export default function Sidebar({ items, activePanel, onSelect, className = "" }) {
+export default function Sidebar({ items, activePanel, onSelect, className = '' }) {
   return (
     <Card
         variant="navbar"

@@ -1,5 +1,3 @@
-// /app/services/api/promotions/savePromotions.js
-
 'use client';
 
 import { handleApiError } from '@/app/services/errorHandler';

@@ -1,18 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import useAuthToken from '@/app/hooks/useAuthToken';
 import savePromotions from '@/app/services/api/promotions/savePromotions';
+import getDiplomas from '@/app/services/api/diplomas/getDiplomas';
+import getPromotionLevels from '@/app/services/api/promotion-levels/getPromotionLevels';
 import FormModal from '@/app/components/ui/modal/FormModal';
-
-const diplomaOptions = [
-  { id: 'MIAGE', value: 'MIAGE' },
-];
-
-const levelOptions = [
-  { id: 'M1', value: 'M1' },
-  { id: 'M2', value: 'M2' },
-];
+import { useNotification } from '@/app/context/NotificationContext';
 
 export default function PromotionModal({
   isOpen,
@@ -21,50 +15,95 @@ export default function PromotionModal({
   onSave,
 }) {
   const token = useAuthToken();
-  const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState('');
+  const notify = useNotification();
+
+  const [diplomaOptions, setDiplomaOptions] = useState([]);
+  const [levelOptions, setLevelOptions] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
+
+  useEffect(() => {
+    if (!isOpen || !token) {
+      if (!isOpen) {
+        setDiplomaOptions([]);
+        setLevelOptions([]);
+      }
+      return;
+    }
+    setIsLoadingOptions(true);
+
+    (async () => {
+      try {
+        const [diplomas, levels] = await Promise.all([
+          getDiplomas(token),
+          getPromotionLevels(token),
+        ]);
+        setDiplomaOptions(
+          diplomas.map((d) => ({ id: d.Initialism, value: d.Initialism }))
+        );
+        setLevelOptions(
+          levels.map((l) => ({ id: l.Initialism, value: l.Initialism }))
+        );
+      } catch (err) {
+        console.error(err);
+        notify(err.message || 'Erreur lors du chargement des options', 'error');
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    })();
+  }, [isOpen, token, notify]);
 
   const fields = useMemo(() => [
     {
       name: 'Diplôme',
       options: diplomaOptions,
-      value: diplomaOptions.find(o => o.id === initialData.Diploma?.Initialism) || null,
+      value:
+        diplomaOptions.find(
+          (o) => o.id === initialData.Diploma?.Initialism
+        ) || null,
     },
     {
       name: 'Niveau',
       options: levelOptions,
-      value: levelOptions.find(o => o.id === initialData.PromotionLevel?.Initialism) || null,
+      value:
+        levelOptions.find(
+          (o) => o.id === initialData.PromotionLevel?.Initialism
+        ) || null,
     },
     {
       name: 'Année',
       value: initialData.Year?.toString() || '',
     },
-  ], [initialData]);
+  ], [initialData, diplomaOptions, levelOptions]);
 
-  const validate = v => {
-    const e = {};
-    if (!v.Diplôme?.id) e.Diplôme = 'Veuillez sélectionner un diplôme.';
-    if (!v.Niveau?.id) e.Niveau = 'Veuillez sélectionner un niveau.';
-    if (!v.Année) e.Année = "L'année est obligatoire.";
-    else if (!/^\d{4}$/.test(v.Année)) e.Année = "L'année doit être un nombre à 4 chiffres.";
-    return e;
-  };
+  function validate(values) {
+    const errs = {};
+    if (!values.Diplôme?.id) errs.Diplôme = 'Veuillez sélectionner un diplôme.';
+    if (!values.Niveau?.id) errs.Niveau = 'Veuillez sélectionner un niveau.';
+    if (!values.Année) errs.Année = "L'année est obligatoire.";
+    else if (!/^\d{4}$/.test(values.Année))
+      errs.Année = "L'année doit être un nombre à 4 chiffres.";
+    return errs;
+  }
 
-  const handleSubmit = async v => {
-    const e = validate(v);
-    if (Object.keys(e).length) { setErrors(e); return; }
-    setErrors({});
+  const handleSubmit = async (values) => {
+    const errs = validate(values);
+    if (Object.keys(errs).length) {
+      setFieldErrors(errs);
+      return;
+    }
+    setFieldErrors({});
 
-    const year = parseInt(v.Année, 10);
+    const year = parseInt(values.Année, 10);
     let payload;
 
     if (initialData.Id) {
       payload = {};
-      if (v.Diplôme.id !== initialData.Diploma.Initialism) {
-        payload.Diploma = { Initialism: v.Diplôme.id };
+      if (values.Diplôme.id !== initialData.Diploma.Initialism) {
+        payload.Diploma = { Initialism: values.Diplôme.id };
       }
-      if (v.Niveau.id !== initialData.PromotionLevel.Initialism) {
-        payload.PromotionLevel = { Initialism: v.Niveau.id };
+      if (values.Niveau.id !== initialData.PromotionLevel.Initialism) {
+        payload.PromotionLevel = { Initialism: values.Niveau.id };
       }
       if (year !== initialData.Year) {
         payload.Year = year;
@@ -75,18 +114,25 @@ export default function PromotionModal({
       }
     } else {
       payload = {
-        Diploma: { Initialism: v.Diplôme.id },
-        PromotionLevel: { Initialism: v.Niveau.id },
+        Diploma: { Initialism: values.Diplôme.id },
+        PromotionLevel: { Initialism: values.Niveau.id },
         Year: year,
       };
     }
 
     try {
       await savePromotions(initialData.Id || null, payload, token);
+      notify(
+        initialData.Id
+          ? 'Promotion mise à jour avec succès'
+          : 'Nouvelle promotion créée avec succès',
+        'success'
+      );
       onSave();
       onClose();
     } catch (err) {
-      setApiError(err.message);
+      console.error(err);
+      notify(err.message || 'Échec de l’enregistrement', 'error');
     }
   };
 
@@ -94,17 +140,20 @@ export default function PromotionModal({
     <FormModal
       formKey={`${initialData.Id || 'new'}-${isOpen}`}
       isOpen={isOpen}
-      title={initialData.Id ? 'Modifier la promotion' : 'Nouvelle promotion'}
+      title={
+        initialData.Id
+          ? 'Modifier la promotion'
+          : 'Nouvelle promotion'
+      }
       metadata={{
         createdAt: initialData.CreatedAt,
         updatedAt: initialData.UpdatedAt,
       }}
       fields={fields}
-      errors={errors}
-      apiError={apiError}
-      onClearApiError={() => setApiError('')}
+      errors={fieldErrors}
       onClose={onClose}
       onSubmit={handleSubmit}
+      isLoading={isLoadingOptions}
     />
   );
 }

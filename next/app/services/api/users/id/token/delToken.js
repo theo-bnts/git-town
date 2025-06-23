@@ -1,6 +1,6 @@
 // app/services/api/users/id/token/delToken.js
-import { delTokenRoute } from "@/app/services/routes";
-import { handleApiError } from "@/app/services/errorHandler";
+import { delTokenRoute } from '@/app/services/routes';
+import { handleApiError } from '@/app/services/errorHandler';
 
 /**
  * Suppression du token de l’utilisateur.
@@ -14,7 +14,7 @@ import { handleApiError } from "@/app/services/errorHandler";
 export default async function delToken(userId, token, tokenId) {
   const url = delTokenRoute(userId, tokenId);
   const res = await fetch(url, {
-    method: "DELETE",
+    method: 'DELETE',
     headers: { 
       Authorization: `Bearer ${token}` 
     },

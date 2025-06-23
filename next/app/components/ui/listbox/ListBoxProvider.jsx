@@ -3,26 +3,48 @@
 import React, { useCallback, useMemo } from 'react';
 import ListBoxContext from '@/app/components/ui/listbox/context';
 
+function sortByDateDesc(a, b) {
+  return new Date(b.Date) - new Date(a.Date);
+}
+
 export default function ListBoxProvider({ items = [], onChange, children }) {
+  const sortedItems = useMemo(() => {
+    return [...items].sort(sortByDateDesc);
+  }, [items]);
+
   const addItem = useCallback(
     (item) => {
       if (!item || items.some((i) => i.id === item.id)) return;
-      onChange([...items, item]);
+      onChange([...sortedItems, item].sort(sortByDateDesc));
     },
-    [items, onChange]
+    [items, sortedItems, onChange]
   );
 
   const updateItem = useCallback(
-    (id, updates) => onChange(items.map((i) => (i.id === id ? { ...i, ...updates } : i))),
-    [items, onChange]
+    (id, updates) => {
+      const updated = sortedItems.map((i) =>
+        i.id === id ? { ...i, ...updates } : i
+      );
+      onChange(updated.sort(sortByDateDesc));
+    },
+    [sortedItems, onChange]
   );
 
   const removeItem = useCallback(
-    (id) => onChange(items.filter((i) => i.id !== id)),
-    [items, onChange]
+    (id) => {
+      onChange(sortedItems.filter((i) => i.id !== id));
+    },
+    [sortedItems, onChange]
   );
 
-  const value = useMemo(() => ({ items, addItem, updateItem, removeItem }), [items, addItem, updateItem, removeItem]);
+  const value = useMemo(
+    () => ({ items: sortedItems, addItem, updateItem, removeItem }),
+    [sortedItems, addItem, updateItem, removeItem]
+  );
 
-  return <ListBoxContext.Provider value={value}>{children}</ListBoxContext.Provider>;
+  return (
+    <ListBoxContext.Provider value={value}>
+      {children}
+    </ListBoxContext.Provider>
+  );
 }

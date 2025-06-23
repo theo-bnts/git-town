@@ -7,7 +7,7 @@ import getEmailAddress from '@/app/services/api/users/emailAddress/getEmailAddre
 import postTemporaryCode from '@/app/services/api/users/id/temporaryCode/postTemporaryCode';
 
 import { isEmailValid } from '@/app/services/validators';
-import { setCookie }  from '@/app/services/cookies';
+import { setCookie } from '@/app/services/cookies';
 
 import { textStyles } from '@/app/styles/tailwindStyles';
 
