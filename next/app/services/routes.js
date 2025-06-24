@@ -66,6 +66,9 @@ export const templateMilestonesRoute = (tplId) =>
 export const templateMilestoneRoute  = (tplId, msId) =>
   `${process.env.NEXT_PUBLIC_API_URL}/templates/${tplId}/milestones/${msId}`;
 
+export const repositoryStatisticsRoute = (repositoryId) =>
+  `${process.env.NEXT_PUBLIC_API_URL}/repositories/${repositoryId}/statistics`;
+
 export const repositoriesRoute = () =>
   `${process.env.NEXT_PUBLIC_API_URL}/repositories`;
 

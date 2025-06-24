@@ -12,7 +12,7 @@ export default function TableHeader({ columns, onSort, sortColumn, sortOrder }) 
   const sortButtonWrapperClasses = "ml-1 flex items-center transition-colors duration-300";
 
   return (
-    <thead className="sticky top-0 bg-white shadow">
+    <thead className="sticky top-0 bg-white shadow z-10">
       <tr className="border-b border-gray-300">
         {columns.map(col => {
           const isSelected = sortColumn === col.key;

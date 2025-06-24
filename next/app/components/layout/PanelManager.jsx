@@ -68,7 +68,7 @@ export default function PanelManager({ fullName, role }) {
           </div>
         )}
 
-        <main className="flex-1 overflow-hidden flex flex-col">
+        <main className="flex-1 overflow-hidden flex flex-col pt-2 pl-2">
           {ActivePanelComponent && <ActivePanelComponent />}
         </main>
       </div>

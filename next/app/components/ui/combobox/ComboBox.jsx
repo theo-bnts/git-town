@@ -168,80 +168,82 @@ export default function ComboBox({
   );
 
   return (
-    <div
-      ref={comboBoxRef}
-      className={
-        selectedOption 
-        ? comboboxStyles.selected 
-        : comboboxStyles.default
-      }
-    >
-      <div className="flex items-center">
-        <Input
-          ref={inputRef}
-          variant={selectedOption ? 'selected' : 'default'}
-          value={searchTerm}
-          onChange={handleSearchChange}
-          onFocus={handleOpenPopover}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          leftIcon={
-            <SearchIcon
-              size={16}
-              className={
-                selectedOption 
-                ? textStyles.default 
-                : textStyles.hint
-              }
-            />
-          }
-        />
-
-        <Button
-          type="button"
-          variant={
-            selectedOption 
-            ? 'popover_selected_sq' 
-            : 'popover_default_sq'
-          }
-          onClick={(e) => {
-            e.preventDefault();
-            if (selectedOption) {
-              clearSelection();
-            } else {
-              setIsOpen((prev) => {
-                const newState = !prev;
-                if (newState) {
-                  setTimeout(() => {
-                    inputRef.current?.focus();
-                    handleOpenPopover();
-                  }, 0);
+    <div className="relative w-full min-w-0">
+      <div
+        ref={comboBoxRef}
+        className={
+          selectedOption 
+          ? comboboxStyles.selected 
+          : comboboxStyles.default
+        }
+      >
+        <div className="flex items-center">
+          <Input
+            ref={inputRef}
+            variant={selectedOption ? 'selected' : 'default'}
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onFocus={handleOpenPopover}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            leftIcon={
+              <SearchIcon
+                size={16}
+                className={
+                  selectedOption 
+                  ? textStyles.default 
+                  : textStyles.hint
                 }
-                return newState;
-              });
+              />
             }
-          }}
-        >
-          {selectedOption ? (
-            <XIcon size={16} className={textStyles.defaultWhite} />
-          ) : isOpen ? (
-            <ChevronUpIcon size={16} className={textStyles.defaultWhite} />
-          ) : (
-            <ChevronDownIcon size={16} className={textStyles.defaultWhite} />
-          )}
-        </Button>
-      </div>
+          />
 
-      <ComboBoxPopover
-        isOpen={isOpen}
-        options={displayedOptions}
-        onSelect={handleSelect}
-        searchTerm={searchTerm}
-        highlightedIndex={highlightedIndex}
-        selectedOption={selectedOption}
-        loadMore={loadMore}
-        maxVisible={maxVisible}
-      />
+          <Button
+            type="button"
+            variant={
+              selectedOption 
+              ? 'popover_selected_sq' 
+              : 'popover_default_sq'
+            }
+            onClick={(e) => {
+              e.preventDefault();
+              if (selectedOption) {
+                clearSelection();
+              } else {
+                setIsOpen((prev) => {
+                  const newState = !prev;
+                  if (newState) {
+                    setTimeout(() => {
+                      inputRef.current?.focus();
+                      handleOpenPopover();
+                    }, 0);
+                  }
+                  return newState;
+                });
+              }
+            }}
+          >
+            {selectedOption ? (
+              <XIcon size={16} className={textStyles.defaultWhite} />
+            ) : isOpen ? (
+              <ChevronUpIcon size={16} className={textStyles.defaultWhite} />
+            ) : (
+              <ChevronDownIcon size={16} className={textStyles.defaultWhite} />
+            )}
+          </Button>
+        </div>
+
+        <ComboBoxPopover
+          isOpen={isOpen}
+          options={displayedOptions}
+          onSelect={handleSelect}
+          searchTerm={searchTerm}
+          highlightedIndex={highlightedIndex}
+          selectedOption={selectedOption}
+          loadMore={loadMore}
+          maxVisible={maxVisible}
+        />
+      </div>
     </div>
   );
 }

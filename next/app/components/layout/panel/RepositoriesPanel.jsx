@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { UploadIcon, DashIcon, CheckIcon, PencilIcon, ArchiveIcon, DuplicateIcon, CommentIcon, FileZipIcon, MarkGithubIcon } from '@primer/octicons-react';
+import { UploadIcon, GraphIcon, DashIcon, CheckIcon, PencilIcon, ArchiveIcon, DuplicateIcon, CommentIcon, FileZipIcon, MarkGithubIcon } from '@primer/octicons-react';
 
 import Button from '@/app/components/ui/Button';
 import CrudPanel from './CrudPanel';
+import { NotificationCard } from '@/app/components/ui/NotificationCard';
 import ConfirmCard from '@/app/components/ui/ConfirmCard';
 
 import getRepositories from '@/app/services/api/repositories/getRepositories';
@@ -13,6 +14,7 @@ import getUsersRepository from '@/app/services/api/repositories/id/getUsersRepos
 
 import RepositoryModal from '@/app/components/layout/forms/modal/RepositoryModal';
 import ImportRepositoriesModal from '@/app/components/layout/forms/modal/importRepositoriesModal';
+import RepositoryStatsModal from '@/app/components/ui/modal/statistics/RepositoryStatsModal';
 
 import { getCookie } from '@/app/services/cookies';
 import { useNotification } from '@/app/context/NotificationContext';
@@ -62,9 +64,31 @@ const mapRepositoryToRow = (repo) => ({
 export default function RepositoriesPanel() {
   const [importOpen, setImportOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+  const [selectedRepoId, setSelectedRepoId] = useState(null);
+  const [statsErrorMessage, setStatsErrorMessage] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toArchive, setToArchive] = useState(null);
   const notify = useNotification();
+  
+  const handleOpenStats = (repoId) => {
+    setSelectedRepoId(repoId);
+    setStatsModalOpen(true);
+    setStatsErrorMessage(null);
+  };
+
+  const handleCloseStatsModal = () => {
+    setStatsModalOpen(false);
+    setSelectedRepoId(null);
+  };
+
+  const handleStatsError = (message) => {
+    setStatsErrorMessage(message);
+  };
+
+  const clearStatsErrorMessage = () => {
+    setStatsErrorMessage(null);
+  };
 
   const importBtn = (
     <Button key="import" variant="default_sq" onClick={() => setImportOpen(true)}>
@@ -104,10 +128,21 @@ export default function RepositoriesPanel() {
       onClick: () => window.open(`https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}`, '_blank'),
       variant: 'action_sq',
     },
+    {
+      icon: <GraphIcon size={16} />,
+      onClick: () => handleOpenStats(row.raw.Id),
+      variant: 'action_sq',
+    },
   ];
 
   return (
     <>
+      <NotificationCard 
+        message={statsErrorMessage}
+        type="warn"
+        onClear={clearStatsErrorMessage}
+      />
+      
       <CrudPanel
         key={refreshKey}
         columns={columns}
@@ -150,6 +185,15 @@ export default function RepositoriesPanel() {
             }
           }}
           onCancel={() => setConfirmOpen(false)}
+        />
+      )}
+      
+      {statsModalOpen && selectedRepoId && (
+        <RepositoryStatsModal
+          isOpen={statsModalOpen}
+          onClose={handleCloseStatsModal}
+          repositoryId={selectedRepoId}
+          onError={handleStatsError}
         />
       )}
     </>

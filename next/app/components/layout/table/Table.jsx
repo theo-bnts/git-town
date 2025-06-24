@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { normalizeString } from '@/app/utils/stringUtils';
 import ComboBox from '@/app/components/ui/combobox/ComboBox';
@@ -6,32 +7,35 @@ import EmptyTableCard from '@/app/components/layout/table/EmptyTableCard';
 import TableHeader from '@/app/components/layout/table/TableHeader';
 import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
+import { filterData, extractUniqueFilterValues } from '@/app/utils/filterUtils';
 
-export default function Table({ columns, data, toolbarContents }) {
-  const [visible, setVisible] = useState(0);
-  const [sortCol, setSortCol] = useState(null);
+export default function Table({ columns, data, toolbarContents, showFilters = true }) {
+  const firstSortableColumn = useMemo(() => {
+    const firstCol = columns.find(col => col.key !== 'actions' && col.sortable !== false);
+    return firstCol ? firstCol.key : null;
+  }, [columns]);
+
+  const [sortCol, setSortCol] = useState(firstSortableColumn);
   const [order, setOrder] = useState('asc');
   const [filters, setFilters] = useState({});
+  const [searchTerms, setSearchTerms] = useState({});
+  const [visible, setVisible] = useState(0);
   const ref = useRef(null);
   const sent = useRef(null);
   const rowH = 50;
 
   const filtered = useMemo(() => {
-    let d = data.filter((r) =>
-      Object.entries(filters).every(([k, f]) => {
-        if (!f) return true;
-        const c = r[k];
-        if (!c) return false;
-        if (typeof c === 'string')
-          return normalizeString(c).includes(normalizeString(f));
-        return false;
-      }),
-    );
-    if (sortCol)
-      d.sort((a, b) =>
-        order === 'asc' ? (a[sortCol] > b[sortCol] ? 1 : -1) : a[sortCol] < b[sortCol] ? 1 : -1,
-      );
-    return d;
+    let filteredData = filterData(data, filters);
+    
+    if (sortCol) {
+      filteredData.sort((a, b) => {
+        const valA = a[sortCol] || '';
+        const valB = b[sortCol] || '';
+        return order === 'asc' ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
+      });
+    }
+    
+    return filteredData;
   }, [data, filters, sortCol, order]);
 
   const load = () => {
@@ -58,40 +62,41 @@ export default function Table({ columns, data, toolbarContents }) {
     setSortCol(k);
     setOrder(sortCol === k && order === 'asc' ? 'desc' : 'asc');
   };
+
   const onFilter = (k, v) => {
-    setFilters((p) => ({ ...p, [k]: v }));
+    setFilters((prev) => ({ ...prev, [k]: v }));
+    
     if (ref.current) setVisible(Math.ceil(ref.current.clientHeight / rowH));
   };
 
+  const onSearch = (k, v) => {
+    setSearchTerms((prev) => ({ ...prev, [k]: v }));
+    onFilter(k, v);
+  };
+
   const filtersUI = columns
-    .filter((c) => c.key !== 'actions')
+    .filter((c) => c.key !== 'actions' && c.sortable !== false)
     .map((c) => {
-      const vals = data.reduce((a, r) => {
-        const cell = r[c.key];
-        if (!cell) return a;
-        if (typeof cell === 'string') {
-          return a.concat(
-            cell
-              .split(/[,\;\/]+/)
-              .map((t) => t.trim())
-              .filter(Boolean),
-          );
-        }
-        if (Array.isArray(cell) && cell.every((v) => typeof v === 'string'))
-          return a.concat(cell);
-        return a;
-      }, []);
-      const uniq = [...new Set(vals)];
-      const opts = uniq.map((v) => ({ id: v, value: v }));
+      const uniqueValues = extractUniqueFilterValues(data, c.key);
+      const searchTerm = searchTerms[c.key] || '';
+      
+      const filteredOptions = uniqueValues
+        .filter(val => {
+          if (!searchTerm) return true;
+          return normalizeString(String(val)).includes(normalizeString(searchTerm));
+        })
+        .map((v) => ({ id: v, value: v }));
+      
       const sel = filters[c.key] || '';
+      
       return (
         <ComboBox
           key={c.key}
           placeholder={c.title}
-          options={opts}
+          options={filteredOptions}
           value={sel ? { id: sel, value: sel } : null}
           onSelect={(o) => onFilter(c.key, o ? o.value : '')}
-          onInputChange={(v) => onFilter(c.key, v)}
+          onInputChange={(v) => onSearch(c.key, v)}
         />
       );
     });
@@ -99,14 +104,22 @@ export default function Table({ columns, data, toolbarContents }) {
   return (
     <>
       <TableToolbar>
-        <div className="flex flex-col gap-4 md:flex-row md:items-center">
-          <div className="flex items-center gap-4">{toolbarContents}</div>
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">{filtersUI}</div>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center w-full">
+          <div className="flex items-center gap-4 flex-shrink-0">{toolbarContents}</div>
+          {showFilters && (
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 flex-1 min-w-0">
+              {filtersUI}
+            </div>
+          )}
         </div>
       </TableToolbar>
-      <div ref={ref} className="overflow-x-auto overflow-y-auto w-full h-full">
-        <table>
-          <TableHeader columns={columns} onSort={onSort} sortColumn={sortCol} sortOrder={order} />
+      <div ref={ref} className="overflow-x-auto overflow-y-auto w-full h-full relative">
+        <table className="w-full">
+          <TableHeader 
+            columns={columns} 
+            onSort={onSort} 
+            sortColumn={sortCol} 
+            sortOrder={order} />
           <tbody>
             {filtered.length ? (
               <>

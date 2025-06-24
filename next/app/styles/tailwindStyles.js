@@ -7,7 +7,11 @@ const textStyles = {
   hint: `text-[var(--hint-color)]`,
   warn: `text-[var(--warn-color)]`,
   selected: `text-[var(--accent-color)]`,
-  url: `underline underline-offset-4 decoration-dotted decoration-gray-400 transition-transform duration-200 hover:scale-105 hover:text-[var(--accent-color)]`
+  url: `underline underline-offset-4 decoration-dotted decoration-gray-400 transition-transform duration-200 hover:scale-105 hover:text-[var(--accent-color)]`,
+  sectionTitle: "text-lg font-bold leading-none",
+  subtle: "text-center text-sm text-gray-600",
+  verySubtle: "text-center text-xs text-gray-500",
+  warning: "text-sm text-yellow-700"
 };
 
 const buttonStyles = {
@@ -39,6 +43,8 @@ const cardStyles = {
   warn: `bg-[var(--warn-color)] p-4 rounded-[12.5px] shadow-lg text-[var(--primary-color)]`,
   empty_list: `bg-[var(--primary-color)] p-2 rounded-[12.5px] border border-[var(--primary-color)]`,
   success: `bg-[var(--accent-color)] p-4 rounded-[12.5px] shadow-lg text-[var(--primary-color)]`,
+  empty: "bg-gray-50 p-4 rounded-lg text-center",
+  contributionCard: "rounded-lg border border-gray-200 bg-white p-4 shadow-sm",
 };
 
 const inputStyles = {
@@ -61,4 +67,37 @@ const listboxStyles = {
   default: `border-[1px] border-[var(--accent-color)] p-2 rounded-[12.5px] focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]`,
 };
 
-export { buttonStyles, cardStyles, comboboxStyles, inputStyles, listboxStyles, spinnerStyles, textStyles };
+const tagStyles = {
+  default: 'px-2 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-800',
+  success: 'px-2 py-1 text-xs font-medium rounded-md bg-green-100 text-green-800',
+  warning: 'px-2 py-1 text-xs font-medium rounded-md bg-yellow-100 text-yellow-800',
+  danger: 'px-2 py-1 text-xs font-medium rounded-md bg-red-100 text-red-800',
+  info: 'px-2 py-1 text-xs font-medium rounded-md bg-blue-100 text-blue-800',
+  accent: 'px-2 py-1 text-xs font-medium rounded-md bg-[var(--accent-color-light)] text-[var(--accent-color-dark)]',
+  selected: 'px-2 py-1 text-xs font-medium rounded-md bg-[rgba(86,86,228,0.15)] text-[var(--selected-color)]',
+};
+
+const modalStyles = {
+  overlay: "fixed inset-0 bg-[var(--popup-color)] flex items-center justify-center z-50 overflow-hidden",
+  container: "w-full h-full overflow-y-auto py-6 lg:py-8 2xl:py-4",
+  content: "w-full max-w-[95vw] 2xl:max-w-[75vw] mx-auto px-2 lg:px-4",
+  grid: "grid grid-cols-1 xl:grid-cols-2 gap-4 xl:gap-6",
+  fullWidth: "w-full"
+};
+
+const tooltipStyles = {
+  default: `bg-white border border-gray-200 shadow-sm p-2 rounded-md`,
+};
+
+export { 
+  buttonStyles, 
+  cardStyles, 
+  comboboxStyles, 
+  inputStyles, 
+  listboxStyles, 
+  spinnerStyles, 
+  textStyles,
+  modalStyles,
+  tagStyles,
+  tooltipStyles 
+ };

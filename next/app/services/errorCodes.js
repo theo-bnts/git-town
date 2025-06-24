@@ -3,6 +3,8 @@ export const API_ERRORS = {
     FST_ERR_CTP_EMPTY_JSON_BODY: '(400) : Corps de la requête vide.',
     INVALID_REPOSITORY_ID: '(400) : Identifiant de dépôt invalide.',
     INVALID_STATISTICS_PARAMS: '(400) : Paramètres de statistiques invalides.',
+    INVALID_REPOSITORY_ID: '(400) : Identifiant de dépôt invalide.',
+    INVALID_STATISTICS_PARAMS: '(400) : Paramètres de statistiques invalides.',
     default: '(400) : Requête incorrecte.',
   },
   401: {
@@ -16,12 +18,15 @@ export const API_ERRORS = {
   403: {
     INSUFFICIENT_PERMISSIONS: '(403) : Permissions insuffisantes.',
     USER_ID_MISMATCH: '(403) : L\'identifiant utilisateur ne correspond pas.',
+    USER_ID_MISMATCH: '(403) : L\'identifiant utilisateur ne correspond pas.',
     SELF: '(403) : Vous ne pouvez pas vous supprimer.',
     SELF_ROLE: '(403) : Modification de votre propre rôle non autorisée.',
+    NOT_REPOSITORY_MEMBER: '(403) : Vous n\'êtes pas membre de ce dépôt.',
     NOT_REPOSITORY_MEMBER: '(403) : Vous n\'êtes pas membre de ce dépôt.',
     default: '(403) : Accès refusé.',
   },
   404: {
+    UNKNOWN_ENSEIGNMENT_UNIT_ID: '(404) : Unité d\'enseignement inconnue.',
     UNKNOWN_ENSEIGNMENT_UNIT_ID: '(404) : Unité d\'enseignement inconnue.',
     UNKNOWN_MILESTONE_ID: '(404) : Jalon inconnu.',
     UNKNOWN_USER_ID: '(404) : Utilisateur inconnu.',
@@ -66,11 +71,18 @@ export const API_ERRORS = {
     ARCHIVED: '(423) : Le dépôt est archivé et ne peut pas être modifié.',
     default: '(423) : Ressource verrouillée.',
   },
+  423: {
+    ARCHIVED: '(423) : Le dépôt est archivé et ne peut pas être consulté.',
+    default: '(423) : Ressource verrouillée.',
+  },
   429: {
     RATE_LIMIT_EXCEEDED: '(429) : Trop de requêtes. Veuillez réessayer plus tard.',
     default: '(429) : Trop de requêtes.',
   },
   500: {
     default: '(500) : Erreur interne du serveur contactez l\'administrateur.',
+  },
+  504: {
+    default: '(504) : Délai d\'attente dépassé.',
   },
 };
