@@ -14,6 +14,7 @@ import getUsersRepository from '@/app/services/api/repositories/id/getUsersRepos
 
 import RepositoryModal from '@/app/components/layout/forms/modal/RepositoryModal';
 import ImportRepositoriesModal from '@/app/components/layout/forms/modal/importRepositoriesModal';
+import CommentModal from '@/app/components/layout/forms/modal/CommentModal';
 import RepositoryStatsModal from '@/app/components/ui/modal/statistics/RepositoryStatsModal';
 
 import { getCookie } from '@/app/services/cookies';
@@ -66,6 +67,8 @@ export default function RepositoriesPanel() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [statsModalOpen, setStatsModalOpen] = useState(false);
   const [selectedRepoId, setSelectedRepoId] = useState(null);
+  const [commentOpen, setCommentOpen] = useState(false);
+  const [commentRepoId, setCommentRepoId] = useState(null);
   const [statsErrorMessage, setStatsErrorMessage] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toArchive, setToArchive] = useState(null);
@@ -115,7 +118,7 @@ export default function RepositoriesPanel() {
     },
     {
       icon: <CommentIcon size={16} />,
-      onClick: () => console.log('Comment repo:', row.raw),
+      onClick: () => { setCommentRepoId(row.raw.Id); setCommentOpen(true); },
       variant: 'action_sq',
     },
     {
@@ -194,6 +197,15 @@ export default function RepositoriesPanel() {
           onClose={handleCloseStatsModal}
           repositoryId={selectedRepoId}
           onError={handleStatsError}
+        />
+      )}
+
+      {commentOpen && commentRepoId && (
+        <CommentModal
+          isOpen={commentOpen}
+          repositoryId={commentRepoId}
+          onClose={() => setCommentOpen(false)}
+          onSave={() => setRefreshKey((k) => k + 1)}
         />
       )}
     </>
