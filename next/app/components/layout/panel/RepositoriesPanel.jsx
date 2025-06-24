@@ -5,7 +5,7 @@ import { UploadIcon, GraphIcon, DashIcon, CheckIcon, PencilIcon, ArchiveIcon, Du
 
 import Button from '@/app/components/ui/Button';
 import CrudPanel from './CrudPanel';
-import { NotificationCard } from '@/app/components/ui/modal/NotificationCard';
+import { NotificationCard } from '@/app/components/ui/NotificationCard';
 import ConfirmCard from '@/app/components/ui/ConfirmCard';
 
 import getRepositories from '@/app/services/api/repositories/getRepositories';
@@ -128,6 +128,11 @@ export default function RepositoriesPanel() {
       onClick: () => window.open(`https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}`, '_blank'),
       variant: 'action_sq',
     },
+    {
+      icon: <GraphIcon size={16} />,
+      onClick: () => handleOpenStats(row.raw.Id),
+      variant: 'action_sq',
+    },
   ];
 
   return (
@@ -144,7 +149,6 @@ export default function RepositoriesPanel() {
         fetchFn={fetchRepositoriesWithStudents}
         mapToRow={mapRepositoryToRow}
         ModalComponent={RepositoryModal}
-        customActions={customActions}
         modalProps={{
           confirmMessage: (repo) => (
             <>Voulez-vous vraiment supprimer le dépôt <strong>{`${repo.Template?.EnseignementUnit?.Initialism} ${repo.Template?.Year}`}</strong>&nbsp;?</>

@@ -17,7 +17,6 @@ export default function CrudPanel({
   modalProps = {},
   actions = () => [],
   toolbarButtons = [],
-  customActions,
 }) {
   const { data, loading, refresh, remove } = useCrudData({ fetchFn, deleteFn, mapToRow });
 

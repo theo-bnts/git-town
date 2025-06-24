@@ -9,7 +9,7 @@ import TableRow from '@/app/components/layout/table/TableRow';
 import TableToolbar from '@/app/components/layout/table/TableToolbar';
 import { filterData, extractUniqueFilterValues } from '@/app/utils/filterUtils';
 
-export default function Table({ columns, data, toolbarContents }) {
+export default function Table({ columns, data, toolbarContents, showFilters = true }) {
   const firstSortableColumn = useMemo(() => {
     const firstCol = columns.find(col => col.key !== 'actions' && col.sortable !== false);
     return firstCol ? firstCol.key : null;
@@ -42,18 +42,12 @@ export default function Table({ columns, data, toolbarContents }) {
     if (ref.current) {
       const h = ref.current.clientHeight;
       setVisible((p) => Math.min(filtered.length, p + Math.ceil(h / rowH)));
-  const load = () => {
-    if (ref.current) {
-      const h = ref.current.clientHeight;
-      setVisible((p) => Math.min(filtered.length, p + Math.ceil(h / rowH)));
     }
   };
 
   useEffect(() => {
     if (ref.current) setVisible(Math.ceil(ref.current.clientHeight / rowH));
   }, [ref, filtered]);
-    if (ref.current) setVisible(Math.ceil(ref.current.clientHeight / rowH));
-  }, [ref, filtered]);
 
   useEffect(() => {
     const obs = new IntersectionObserver((e) => e[0].isIntersecting && load(), {
@@ -63,17 +57,7 @@ export default function Table({ columns, data, toolbarContents }) {
     if (sent.current) obs.observe(sent.current);
     return () => obs.disconnect();
   }, [sent, filtered, visible]);
-    const obs = new IntersectionObserver((e) => e[0].isIntersecting && load(), {
-      threshold: 0.1,
-      rootMargin: '0px 0px 20px 0px',
-    });
-    if (sent.current) obs.observe(sent.current);
-    return () => obs.disconnect();
-  }, [sent, filtered, visible]);
 
-  const onSort = (k) => {
-    setSortCol(k);
-    setOrder(sortCol === k && order === 'asc' ? 'desc' : 'asc');
   const onSort = (k) => {
     setSortCol(k);
     setOrder(sortCol === k && order === 'asc' ? 'desc' : 'asc');
@@ -120,17 +104,17 @@ export default function Table({ columns, data, toolbarContents }) {
   return (
     <>
       <TableToolbar>
-        <div className="flex flex-col gap-4 md:flex-row md:items-center">
-          <div className="flex items-center gap-4">{toolbarContents}</div>
-          <div className="grid gap-4 
-            grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filtersUI}
-          </div>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center w-full">
+          <div className="flex items-center gap-4 flex-shrink-0">{toolbarContents}</div>
+          {showFilters && (
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 flex-1 min-w-0">
+              {filtersUI}
+            </div>
+          )}
         </div>
       </TableToolbar>
-      <div ref={ref} className="overflow-x-auto overflow-y-auto w-full h-full">
-      <div ref={ref} className="overflow-x-auto overflow-y-auto w-full h-full">
-        <table>
+      <div ref={ref} className="overflow-x-auto overflow-y-auto w-full h-full relative">
+        <table className="w-full">
           <TableHeader 
             columns={columns} 
             onSort={onSort} 
@@ -138,14 +122,10 @@ export default function Table({ columns, data, toolbarContents }) {
             sortOrder={order} />
           <tbody>
             {filtered.length ? (
-            {filtered.length ? (
               <>
                 {filtered.slice(0, visible).map((r, i) => (
                   <TableRow key={i} rowData={r} columns={columns} />
-                {filtered.slice(0, visible).map((r, i) => (
-                  <TableRow key={i} rowData={r} columns={columns} />
                 ))}
-                <tr ref={sent}>
                 <tr ref={sent}>
                   <td colSpan={columns.length} />
                 </tr>

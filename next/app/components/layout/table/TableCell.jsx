@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-
 import { textStyles } from '@/app/styles/tailwindStyles';
 import Button from '@/app/components/ui/Button';
 
@@ -9,7 +8,7 @@ export default function TableCell({ value, columnKey }) {
   const baseClasses = "py-4 px-6 border-b border-gray-200";
   const contentClasses = "min-h-[32px] flex items-center text-left";
   const isActionColumn = columnKey === 'actions';
-  const tdClasses = `${baseClasses} ${isActionColumn ? 'whitespace-nowrap' : 'min-w-[150px]'}`;
+  const tdClasses = `${baseClasses} ${isActionColumn ? 'whitespace-nowrap relative' : 'min-w-[150px]'}`;
   const isArray = Array.isArray(value);
   const isTextArray = isArray && value.every(item => typeof item === 'string');
 
@@ -19,16 +18,16 @@ export default function TableCell({ value, columnKey }) {
         className={
           isArray
             ? isTextArray
-              ? `${baseClasses} ${isActionColumn ? 'whitespace-nowrap' : 'min-w-[150px]'}`
-              : `${baseClasses} whitespace-nowrap`
+              ? `${baseClasses} ${isActionColumn ? 'whitespace-nowrap relative' : 'min-w-[150px]'}`
+              : `${baseClasses} whitespace-nowrap relative`
             : tdClasses
         }
       >
         <div
           className={
             `${contentClasses} ${
-              isArray && isTextArray && isActionColumn ? 'whitespace-nowrap' : ''
-            }`
+              isArray && !isTextArray ? 'z-5 relative' : ''
+            } ${isActionColumn ? 'z-5 relative' : ''}`
           }
         >
           {isArray ? (

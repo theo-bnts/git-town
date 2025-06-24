@@ -78,6 +78,7 @@ export default function ContributionsTable({ userStats = [], teamStats }) {
         columns={columns} 
         data={tableData}
         toolbarContents={null}
+        showFilters={false}
       />
     </div>
   );
