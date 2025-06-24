@@ -101,6 +101,10 @@ export default function Table({ columns, data, toolbarContents, showFilters = tr
       );
     });
 
+  const hasActiveFilters = useMemo(() => {
+    return Object.values(filters).some(value => value !== '');
+  }, [filters]);
+
   return (
     <>
       <TableToolbar>
@@ -133,7 +137,13 @@ export default function Table({ columns, data, toolbarContents, showFilters = tr
             ) : (
               <tr>
                 <td colSpan={columns.length}>
-                  <EmptyTableCard />
+                  <EmptyTableCard 
+                    message={
+                      hasActiveFilters
+                        ? "Aucun résultat ne correspond aux critères de recherche"
+                        : "Aucune donnée disponible"
+                    }
+                  />
                 </td>
               </tr>
             )}

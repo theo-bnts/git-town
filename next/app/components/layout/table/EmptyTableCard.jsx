@@ -1,9 +1,15 @@
 'use client';
 
 import React from 'react';
+import Card from '@/app/components/ui/Card';
+import { textStyles } from '@/app/styles/tailwindStyles';
 
 export default function EmptyTableCard ({message = 'Aucune donnée disponible'}) {
-  <div className="flex items-center justify-center p-6 border border-gray-200 rounded-lg bg-white shadow-md">
-    <p className="text-gray-600 text-center">{message}</p>
-  </div>
+  return (
+    <div className="my-6">
+      <Card variant="empty">
+        <p className={textStyles.subtle}>{message}</p>
+      </Card>
+    </div>
+  );
 }
