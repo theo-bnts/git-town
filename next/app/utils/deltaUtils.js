@@ -17,39 +17,44 @@ export function calculateDelta(additions, deletions) {
  * Qualifie un delta selon sa valeur
  */
 export function deltaQualifier(delta) {
-  if (delta >= 0.8) {
+  if (delta > 0.8) {
+    return {
+      label: "Ajout majeur",
+      class: "text-yellow-600"
+    };
+  } else if (delta >= 0.5) {
     return {
       label: "Développement intensif",
       class: "text-green-700"
     };
   } else if (delta >= 0.3) {
     return {
-      label: "Plus d'ajouts",
+      label: "Développement régulier",
       class: "text-green-600"
     };
   } else if (delta >= 0.1) {
     return {
-      label: "Légèrement positif",
+      label: "Développement modéré",
       class: "text-green-500" 
     };
   } else if (delta >= -0.1) {
     return {
-      label: "Équilibré",
+      label: "Développement stable",
       class: "text-gray-500"
     };
   } else if (delta >= -0.3) {
     return {
-      label: "Légèrement négatif",
+      label: "Revue de code",
       class: "text-orange-500"
     };
   } else if (delta >= -0.8) {
     return {
-      label: "Plus de suppressions",
+      label: "Refactorisation mineure",
       class: "text-orange-600"
     };
   } else {
     return {
-      label: "Refactoring majeur",
+      label: "Refactorisation majeure",
       class: "text-red-700"
     };
   }
