@@ -48,6 +48,10 @@ export default async function route(app) {
 
       const repository = await Repository.fromId(repositoryId);
 
+      if (repository.ArchivedAt !== null) {
+        throw { statusCode: 423, error: 'ARCHIVED' };
+      }
+
       repository.Comment = comment;
 
       await repository.update();
