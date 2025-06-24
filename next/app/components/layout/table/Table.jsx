@@ -42,10 +42,16 @@ export default function Table({ columns, data, toolbarContents }) {
     if (ref.current) {
       const h = ref.current.clientHeight;
       setVisible((p) => Math.min(filtered.length, p + Math.ceil(h / rowH)));
+  const load = () => {
+    if (ref.current) {
+      const h = ref.current.clientHeight;
+      setVisible((p) => Math.min(filtered.length, p + Math.ceil(h / rowH)));
     }
   };
 
   useEffect(() => {
+    if (ref.current) setVisible(Math.ceil(ref.current.clientHeight / rowH));
+  }, [ref, filtered]);
     if (ref.current) setVisible(Math.ceil(ref.current.clientHeight / rowH));
   }, [ref, filtered]);
 
@@ -57,7 +63,17 @@ export default function Table({ columns, data, toolbarContents }) {
     if (sent.current) obs.observe(sent.current);
     return () => obs.disconnect();
   }, [sent, filtered, visible]);
+    const obs = new IntersectionObserver((e) => e[0].isIntersecting && load(), {
+      threshold: 0.1,
+      rootMargin: '0px 0px 20px 0px',
+    });
+    if (sent.current) obs.observe(sent.current);
+    return () => obs.disconnect();
+  }, [sent, filtered, visible]);
 
+  const onSort = (k) => {
+    setSortCol(k);
+    setOrder(sortCol === k && order === 'asc' ? 'desc' : 'asc');
   const onSort = (k) => {
     setSortCol(k);
     setOrder(sortCol === k && order === 'asc' ? 'desc' : 'asc');
@@ -113,6 +129,7 @@ export default function Table({ columns, data, toolbarContents }) {
         </div>
       </TableToolbar>
       <div ref={ref} className="overflow-x-auto overflow-y-auto w-full h-full">
+      <div ref={ref} className="overflow-x-auto overflow-y-auto w-full h-full">
         <table>
           <TableHeader 
             columns={columns} 
@@ -121,10 +138,14 @@ export default function Table({ columns, data, toolbarContents }) {
             sortOrder={order} />
           <tbody>
             {filtered.length ? (
+            {filtered.length ? (
               <>
                 {filtered.slice(0, visible).map((r, i) => (
                   <TableRow key={i} rowData={r} columns={columns} />
+                {filtered.slice(0, visible).map((r, i) => (
+                  <TableRow key={i} rowData={r} columns={columns} />
                 ))}
+                <tr ref={sent}>
                 <tr ref={sent}>
                   <td colSpan={columns.length} />
                 </tr>

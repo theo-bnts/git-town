@@ -49,8 +49,12 @@ export default async function route(app) {
 
       const repositories = await Repository.fromTemplate(template);
 
+      const nonArchivedRepositories = repositories.filter((repository) => (
+        repository.ArchivedAt === null
+      ));
+
       await Promise.all(
-        repositories.map(async (repository) => {
+        nonArchivedRepositories.map(async (repository) => {
           const gitHubMilestones = await GitHubApp.EnvironmentInstance.Milestones.get(
             repository.Id,
           );

@@ -75,6 +75,9 @@ export const repositoriesRoute = () =>
 export const repositoryRoute = (repoId) =>
   `${process.env.NEXT_PUBLIC_API_URL}/repositories/${repoId}`;
 
+export const repositoryArchiveRoute = (repoId) =>
+  `${process.env.NEXT_PUBLIC_API_URL}/repositories/${repoId}/archive`;
+
 export const repositoryUsersRoute = (repoId) =>
   `${process.env.NEXT_PUBLIC_API_URL}/repositories/${repoId}/users`;
 

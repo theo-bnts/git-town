@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { textStyles } from '@/app/styles/tailwindStyles';
-
 import Button from '@/app/components/ui/Button';
 
 export default function TableCell({ value, columnKey }) {
@@ -44,7 +43,8 @@ export default function TableCell({ value, columnKey }) {
                 <Button
                   key={index}
                   onClick={action.onClick}
-                  variant="action_sq"
+                  variant={action.variant}
+                  disabled={action.disabled}
                 >
                   {action.icon}
                 </Button>
@@ -61,4 +61,4 @@ export default function TableCell({ value, columnKey }) {
       </td>
     </>
   );
-};
+}

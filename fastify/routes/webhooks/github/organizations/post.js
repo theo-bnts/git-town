@@ -80,8 +80,12 @@ export default async function route(app) {
 
       if (user.GitHubOrganizationMember) {
         if (user.Role.Keyword === 'student') {
+          const nonArchivedUserRepositories = userRepositories.filter((userRepository) => (
+            userRepository.Repository.ArchivedAt === null
+          ));
+
           await Promise.all(
-            userRepositories.map(async (userRepository) => (
+            nonArchivedUserRepositories.map(async (userRepository) => (
               GitHubApp.EnvironmentInstance.Repositories.addMember(
                 userRepository.Repository.Id,
                 user.GitHubId,

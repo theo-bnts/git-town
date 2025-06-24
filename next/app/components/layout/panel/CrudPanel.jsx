@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { PencilIcon, TrashIcon, PlusIcon } from '@primer/octicons-react';
+import { useState } from 'react';
+import { PlusIcon } from '@primer/octicons-react';
 
 import Table from '@/app/components/layout/table/Table';
 import ConfirmCard from '@/app/components/ui/ConfirmCard';
@@ -15,78 +15,56 @@ export default function CrudPanel({
   mapToRow,
   ModalComponent,
   modalProps = {},
+  actions = () => [],
   toolbarButtons = [],
   customActions,
 }) {
   const { data, loading, refresh, remove } = useCrudData({ fetchFn, deleteFn, mapToRow });
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [toDelete, setToDelete] = useState(null);
 
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null);
-
-  const actionsFactory = (row) => {
-    const defaultActions = [
-      {
-        icon: <PencilIcon size={16} />,
-        onClick: () => {
-          setSelectedItem(row.raw);
-          setIsModalOpen(true);
-        },
-      },
-      {
-        icon: <TrashIcon size={16} />,
-        onClick: () => {
-          setItemToDelete(row.raw);
-          setIsConfirmOpen(true);
-        },
-      },
-    ];
-    
-    // Ajouter les actions personnalisées si elles existent
-    const additionalActions = customActions ? customActions(row) : [];
-    
-    return [...defaultActions, ...additionalActions];
+  const helpers = {
+    edit: (row) => { setSelected(row.raw); setModalOpen(true); },
+    del: (row) => { setToDelete(row.raw); setConfirmOpen(true); },
+    refresh,
+    remove: async (id) => { await remove(id); },
   };
+
+  const rows = loading
+    ? Array.from({ length: 3 }).map((_, i) => ({ skeleton: true, key: i }))
+    : data.map((r) => ({ ...r, actions: actions(r, helpers) }));
 
   return (
     <>
       <Table
         columns={[...columns, { key: 'actions', title: 'Actions', sortable: false }]}
-        data={
-          loading
-            ? Array.from({ length: 3 }).map((_, i) => ({ skeleton: true, key: `skele-${i}` }))
-            : data.map(row => ({ ...row, actions: actionsFactory(row) }))
-        }
+        data={rows}
         toolbarContents={
           <>
-            <Button variant="default_sq" onClick={() => { setSelectedItem(null); setIsModalOpen(true); }}>
+            <Button variant="default_sq" onClick={() => { setSelected(null); setModalOpen(true); }}>
               <PlusIcon size={24} className="text-white" />
             </Button>
             {toolbarButtons}
           </>
         }
       />
-
-      {isModalOpen && (
+      {modalOpen && (
         <ModalComponent
-          isOpen={isModalOpen}
-          initialData={selectedItem || {}}
-          onClose={() => setIsModalOpen(false)}
-          onSave={() => { refresh(); setIsModalOpen(false); }}
+          isOpen={modalOpen}
+          initialData={selected || {}}
+          onClose={() => { refresh(); setModalOpen(false); }}
+          onSave={() => { refresh(); setModalOpen(false); }}
           {...modalProps}
         />
       )}
-
-      {isConfirmOpen && (
+      {confirmOpen && (
         <ConfirmCard
-          message={modalProps.confirmMessage(itemToDelete)}
-          onConfirm={async () => {
-            await remove(itemToDelete.Id);
-            setIsConfirmOpen(false);
-          }}
-          onCancel={() => setIsConfirmOpen(false)}
+          message={modalProps.confirmMessage(toDelete)}
+          onConfirm={async () => { await helpers.remove(toDelete.Id); setConfirmOpen(false); }}
+          onCancel={() => setConfirmOpen(false)}
         />
       )}
     </>

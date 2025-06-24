@@ -54,12 +54,17 @@ export default async function route(app) {
         throw { statusCode: 409, error: 'UNKNOWN_TARGET_REPOSITORY_ID' };
       }
 
+      const targetRepository = await Repository.fromId(targetRepositoryId);
+
+      if (targetRepository.ArchivedAt !== null) {
+        throw { statusCode: 423, error: 'TARGET_IS_ARCHIVED' };
+      }
+
       if (sourceRepositoryId === targetRepositoryId) {
         throw { statusCode: 409, error: 'SAME_REPOSITORY_ID' };
       }
 
       const sourceRepository = await Repository.fromId(sourceRepositoryId);
-      const targetRepository = await Repository.fromId(targetRepositoryId);
 
       if (targetRepository.CreatedAt < sourceRepository.CreatedAt) {
         throw { statusCode: 409, error: 'TARGET_IS_OLDER' };

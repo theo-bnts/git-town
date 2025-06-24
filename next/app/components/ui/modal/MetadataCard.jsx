@@ -1,4 +1,3 @@
-// app/components/ui/modal/MetadataCard.jsx
 import Card from '@/app/components/ui/Card';
 
 export function MetadataCard({ createdAt, updatedAt }) {

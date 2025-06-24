@@ -23,10 +23,12 @@ const buttonStyles = {
   
   outline_full: `w-full flex items-center justify-center bg-[var(--primary-color)] border-[0.5px] py-2 px-4 rounded-[12.5px] border-[var(--hint-color)] hover:bg-[var(--primary-color-hover)] transition-colors duration-200`,
 
-  action_icon_warn: `transition-colors duration-200 hover:scale-110 hover:text-[var(--warn-color-hover)]`,
-  action_icon: `transition-colors duration-200 hover:scale-110 hover:text-[var(--accent-color)]`,
+  action_icon_warn: `transition-colors duration-200 hover:scale-125 hover:text-[var(--warn-color-hover)]`,
+  action_icon: `transition-colors duration-200 hover:scale-125 hover:text-[var(--accent-color)]`,
   
-  action_sq: `flex items-center justify-center p-2 transition-transform duration-200 hover:scale-110 hover:text-[var(--accent-color)]`,
+  action_sq: `flex items-center justify-center p-2 transition-transform duration-200 hover:scale-125 hover:text-[var(--accent-color)]`,
+  action_sq_warn: `flex items-center justify-center p-2 transition-transform duration-200 hover:scale-125 hover:text-[var(--warn-color)]`,
+  action_sq_disabled: `flex items-center justify-center p-2 cursor-not-allowed text-[var(--hint-color)]`,
   default_sq: `bg-[var(--accent-color)] p-2 rounded-[12.5px] hover:bg-[var(--accent-color-hover)] transition-colors duration-200`,
   
   popover_default_sq: `flex items-center p-2 bg-[var(--accent-color)] rounded-r-[12.5px]`,
