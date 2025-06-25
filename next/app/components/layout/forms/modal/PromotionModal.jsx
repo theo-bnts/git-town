@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import useAuthToken from '@/app/hooks/useAuthToken';
 import savePromotions from '@/app/services/api/promotions/savePromotions';
+import replicateUsersPromotion from '@/app/services/api/promotions/id/replicateUsersPromotion';
 import getDiplomas from '@/app/services/api/diplomas/getDiplomas';
 import getPromotionLevels from '@/app/services/api/promotion-levels/getPromotionLevels';
 import FormModal from '@/app/components/ui/modal/FormModal';
@@ -11,6 +12,7 @@ import { useNotification } from '@/app/context/NotificationContext';
 export default function PromotionModal({
   isOpen,
   initialData = {},
+  duplicatedFromId = null,
   onClose,
   onSave,
 }) {
@@ -121,7 +123,13 @@ export default function PromotionModal({
     }
 
     try {
-      await savePromotions(initialData.Id || null, payload, token);
+      const created = await savePromotions(initialData.Id || null, payload, token);
+
+      if (duplicatedFromId) {
+        const targetId = created.Id || created.id;
+        await replicateUsersPromotion(duplicatedFromId, targetId, token);
+      }
+
       notify(
         initialData.Id
           ? 'Promotion mise à jour avec succès'
