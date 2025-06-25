@@ -17,6 +17,7 @@ export default function CrudPanel({
   modalProps = {},
   actions = () => [],
   toolbarButtons = [],
+  disableAdd = false,
 }) {
   const { data, loading, refresh, remove } = useCrudData({ fetchFn, deleteFn, mapToRow });
 
@@ -43,9 +44,11 @@ export default function CrudPanel({
         data={rows}
         toolbarContents={
           <>
-            <Button variant="default_sq" onClick={() => { setSelected(null); setModalOpen(true); }}>
-              <PlusIcon size={24} className="text-white" />
-            </Button>
+            {!disableAdd && (
+              <Button variant="default_sq" onClick={() => { setSelected(null); setModalOpen(true); }}>
+                <PlusIcon size={24} className="text-white" />
+              </Button>
+            )}
             {toolbarButtons}
           </>
         }

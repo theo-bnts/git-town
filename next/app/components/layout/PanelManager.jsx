@@ -9,7 +9,7 @@ import EnseignementUnitPanel from '@/app/components/layout/panel/EnseignementUni
 import TemplatePanel from '@/app/components/layout/panel/TemplatePanel';
 import RepositoriesPanel from '@/app/components/layout/panel/RepositoriesPanel';
 
-export default function PanelManager({ fullName, role }) {
+export default function PanelManager({ fullName, role, userId }) {
   const navbarItems = [
     { label: 'Dépots', component: RepositoriesPanel },
     { label: 'Promotions', component: PromotionPanel },
@@ -41,13 +41,13 @@ export default function PanelManager({ fullName, role }) {
   }, []);
 
   const ActivePanelComponent = navItems.find(
-    (item) => item.label === activePanel
+    item => item.label === activePanel
   )?.component;
 
   return (
     <div className="flex flex-col h-screen max-w-[2000] mx-auto">
       <header className="pt-4 px-4">
-        <Header 
+        <Header
           fullName={fullName}
           navItems={navItems}
           activePanel={activePanel}
@@ -69,7 +69,12 @@ export default function PanelManager({ fullName, role }) {
         )}
 
         <main className="flex-1 overflow-hidden flex flex-col pt-2 pl-2">
-          {ActivePanelComponent && <ActivePanelComponent />}
+          {ActivePanelComponent && (
+            <ActivePanelComponent
+              role={role}
+              userId={userId}
+            />
+          )}
         </main>
       </div>
     </div>
