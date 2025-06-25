@@ -11,6 +11,7 @@ import {
   DuplicateIcon,
   CommentIcon,
   FileZipIcon,
+  CodeIcon,
   MarkGithubIcon,
 } from '@primer/octicons-react';
 
@@ -136,10 +137,18 @@ export default function RepositoriesPanel({ role, userId }) {
   const actions = (row, helpers) => {
     const baseActions = [
       { icon: <GraphIcon size={16} />, onClick: () => handleOpenStats(row.raw.Id), variant: 'action_sq' },
+      { icon: <CodeIcon size={16} />, onClick: () => window.open(
+          `https://github.dev/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}`,
+          '_blank'
+        ), variant: 'action_sq' },
+      { icon: <FileZipIcon size={16} />, onClick: () => window.open(
+          `https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}/archive/HEAD.zip`,
+          '_blank'
+      ), variant: 'action_sq' },
       { icon: <MarkGithubIcon size={16} />, onClick: () => window.open(
           `https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}`,
           '_blank'
-        ), variant: 'action_sq' },
+      ), variant: 'action_sq' },
     ];
 
     if (role === 'student') {
@@ -158,10 +167,6 @@ export default function RepositoriesPanel({ role, userId }) {
       { icon: <ArchiveIcon size={16} />, onClick: () => { setToArchive(row.raw); setConfirmOpen(true); }, variant: 'action_sq_warn' },
       { icon: <DuplicateIcon size={16} />, onClick: () => console.log('Duplicate repo:', row.raw), variant: 'action_sq' },
       { icon: <CommentIcon size={16} />, onClick: () => { setCommentRepoId(row.raw.Id); setCommentOpen(true); }, variant: 'action_sq' },
-      { icon: <FileZipIcon size={16} />, onClick: () => window.open(
-          `https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}/archive/HEAD.zip`,
-          '_blank'
-        ), variant: 'action_sq' },
       ...baseActions,
     ];
   };

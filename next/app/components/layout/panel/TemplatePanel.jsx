@@ -43,7 +43,7 @@ const actions = (row, helpers) => [
   },
   {
     icon: <DuplicateIcon size={16} />,
-    onClick: () => console.log('Duplicate template:', row.raw),
+    onClick: () => helpers.duplicate(row),
     variant: 'action_sq',
   },
 ];
