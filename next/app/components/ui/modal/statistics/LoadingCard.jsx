@@ -16,7 +16,7 @@ const ERROR_MESSAGES = {
   LOADING_FAILED: "Le chargement des statistiques a échoué. Le dépôt est peut-être vide ou l'API GitHub n'est pas disponible."
 };
 
-export default function LoadingCard({ onClose, onTimeout, error }) {
+export default function LoadingCard({ onClose, onTimeout, error, hasPartialData = false }) {
   const [loadingTime, setLoadingTime] = useState(0);
   
   useEffect(() => {
@@ -31,7 +31,12 @@ export default function LoadingCard({ onClose, onTimeout, error }) {
     }
   }, [error, onTimeout, onClose]);
   
+  // N'initialise le timer de timeout que si nous n'avons pas de données partielles
   useEffect(() => {
+    if (hasPartialData) {
+      return; // Ne pas initialiser le timer si nous avons des données partielles
+    }
+    
     const timer = setInterval(() => {
       setLoadingTime(prev => {
         const newTime = prev + 1;
@@ -51,7 +56,7 @@ export default function LoadingCard({ onClose, onTimeout, error }) {
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [onTimeout, onClose]);
+  }, [onTimeout, onClose, hasPartialData]);
   
   const renderWarningMessage = () => {
     if (loadingTime <= FIRST_WARNING_THRESHOLD) return null;
@@ -99,5 +104,6 @@ export default function LoadingCard({ onClose, onTimeout, error }) {
 LoadingCard.propTypes = {
   onClose: PropTypes.func,
   onTimeout: PropTypes.func,
-  error: PropTypes.object
+  error: PropTypes.object,
+  hasPartialData: PropTypes.bool
 };

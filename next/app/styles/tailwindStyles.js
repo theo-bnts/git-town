@@ -11,7 +11,10 @@ const textStyles = {
   sectionTitle: "text-lg font-bold leading-none",
   subtle: "text-center text-sm text-gray-600",
   verySubtle: "text-center text-xs text-gray-500",
-  warning: "text-sm text-yellow-700"
+  warning: "text-sm text-yellow-700",
+  alertTitle: "font-medium text-[var(--secondary-color)] text-base",
+  alertText: "text-sm text-[var(--hint-color)]",
+  alertLink: "text-sm text-[var(--accent-color)] cursor-pointer hover:text-[var(--accent-color-hover)] font-medium",
 };
 
 const buttonStyles = {
@@ -33,6 +36,7 @@ const buttonStyles = {
   
   popover_default_sq: `flex items-center p-2 bg-[var(--accent-color)] rounded-r-[12.5px]`,
   popover_selected_sq: `flex items-center p-2 bg-[var(--selected-color)] rounded-r-[12.5px]`,
+  action_icon_refresh: `flex items-center space-x-1 bg-white hover:bg-[var(--primary-color-hover)] text-[var(--accent-color)] px-3 py-2 rounded-md border border-[var(--accent-color)] transition-colors duration-200`,
 };
 
 const cardStyles = {
@@ -45,6 +49,7 @@ const cardStyles = {
   success: `bg-[var(--accent-color)] p-4 rounded-[12.5px] shadow-lg text-[var(--primary-color)]`,
   empty: "bg-gray-50 p-4 rounded-lg text-center",
   contributionCard: "rounded-lg border border-gray-200 bg-white p-4 shadow-sm",
+  partialData: `bg-white border-l-4 border-[var(--accent-color)] p-4 rounded-lg shadow-md`,
 };
 
 const inputStyles = {

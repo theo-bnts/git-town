@@ -16,14 +16,17 @@ import { modalStyles } from '@/app/styles/tailwindStyles';
  * Modal affichant les statistiques détaillées d'un dépôt
  * Gère le chargement, les timeouts et les données partielles
  */
-export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, onError }) {
+export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, onError, options = {} }) {
   const { 
     formattedStats, 
     loading, 
     error, 
-    isPartialData, 
-    handleRetry 
-  } = useRepositoryStats(repositoryId, isOpen);
+    isPartialData,
+    canRefresh,
+    missingFields,
+    handleRetry,
+    isEmpty
+  } = useRepositoryStats(repositoryId, isOpen, options);
   
   const modalContentRef = useRef(null);
   const [attemptCount, setAttemptCount] = useState(0);
@@ -53,8 +56,7 @@ export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, on
 
   const retryWithClear = () => {
     if (attemptCount >= maxAttempts) {
-      onError("Impossible de charger les statistiques après plusieurs tentatives. Le dépôt est probablement vide.");
-      onClose();
+      onError("Impossible de charger les statistiques complètes après plusieurs tentatives.");
       return;
     }
     
@@ -74,13 +76,17 @@ export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, on
 
   if (!isOpen) return null;
 
+  // Modifier cette condition pour afficher la LoadingCard même pour les dépôts vides
+  const shouldShowLoadingCard = loading || isEmpty || !formattedStats;
+
   return (
     <div className={modalStyles.overlay} onClick={handleOutsideClick}>
-      {loading ? (
+      {shouldShowLoadingCard ? (
         <LoadingCard 
           onClose={onClose} 
           onTimeout={handleTimeout}
           error={error}
+          hasPartialData={Boolean(formattedStats && isPartialData)} 
         />
       ) : (
         <div className={modalStyles.container}>
@@ -107,10 +113,14 @@ export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, on
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 xl:gap-6">
         {isPartialData && (
           <div className="col-span-1 xl:col-span-2">
-            <PartialDataAlert onRetry={retryWithClear} />
+            <PartialDataAlert 
+              onRetry={retryWithClear}
+              missingFields={missingFields}
+              canRefresh={canRefresh}
+            />
           </div>
         )}
-
+        
         <div className="col-span-1">
           <StatsCard 
             formattedStats={formattedStats}
@@ -122,7 +132,6 @@ export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, on
           <UserContributionsSection 
             formattedStats={formattedStats}
             isPartialData={isPartialData}
-            onRetry={retryWithClear}
           />
         </div>
       </div>
@@ -134,5 +143,6 @@ RepositoryStatsModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   repositoryId: PropTypes.string.isRequired,
-  onError: PropTypes.func.isRequired
+  onError: PropTypes.func.isRequired,
+  options: PropTypes.object
 };
