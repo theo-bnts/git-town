@@ -32,7 +32,6 @@ export async function GET(request, { params }) {
   const filePath = path.join(getRejectsDir(type), filename);
 
   try {
-    // On essaie directement de lire le fichier
     const raw = await fs.readFile(filePath, 'utf8');
     const content = '\uFEFF' + raw;
     return new NextResponse(content, {
@@ -46,7 +45,6 @@ export async function GET(request, { params }) {
     if (err.code === 'ENOENT') {
       return NextResponse.json({ error: 'Fichier introuvable.' }, { status: 404 });
     }
-    // autre erreur IO
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }

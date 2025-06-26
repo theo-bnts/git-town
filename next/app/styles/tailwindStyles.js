@@ -1,4 +1,3 @@
-// app/styles/tailwindStyles.js
 const textStyles = {
   default: `text-[var(--secondary-color)]`,
   defaultWhite: `text-[var(--primary-color)]`,

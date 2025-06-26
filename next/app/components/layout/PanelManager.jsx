@@ -12,8 +12,8 @@ import RepositoriesPanel from '@/app/components/layout/panel/RepositoriesPanel';
 export default function PanelManager({ fullName, role, userId }) {
   const navbarItems = [
     { label: 'Dépots', component: RepositoriesPanel },
-    { label: 'Promotions', component: PromotionPanel },
     { label: 'Utilisateurs', component: UsersPanel },
+    { label: 'Promotions', component: PromotionPanel },
     { label: 'Modèles', component: TemplatePanel },
     { label: 'UE', component: EnseignementUnitPanel },
   ];

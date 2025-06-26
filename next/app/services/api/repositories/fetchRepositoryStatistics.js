@@ -1,3 +1,5 @@
+'use client';
+
 import { fetchWithAuth } from '@/app/services/auth';
 import { repositoryStatisticsRoute } from '@/app/services/routes';
 import { handleApiError, handleNetworkError } from '@/app/services/errorHandler';

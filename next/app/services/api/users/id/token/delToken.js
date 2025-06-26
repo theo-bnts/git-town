@@ -1,4 +1,5 @@
-// app/services/api/users/id/token/delToken.js
+'use client';
+
 import { delTokenRoute } from '@/app/services/routes';
 import { handleApiError } from '@/app/services/errorHandler';
 

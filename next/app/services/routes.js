@@ -1,5 +1,3 @@
-// app/services/routes.js
-
 export const publicRoute = (email) =>
   `${process.env.NEXT_PUBLIC_API_URL}/users/${encodeURIComponent(email)}/public`;
 

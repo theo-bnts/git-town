@@ -1,4 +1,5 @@
-// app/services/users/id/github/postOAuthCode.jsx
+'use client';
+
 import { githubOAuthRoute } from '@/app/services/routes';
 import { handleApiError } from '@/app/services/errorHandler';
 

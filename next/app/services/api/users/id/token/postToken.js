@@ -1,4 +1,5 @@
-// app/services/api/users/id/token/postToken.js
+'use client';
+
 import { tokenRoute } from '@/app/services/routes';
 import { handleApiError } from '@/app/services/errorHandler';
 

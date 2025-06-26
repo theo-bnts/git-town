@@ -1,4 +1,5 @@
-// app/services/api/users/id/repositories/deleteUserRepository.js
+'use client';
+
 import { delUserRepositoryRoute } from '@/app/services/routes';
 import { handleApiError } from '@/app/services/errorHandler';
 

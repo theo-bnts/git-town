@@ -1,5 +1,3 @@
-// app/components/ui/Card.jsx
-
 'use client';
 
 import React from 'react';

@@ -38,7 +38,6 @@ export function decodeUserInfo(rawBase64Url) {
  * @returns {Promise<Response>}
  */
 export async function fetchWithAuth(url, options = {}) {
-  // Récupère le token depuis les cookies (adapté à ton projet)
   const token = await getCookie('token');
   const headers = {
     ...(options.headers || {}),

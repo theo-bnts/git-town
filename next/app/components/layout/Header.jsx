@@ -55,8 +55,7 @@ export default function Header({
       notify('Déconnexion réussie', 'success');
       router.replace('/login');
     } catch (error) {
-      console.error('Erreur lors de la déconnexion', error);
-      notify('Erreur lors de la déconnexion', 'error');
+      router.replace('/login');
     }
   };
 

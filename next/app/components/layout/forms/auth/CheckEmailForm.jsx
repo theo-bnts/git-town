@@ -1,4 +1,3 @@
-// app/components/layout/CheckEmailForm.jsx
 'use client';
 
 import React, { useState } from 'react';

@@ -5,6 +5,7 @@ import useAuthToken from '@/app/hooks/useAuthToken';
 import saveEnseignementUnit from '@/app/services/api/enseignementUnit/saveEnseignementUnit';
 import FormModal from '@/app/components/ui/modal/FormModal';
 import { useNotification } from '@/app/context/NotificationContext';
+import { isUEInitialismValid, isUENameValid } from '@/app/services/validators';
 
 export default function EnseignementUnitModal({
   isOpen,
@@ -25,7 +26,11 @@ export default function EnseignementUnitModal({
   function validate(values) {
     const errs = {};
     if (!values.Sigle) errs.Sigle = 'Le sigle est obligatoire.';
+    else if (!isUEInitialismValid(values.Sigle))
+      errs.Sigle = `Le sigle doit avoir 10 caractères maximum, uniquement des lettres, des chiffres et des underscores.`;
     if (!values.Nom) errs.Nom = 'Le nom est obligatoire.';
+    else if (!isUENameValid(values.Nom))
+      errs.Nom = `Le nom doit avoir au maximum ${process.env.NEXT_PUBLIC_UE_NAME_LENGTH} caractères.`;
     return errs;
   }
 

@@ -1,4 +1,4 @@
-// /app/services/api/users/emailAddress/getEmailAddress.js
+'use client';
 
 import { publicRoute } from '@/app/services/routes';
 import { handleApiError } from '@/app/services/errorHandler';

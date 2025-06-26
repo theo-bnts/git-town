@@ -1,4 +1,5 @@
-// app/services/users/id/github/postInvite.jsx
+'use client';
+
 import { githubInviteRoute } from '@/app/services/routes';
 import { handleApiError } from '@/app/services/errorHandler';
 
