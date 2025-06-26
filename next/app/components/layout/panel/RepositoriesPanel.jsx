@@ -45,6 +45,7 @@ export default function RepositoriesPanel({ role, userId }) {
 
   const [commentOpen, setCommentOpen] = useState(false);
   const [commentRepoId, setCommentRepoId] = useState(null);
+  const [commentIsArchived, setCommentIsArchived] = useState(false);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toArchive, setToArchive] = useState(null);
@@ -69,12 +70,12 @@ export default function RepositoriesPanel({ role, userId }) {
       const users = await getUsersRepository(repo.Id, token);
       return {
         ...repo,
-        studentNames: Array.isArray(users) ? users.map((u) => u.FullName).sort() : [],
+        studentNames: Array.isArray(users) ? users.map(u => u.FullName).sort() : [],
       };
     }));
   }, [role, userId]);
 
-  const mapToRow = useCallback((repo) => ({
+  const mapToRow = useCallback(repo => ({
     raw: repo,
     students: repo.studentNames,
     tutor: repo.User?.FullName || '',
@@ -99,7 +100,7 @@ export default function RepositoriesPanel({ role, userId }) {
   }, [role]);
 
   const actions = useCallback((row, helpers) => {
-    const baseActions = [
+    const base = [
       {
         icon: <GraphIcon size={16} />,
         onClick: () => {
@@ -138,57 +139,36 @@ export default function RepositoriesPanel({ role, userId }) {
       },
     ];
 
-    if (role === 'student') return baseActions;
+    if (role === 'student') return base;
 
-    if (role === 'teacher') {
-      return [
-        ...baseActions,
-        {
-          icon: <CommentIcon size={16} />,
-          onClick: () => {
-            setCommentRepoId(row.raw.Id);
-            setCommentOpen(true);
-          },
-          variant: 'action_sq',
-        },
-      ];
-    }
+    const commentBtn = {
+      icon: <CommentIcon size={16} />,
+      onClick: () => {
+        setCommentRepoId(row.raw.Id);
+        setCommentIsArchived(Boolean(row.raw.ArchivedAt));
+        setCommentOpen(true);
+      },
+      variant: 'action_sq',
+    };
+
+    if (role === 'teacher') return [...base, commentBtn];
 
     return [
-      {
-        icon: <PencilIcon size={16} />,
-        onClick: () => helpers.edit(row),
-        variant: row.raw.ArchivedAt ? 'action_sq_disabled' : 'action_sq',
-        disabled: Boolean(row.raw.ArchivedAt),
-      },
-      {
-        icon: <ArchiveIcon size={16} />,
-        onClick: () => {
-          setToArchive(row.raw);
-          setConfirmOpen(true);
-        },
-        variant: 'action_sq_warn',
-      },
-      {
-        icon: <DuplicateIcon size={16} />,
-        onClick: () => helpers.duplicate(row),
-        variant: 'action_sq',
-      },
-      {
-        icon: <CommentIcon size={16} />,
-        onClick: () => {
-          setCommentRepoId(row.raw.Id);
-          setCommentOpen(true);
-        },
-        variant: 'action_sq',
-      },
-      ...baseActions,
+      { icon:<PencilIcon size={16}/>, onClick:()=>helpers.edit(row), variant: row.raw.ArchivedAt?'action_sq_disabled':'action_sq', disabled:Boolean(row.raw.ArchivedAt) },
+      { icon:<ArchiveIcon size={16}/>, onClick:()=>{ setToArchive(row.raw); setConfirmOpen(true); }, variant:'action_sq_warn' },
+      { icon:<DuplicateIcon size={16}/>, onClick:()=>helpers.duplicate(row), variant:'action_sq' },
+      commentBtn,
+      ...base,
     ];
   }, [role]);
 
   return (
     <>
-      <NotificationCard message={statsErrorMessage} type="warn" onClear={() => setStatsErrorMessage(null)} />
+      <NotificationCard 
+        message={statsErrorMessage} 
+        type="warn" 
+        onClear={()=>setStatsErrorMessage(null)} 
+      />
 
       <CrudPanel
         key={refreshKey}
@@ -197,12 +177,14 @@ export default function RepositoriesPanel({ role, userId }) {
         mapToRow={mapToRow}
         ModalComponent={RepositoryModal}
         modalProps={{
-          confirmMessage: (repo) => (
+          confirmMessage: repo => (
             <>
               Voulez-vous vraiment supprimer le dépôt{' '}
-              <strong>{`${repo.Template?.EnseignementUnit?.Initialism} ${repo.Template?.Year}`}</strong> ?
+              <strong>
+                {`${repo.Template?.EnseignementUnit?.Initialism} ${repo.Template?.Year}`}
+              </strong> ?
             </>
-          ),
+          )
         }}
         toolbarButtons={toolbarButtons}
         actions={actions}
@@ -212,52 +194,39 @@ export default function RepositoriesPanel({ role, userId }) {
       {importOpen && (
         <ImportRepositoriesModal
           isOpen={importOpen}
-          onClose={() => setImportOpen(false)}
-          onImport={() => {
-            setImportOpen(false);
-            setRefreshKey((k) => k + 1);
-          }}
+          onClose={()=>setImportOpen(false)}
+          onImport={()=>{ setImportOpen(false); setRefreshKey(k=>k+1); }}
         />
       )}
 
       {confirmOpen && toArchive && (
         <ConfirmCard
           message={
-            toArchive.ArchivedAt == null ? (
-              <>
-                Voulez-vous archiver le dépôt ayant comme étudiants
-                <strong> {toArchive.studentNames.join(', ')}</strong> de l'année
-                <strong> {toArchive.Template.Year}</strong> ?
-              </>
-            ) : (
-              <>
-                Voulez-vous désarchiver le dépôt ayant comme étudiants
-                <strong> {toArchive.studentNames.join(', ')}</strong> de l'année
-                <strong> {toArchive.Template.Year}</strong> ?
-              </>
-            )
+            toArchive.ArchivedAt == null 
+              ? <>Voulez-vous archiver le dépôt …</>
+              : <>Voulez-vous désarchiver le dépôt …</>
           }
-          onConfirm={async () => {
+          onConfirm={async ()=>{
             const token = await getCookie('token');
-            const shouldArchive = toArchive.ArchivedAt == null;
-            try {
+            const shouldArchive = toArchive.ArchivedAt==null;
+            try{
               await archiveRepository(toArchive.Id, shouldArchive, token);
-              notify(`Dépôt ${shouldArchive ? 'archivé' : 'désarchivé'} avec succès.`, 'success');
-              setRefreshKey((k) => k + 1);
-            } catch {
-              notify('Erreur lors de la mise à jour du dépôt.', 'error');
-            } finally {
+              notify(`Dépôt ${shouldArchive?'archivé':'désarchivé'} avec succès.`,'success');
+              setRefreshKey(k=>k+1);
+            }catch{
+              notify('Erreur lors de la mise à jour du dépôt.','error');
+            }finally{
               setConfirmOpen(false);
             }
           }}
-          onCancel={() => setConfirmOpen(false)}
+          onCancel={()=>setConfirmOpen(false)}
         />
       )}
 
       {statsModalOpen && selectedRepoId && (
         <RepositoryStatsModal
           isOpen={statsModalOpen}
-          onClose={() => setStatsModalOpen(false)}
+          onClose={()=>setStatsModalOpen(false)}
           repositoryId={selectedRepoId}
           onError={setStatsErrorMessage}
         />
@@ -267,8 +236,9 @@ export default function RepositoriesPanel({ role, userId }) {
         <CommentModal
           isOpen={commentOpen}
           repositoryId={commentRepoId}
-          onClose={() => setCommentOpen(false)}
-          onSave={() => setRefreshKey((k) => k + 1)}
+          isArchived={commentIsArchived}
+          onClose={()=>setCommentOpen(false)}
+          onSave={()=>setRefreshKey(k=>k+1)}
         />
       )}
     </>
