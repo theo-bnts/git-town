@@ -15,9 +15,12 @@ export default function ListBoxItem({
 }) {
   const Chip = renderChip;
   return (
-    <div className="flex items-center justify-between px-4 py-1">
-      <Chip {...item} />
-      <div className="space-x-2">
+    <div className="flex items-center px-2 py-1">
+      <div className="basis-[80%]">
+        <Chip {...item} />
+      </div>
+
+      <div className="basis-[20%] flex space-x-2">
         {onEdit && (
           <Button type="button" onClick={onEdit} variant="action_icon">
             <EditIcon size={16} />
