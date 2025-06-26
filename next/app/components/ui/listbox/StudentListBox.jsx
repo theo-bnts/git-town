@@ -3,19 +3,24 @@
 import React from 'react';
 import { listboxStyles } from '@/app/styles/tailwindStyles';
 import ComboBox from '@/app/components/ui/combobox/ComboBox';
-
 import ListBoxProvider from '@/app/components/ui/listbox/ListBoxProvider';
 import ListBoxArea from '@/app/components/ui/listbox/ListBoxArea';
 import useListBox from '@/app/components/ui/listbox/useListBox';
 
 function StudentAdder({ options, placeholder }) {
   const { addItem } = useListBox();
+
   return (
     <ComboBox
       placeholder={placeholder}
       options={options}
       onSelect={addItem}
       maxVisible={4}
+      renderOption={opt => (
+        <div className="flex flex-col">
+          <span>{opt.label}</span>
+        </div>
+      )}
     />
   );
 }
