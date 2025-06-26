@@ -81,7 +81,7 @@ export default function UserModal({
 
   const fields = useMemo(
     () => [
-      { name: 'Nom', value: initialData.FullName || '' },
+      { name: 'Nom prénom', value: initialData.FullName || '' },
       { name: 'Email', value: initialData.EmailAddress || '' },
       { name: 'Rôle', options: roleOptions, value: initialRole },
       {
@@ -128,7 +128,7 @@ export default function UserModal({
       : [];
 
     const payload = {};
-    if (v.Nom.trim() !== initialData.FullName) payload.FullName = v.Nom.trim();
+    if (v.Nom.trim() !== initialData.FullName) payload.FullName = v.Nom.trim().toUpperCase();;
     if (v.Email.trim() !== initialData.EmailAddress)
       payload.EmailAddress = v.Email.trim();
     if (v.Rôle.id !== initialData.Role?.Keyword)

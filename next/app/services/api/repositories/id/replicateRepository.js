@@ -28,5 +28,5 @@ export default async function replicateRepository(sourceId, targetId, token) {
     return data;
   }
   
-  handleApiError(res, data);
+  throw handleApiError(res, data);
 }

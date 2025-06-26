@@ -25,5 +25,5 @@ export default async function delToken(userId, token, tokenId) {
   const data = text ? JSON.parse(text) : {};
 
   if (res.ok) return data;
-  handleApiError(res, data);
+  throw handleApiError(res, data);
 }

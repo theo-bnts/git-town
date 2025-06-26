@@ -245,11 +245,17 @@ export default function RepositoryModal({
 
   if (!isOpen) return null;
 
+  const modalTitle = repository.Id
+    ? 'Modifier le dépôt'
+    : duplicatedFromId
+    ? 'Duplication dépôt'
+    : 'Nouveau dépôt';
+
   return (
     <FormModal
       formKey={`${repository.Id || 'new'}-${isOpen}`}
       isOpen={isOpen}
-      title={repository.Id ? 'Modifier le dépôt' : 'Nouveau dépôt'}
+      title={modalTitle}
       metadata={{
         createdAt: repository.CreatedAt,
         updatedAt: repository.UpdatedAt,

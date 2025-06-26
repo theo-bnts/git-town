@@ -64,7 +64,7 @@ export default function ImportUsersModal({ isOpen, onClose, onImport }) {
       isOpen={isOpen}
       onClose={onClose}
       onImport={onImport}
-      title="Import utilisateurs"
+      title="Import utilisateurs (CSV)"
       csvParser={parseUsersCsv}
       processRows={processRows}
       rejectType="users"

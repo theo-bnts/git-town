@@ -24,5 +24,5 @@ export default async function postToken(userId, password) {
   const data = await res.json();
 
   if (res.ok) return data;
-  handleApiError(res, data);
+  throw handleApiError(res, data);
 }

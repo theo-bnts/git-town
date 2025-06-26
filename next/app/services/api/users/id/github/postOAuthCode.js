@@ -28,5 +28,5 @@ export default async function postOAuthCode(userId, code, token) {
   const data = text ? JSON.parse(text) : {};
 
   if (res.ok) return data;
-  handleApiError(res, data);
+  throw handleApiError(res, data);
 }

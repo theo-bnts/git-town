@@ -159,7 +159,9 @@ export default function TemplateModal({ isOpen, initialData = {}, duplicatedFrom
   if (loading || !token) {
     return (
       <ModalBase isOpen title="Chargement…" onClose={onClose}>
-        <div className="flex justify-center py-8"><LoadingSpinner size={40} /></div>
+        <div className="flex justify-center py-8">
+          <LoadingSpinner size={40} />
+        </div>
       </ModalBase>
     );
   }

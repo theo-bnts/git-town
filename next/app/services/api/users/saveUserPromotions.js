@@ -44,7 +44,7 @@ export default async function saveUserPromotions(userId, newPromotions, token) {
     });
     if (!res.ok) {
       const errorData = await res.json();
-      throw await handleApiError(res, errorData);
+      throw handleApiError(res, errorData);
     }
   }
 
@@ -62,7 +62,7 @@ export default async function saveUserPromotions(userId, newPromotions, token) {
     });
     if (!res.ok) {
       const errorData = await res.json();
-      throw await handleApiError(res, errorData);
+      throw handleApiError(res, errorData);
     }
   }
 

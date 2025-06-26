@@ -1,7 +1,6 @@
 'use client';
 
 export default function LoadingSpinner({ size = 32 }) {
-  /* cercle animé en Tailwind */
   return (
     <span
       style={{ width: size, height: size }}
