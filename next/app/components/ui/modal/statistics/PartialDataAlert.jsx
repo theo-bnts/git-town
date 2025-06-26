@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
+import Spinner from '@/app/components/ui/Spinner';
 import { AlertIcon, SyncIcon } from '@primer/octicons-react';
-import { textStyles, cardStyles, buttonStyles, spinnerStyles } from '@/app/styles/tailwindStyles';
+import { textStyles, cardStyles, buttonStyles } from '@/app/styles/tailwindStyles';
 
 /**
  * Alerte affichée lorsque certaines données statistiques sont manquantes
  */
-export default function PartialDataAlert({ onRetry, missingFields = [], canRefresh = true }) {
+export default function PartialDataAlert({ onRetry, missingFields = [], canRefresh = true, autoRetrying = false }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   const handleRetry = () => {
@@ -23,7 +24,7 @@ export default function PartialDataAlert({ onRetry, missingFields = [], canRefre
   };
   
   return (
-    <div className="mb-4 sticky top-0 z-10">
+    <div className="sticky top-0 z-10">
       <Card variant="partialData">
         <div className="flex items-start gap-3">
           <div className="text-[var(--accent-color)] mt-1 flex-shrink-0">
@@ -36,7 +37,9 @@ export default function PartialDataAlert({ onRetry, missingFields = [], canRefre
             </h3>
             
             <p className={textStyles.alertText + " mt-1"}>
-              Certaines statistiques sont en cours de calcul par GitHub. Vous pouvez rafraîchir pour tenter de récupérer les données manquantes.
+              {autoRetrying 
+                ? "Récupération automatique des données manquantes en cours..." 
+                : "Certaines statistiques sont en cours de calcul par GitHub. Vous pouvez rafraîchir pour tenter de récupérer les données manquantes."}
             </p>
             
             {missingFields.length > 0 && (
@@ -56,20 +59,32 @@ export default function PartialDataAlert({ onRetry, missingFields = [], canRefre
             )}
           </div>
           
-          {canRefresh && (
+          {canRefresh && !autoRetrying && (
             <Button 
               variant="action_icon"
               onClick={handleRetry}
               disabled={isRefreshing}
             >
               {isRefreshing ? (
-                <span className="w-4 h-4 inline-block">
-                  <span className={spinnerStyles.default + " h-4 w-4 border-2 border-t-[var(--accent-color)] border-[var(--primary-color-hover)]"}></span>
-                </span>
+                <Spinner 
+                  size="sm" 
+                  thickness="2"
+                  baseColor="var(--primary-color-hover)" 
+                />
               ) : (
                 <SyncIcon size={18} />
               )}
             </Button>
+          )}
+          
+          {autoRetrying && (
+            <div className="flex-shrink-0">
+              <Spinner 
+                size="sm" 
+                thickness="2"
+                baseColor="var(--primary-color-hover)" 
+              />
+            </div>
           )}
         </div>
       </Card>

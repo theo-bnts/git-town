@@ -40,8 +40,16 @@ export function analyzeStatistics(data) {
   const missingFields = [];
   const missingFieldKeys = [];
   
-  // Vérifier si les commits globaux existent (minimum requis)
-  const hasMinimumData = data.Global?.Commits?.Weekly?.Counts?.length > 0;
+  // Vérifier si des données minimales existent
+  // On considère les données comme exploitables même si elles sont incomplètes
+  const hasMinimumData = Boolean(
+    // Accepter que les commits existent
+    (data.Global?.Commits?.Weekly?.Counts?.length > 0) || 
+    // OU que les langages existent
+    (data.Global?.Languages && Object.keys(data.Global.Languages).length > 0) || 
+    // OU qu'il y ait au moins un utilisateur
+    (Array.isArray(data.Users) && data.Users.length > 0)
+  );
   
   // Vérifier si toutes les données sont présentes
   function checkPath(obj, path, expectedValue, fullPath = []) {
@@ -92,19 +100,23 @@ export function analyzeStatistics(data) {
     return true;
   }
 
+  // Vérifier la structure complète pour signaler toutes les données manquantes
   let isComplete = true;
   for (const key in EXPECTED_STRUCTURE) {
     const result = checkPath(data[key], key, EXPECTED_STRUCTURE[key]);
     isComplete = isComplete && result;
   }
-
+  
   // Vérifier si les données utilisateurs sont présentes et complètes
   const hasUsers = Array.isArray(data.Users) && data.Users.length > 0;
   if (hasUsers) {
+    // Détecter si certains utilisateurs ont des données undefined ou null
     const incompleteUsers = data.Users.filter(user => 
       !user.Lines || 
       !user.Lines.Weekly || 
-      !user.Lines.Weekly.Counts
+      !user.Lines.Weekly.Counts ||
+      // Vérifier également les données undefined dans les tableaux
+      (user.Lines?.Weekly?.Counts && user.Lines.Weekly.Counts.some(count => count === undefined || count === null))
     );
     
     if (incompleteUsers.length > 0) {
@@ -117,11 +129,39 @@ export function analyzeStatistics(data) {
     missingFieldKeys.push('Users');
     isComplete = false;
   }
+  
+  // Vérifier si des données importantes contiennent des undefined (données en cours de chargement)
+  let hasUndefinedData = false;
+  
+  // Vérifier les commits
+  if (data.Global?.Commits?.Weekly?.Counts) {
+    if (data.Global.Commits.Weekly.Counts.some(count => count === undefined || count === null)) {
+      hasUndefinedData = true;
+      missingFields.push('Certaines données de commits sont en cours de chargement');
+      missingFieldKeys.push('Global.Commits.Undefined');
+    }
+  }
+  
+  // Vérifier les lignes
+  if (data.Global?.Lines?.Weekly?.Counts) {
+    if (data.Global.Lines.Weekly.Counts.some(count => count === undefined || count === null)) {
+      hasUndefinedData = true;
+      missingFields.push('Certaines données de lignes sont en cours de chargement');
+      missingFieldKeys.push('Global.Lines.Undefined');
+    }
+  }
+  
+  // Les données sont partielles si:
+  // 1. Elles ne sont pas complètes selon la structure attendue OU
+  // 2. Elles contiennent des undefined/null dans des tableaux de données
+  // Mais elles ont au minimum quelques données à afficher
+  const isPartial = (!isComplete || hasUndefinedData) && hasMinimumData;
 
   return {
-    isPartial: !isComplete && hasMinimumData,
+    isPartial,
     isComplete,
     isEmpty: !hasMinimumData,
+    hasUndefinedData,
     missingFields,
     missingFieldKeys
   };
@@ -136,11 +176,26 @@ export function canRefreshForMissingData(analysis) {
     return false;
   }
   
+  // Si on a toutes les données essentielles, pas besoin de rafraîchir
+  if (analysis.isComplete) {
+    return false;
+  }
+  
+  // Si des données undefined sont détectées, on peut toujours rafraîchir
+  if (analysis.hasUndefinedData) {
+    return true;
+  }
+  
   // Les données manquantes liées aux utilisateurs ou aux lignes peuvent souvent
   // être récupérées lors d'un rafraîchissement
-  return analysis.missingFieldKeys.some(key => 
+  const importantMissingFields = analysis.missingFieldKeys.some(key => 
     key === 'Users' || 
     key === 'Users.Lines' || 
-    key === 'Global.Lines'
+    key === 'Global.Lines' ||
+    key === 'Global.Commits' ||
+    key === 'Global.Languages'
   );
+  
+  // Ne proposer le rafraîchissement que si des données importantes sont manquantes
+  return importantMissingFields;
 }

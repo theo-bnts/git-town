@@ -74,9 +74,15 @@ export default function RepositoriesPanel() {
   const notify = useNotification();
   
   const handleOpenStats = (repoId) => {
-    setSelectedRepoId(repoId);
-    setStatsModalOpen(true);
+    console.log(`[Panel] Ouverture des stats pour le dépôt: ${repoId}`);
+    // Garantir une mise à jour atomique de l'état
     setStatsErrorMessage(null);
+    // On définit d'abord l'ID du repo avant d'ouvrir le modal
+    setSelectedRepoId(repoId);
+    // On utilise un timeout de 0 pour garantir que l'état est bien mis à jour
+    setTimeout(() => {
+      setStatsModalOpen(true);
+    }, 0);
   };
 
   const handleCloseStatsModal = () => {
@@ -242,15 +248,16 @@ export default function RepositoriesPanel() {
         />
       )}
       
-      {statsModalOpen && selectedRepoId && (
+      {statsModalOpen && selectedRepoId ? (
         <RepositoryStatsModal
+          key={`stats-modal-${selectedRepoId}`} 
           isOpen={statsModalOpen}
           onClose={handleCloseStatsModal}
           repositoryId={selectedRepoId}
           onError={handleStatsError}
           options={{ simulateMode }}
         />
-      )}
+      ) : null}
     </>
   );
 }

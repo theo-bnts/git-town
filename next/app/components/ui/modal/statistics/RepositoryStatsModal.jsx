@@ -17,6 +17,10 @@ import { modalStyles } from '@/app/styles/tailwindStyles';
  * Gère le chargement, les timeouts et les données partielles
  */
 export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, onError, options = {} }) {
+  // Un identifiant unique pour cette instance du modal
+  const modalInstanceRef = useRef(`stats-modal-${Date.now()}`);
+  
+  // N'utiliser le hook que si le modal est ouvert pour éviter des appels inutiles
   const { 
     formattedStats, 
     loading, 
@@ -25,12 +29,25 @@ export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, on
     canRefresh,
     missingFields,
     handleRetry,
-    isEmpty
+    isEmpty,
+    autoRetrying
   } = useRepositoryStats(repositoryId, isOpen, options);
   
   const modalContentRef = useRef(null);
   const [attemptCount, setAttemptCount] = useState(0);
   const maxAttempts = 2;
+  
+  // Logging pour déboguer les instances multiples
+  useEffect(() => {
+    if (isOpen) {
+      console.log(`[Modal] Ouverture du modal ${modalInstanceRef.current} pour le dépôt ${repositoryId}`);
+    }
+    return () => {
+      if (isOpen) {
+        console.log(`[Modal] Fermeture du modal ${modalInstanceRef.current} pour le dépôt ${repositoryId}`);
+      }
+    };
+  }, [isOpen, repositoryId]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -76,17 +93,22 @@ export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, on
 
   if (!isOpen) return null;
 
-  // Modifier cette condition pour afficher la LoadingCard même pour les dépôts vides
-  const shouldShowLoadingCard = loading || isEmpty || !formattedStats;
+  // N'afficher la LoadingCard que si aucune donnée n'est disponible
+  // ou si le dépôt est vide (pas de commits)
+  const shouldShowLoadingCard = (!formattedStats && loading) || isEmpty;
+  
+  // Forcer l'affichage des données si disponibles, même partielles
+  const forceShowData = Boolean(formattedStats && !isEmpty);
 
   return (
     <div className={modalStyles.overlay} onClick={handleOutsideClick}>
-      {shouldShowLoadingCard ? (
+      {shouldShowLoadingCard && !forceShowData ? (
         <LoadingCard 
           onClose={onClose} 
           onTimeout={handleTimeout}
           error={error}
-          hasPartialData={Boolean(formattedStats && isPartialData)} 
+          hasPartialData={Boolean(formattedStats && isPartialData)}
+          autoRetrying={autoRetrying}
         />
       ) : (
         <div className={modalStyles.container}>
@@ -111,12 +133,13 @@ export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, on
     
     return (
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 xl:gap-6">
-        {isPartialData && (
+        {isPartialData && canRefresh && (
           <div className="col-span-1 xl:col-span-2">
             <PartialDataAlert 
               onRetry={retryWithClear}
               missingFields={missingFields}
               canRefresh={canRefresh}
+              autoRetrying={autoRetrying}
             />
           </div>
         )}
@@ -125,6 +148,7 @@ export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, on
           <StatsCard 
             formattedStats={formattedStats}
             onClose={onClose}
+            isLoading={loading}
           />
         </div>
         
@@ -132,6 +156,7 @@ export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, on
           <UserContributionsSection 
             formattedStats={formattedStats}
             isPartialData={isPartialData}
+            isLoading={loading}
           />
         </div>
       </div>
