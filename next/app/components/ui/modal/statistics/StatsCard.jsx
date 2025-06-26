@@ -19,7 +19,6 @@ export default function StatsCard({ formattedStats, onClose, isLoading = false }
   const [showInfo, setShowInfo] = useState(false);
   const { teamStats, languages, globalStats, userStats } = formattedStats || {};
   
-  // Considérer les statistiques comme disponibles même si partielles
   const hasGlobalStats = Boolean(globalStats || languages);
 
   return (

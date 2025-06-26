@@ -5,22 +5,24 @@ import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import Spinner from '@/app/components/ui/Spinner';
 import { AlertIcon, SyncIcon } from '@primer/octicons-react';
-import { textStyles, cardStyles, buttonStyles } from '@/app/styles/tailwindStyles';
+import { textStyles } from '@/app/styles/tailwindStyles';
+import { STATISTICS_CONFIG } from '@/app/config/config';
 
 /**
  * Alerte affichée lorsque certaines données statistiques sont manquantes
  */
-export default function PartialDataAlert({ onRetry, missingFields = [], canRefresh = true, autoRetrying = false }) {
+export default function PartialDataAlert({ 
+  onRetry, 
+  missingFields = [], 
+  canRefresh = true, 
+  autoRetrying = false }
+) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   const handleRetry = () => {
     setIsRefreshing(true);
     onRetry();
-    
-    // Simuler l'animation pendant un court moment même si la réponse est rapide
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1000);
+    setIsRefreshing(false);
   };
   
   return (
@@ -38,8 +40,8 @@ export default function PartialDataAlert({ onRetry, missingFields = [], canRefre
             
             <p className={textStyles.alertText + " mt-1"}>
               {autoRetrying 
-                ? "Récupération automatique des données manquantes en cours..." 
-                : "Certaines statistiques sont en cours de calcul par GitHub. Vous pouvez rafraîchir pour tenter de récupérer les données manquantes."}
+                ? STATISTICS_CONFIG.PARTIAL_DATA_MESSAGES.AUTO_RETRYING 
+                : STATISTICS_CONFIG.PARTIAL_DATA_MESSAGES.MANUAL_REFRESH}
             </p>
             
             {missingFields.length > 0 && (

@@ -7,17 +7,23 @@ import Spinner from '@/app/components/ui/Spinner';
 import { XIcon } from '@primer/octicons-react';
 import PropTypes from 'prop-types';
 import { textStyles } from '@/app/styles/tailwindStyles';
+import { STATISTICS_CONFIG } from '@/app/config/config';
 
-const TIMEOUT_THRESHOLD = 10; // Réduit de 30 à 10 secondes
-const FIRST_WARNING_THRESHOLD = 5; // Réduit de 15 à 5 secondes  
-const SECOND_WARNING_THRESHOLD = 8; // Réduit de 22 à 8 secondes
+const { ERROR_MESSAGES, LOADING } = STATISTICS_CONFIG;
+const { 
+  TIMEOUT_THRESHOLD, 
+  FIRST_WARNING_THRESHOLD, 
+  SECOND_WARNING_THRESHOLD,
+  MESSAGES
+} = LOADING;
 
-const ERROR_MESSAGES = {
-  GATEWAY_TIMEOUT: "Le serveur a mis trop de temps à répondre. Le dépôt est peut-être trop volumineux ou vide.",
-  LOADING_FAILED: "Le chargement des statistiques a échoué. Le dépôt est peut-être vide ou l'API GitHub n'est pas disponible."
-};
+export default function LoadingCard({ 
+  onClose, 
+  onTimeout, 
+  error, 
+  hasPartialData = false, 
+  autoRetrying = false }) {
 
-export default function LoadingCard({ onClose, onTimeout, error, hasPartialData = false, autoRetrying = false }) {
   const [loadingTime, setLoadingTime] = useState(0);
   
   useEffect(() => {
@@ -31,11 +37,8 @@ export default function LoadingCard({ onClose, onTimeout, error, hasPartialData 
       return () => clearTimeout(closeTimer);
     }
   }, [error, onTimeout, onClose]);
-  
-  // Initialiser le timer de timeout pour afficher un message d'erreur
-  // si les données ne sont pas reçues rapidement
+
   useEffect(() => {
-    // Ne pas initialiser le timer si nous avons déjà des données ou si une tentative auto est en cours
     if (hasPartialData || autoRetrying) {
       return;
     }
@@ -46,8 +49,6 @@ export default function LoadingCard({ onClose, onTimeout, error, hasPartialData 
         if (newTime >= TIMEOUT_THRESHOLD) {
           clearInterval(timer);
           
-          // Si on n'a toujours pas de données après le timeout,
-          // afficher un message d'erreur et fermer le modal
           setTimeout(() => {
             onTimeout?.(ERROR_MESSAGES.LOADING_FAILED);
             onClose?.();
@@ -65,8 +66,8 @@ export default function LoadingCard({ onClose, onTimeout, error, hasPartialData 
     
     return (
       <p className={textStyles.warning}>
-        Le chargement prend plus de temps que prévu...
-        {loadingTime > SECOND_WARNING_THRESHOLD && " Le dépôt est peut-être vide ou contient peu de commits."}
+        {MESSAGES.LONG_WAIT_WARNING}
+        {loadingTime > SECOND_WARNING_THRESHOLD && ` ${MESSAGES.VERY_LONG_WAIT_WARNING}`}
       </p>
     );
   };
@@ -90,12 +91,12 @@ export default function LoadingCard({ onClose, onTimeout, error, hasPartialData 
           />
           
           <h3 className={`text-lg font-medium ${textStyles.default}`}>
-            {autoRetrying ? 'Amélioration des données...' : 'Chargement des statistiques...'}
+            {autoRetrying ? MESSAGES.AUTO_RETRYING_TITLE : MESSAGES.STANDARD_TITLE}
           </h3>
           <p className={textStyles.subtle}>
             {autoRetrying 
-              ? 'Récupération de données supplémentaires en cours. L\'affichage sera automatiquement mis à jour.' 
-              : 'Veuillez patienter pendant la récupération des données.'}
+              ? MESSAGES.AUTO_RETRYING_SUBTITLE
+              : MESSAGES.STANDARD_SUBTITLE}
           </p>
           
           {!autoRetrying && renderWarningMessage()}

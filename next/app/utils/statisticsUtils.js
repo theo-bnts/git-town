@@ -53,11 +53,9 @@ export function calculateStats(entity, options = {}) {
   
   let totalCommits;
   
-  // Pour les statistiques d'équipe, utiliser le total fourni par l'API si disponible
   if (isTeam && entity.TotalCommits !== undefined) {
     totalCommits = entity.TotalCommits;
   } else {
-    // Sinon recalculer à partir des commits hebdomadaires
     const counts = entity.Commits?.Weekly?.Counts || [];
     totalCommits = safeArraySum(counts);
   }
@@ -87,7 +85,6 @@ export function generateGlobalStatsFromUsers(users = []) {
     return null;
   }
   
-  // Structure pour stocker les résultats agrégés
   const aggregatedStats = {
     Commits: {
       Weekly: { 
@@ -106,28 +103,22 @@ export function generateGlobalStatsFromUsers(users = []) {
     }
   };
   
-  // Trouve le premier utilisateur avec des données de commits
   const firstUserWithCommits = users.find(u => u.Commits?.Weekly?.Counts?.length > 0);
   
   if (firstUserWithCommits) {
-    // Copier la date de référence du premier jour
     aggregatedStats.Commits.Weekly.FirstDayOfFirstWeek = 
       firstUserWithCommits.Commits.Weekly.FirstDayOfFirstWeek;
     
-    // Déterminer la longueur maximale des tableaux de commits
     const maxLength = Math.max(
       ...users.map(u => (u.Commits?.Weekly?.Counts?.length || 0))
     );
     
-    // Préparer les tableaux avec des zéros
     for (let i = 0; i < maxLength; i++) {
       aggregatedStats.Commits.Weekly.Counts[i] = 0;
       aggregatedStats.Lines.Weekly.Counts[i] = { Additions: 0, Deletions: 0 };
     }
     
-    // Agréger les données de tous les utilisateurs
     users.forEach(user => {
-      // Agréger les commits
       if (user.Commits?.Weekly?.Counts) {
         user.Commits.Weekly.Counts.forEach((count, idx) => {
           if (idx < aggregatedStats.Commits.Weekly.Counts.length) {
@@ -136,7 +127,6 @@ export function generateGlobalStatsFromUsers(users = []) {
         });
       }
       
-      // Agréger les lignes
       if (user.Lines?.Weekly?.Counts) {
         user.Lines.Weekly.Counts.forEach((lineData, idx) => {
           if (idx < aggregatedStats.Lines.Weekly.Counts.length) {
@@ -146,7 +136,6 @@ export function generateGlobalStatsFromUsers(users = []) {
         });
       }
       
-      // Agréger les pull requests
       aggregatedStats.PullRequests.Open += (user.PullRequests?.Open || 0);
       aggregatedStats.PullRequests.Closed += (user.PullRequests?.Closed || 0);
     });

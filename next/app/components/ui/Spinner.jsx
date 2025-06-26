@@ -19,14 +19,12 @@ export default function Spinner({
   thickness = '4',
   className = '',
 }) {
-  // Déterminer les dimensions en fonction de la taille
   const dimensions = {
     sm: 'w-4 h-4',
     md: 'w-8 h-8',
     lg: 'w-16 h-16',
   }[size] || 'w-8 h-8';
   
-  // Si thickness est un nombre simple, le convertir en border-{n}
   const borderThickness = thickness.toString().match(/^\d+$/) 
     ? `border-${thickness}` 
     : thickness;

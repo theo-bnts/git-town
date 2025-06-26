@@ -16,11 +16,14 @@ import { modalStyles } from '@/app/styles/tailwindStyles';
  * Modal affichant les statistiques détaillées d'un dépôt
  * Gère le chargement, les timeouts et les données partielles
  */
-export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, onError, options = {} }) {
-  // Un identifiant unique pour cette instance du modal
-  const modalInstanceRef = useRef(`stats-modal-${Date.now()}`);
+export default function RepositoryStatsModal({ 
+  isOpen, 
+  onClose, 
+  repositoryId, 
+  onError, 
+  options = {} }
+) {
   
-  // N'utiliser le hook que si le modal est ouvert pour éviter des appels inutiles
   const { 
     formattedStats, 
     loading, 
@@ -36,18 +39,6 @@ export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, on
   const modalContentRef = useRef(null);
   const [attemptCount, setAttemptCount] = useState(0);
   const maxAttempts = 2;
-  
-  // Logging pour déboguer les instances multiples
-  useEffect(() => {
-    if (isOpen) {
-      console.log(`[Modal] Ouverture du modal ${modalInstanceRef.current} pour le dépôt ${repositoryId}`);
-    }
-    return () => {
-      if (isOpen) {
-        console.log(`[Modal] Fermeture du modal ${modalInstanceRef.current} pour le dépôt ${repositoryId}`);
-      }
-    };
-  }, [isOpen, repositoryId]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -93,11 +84,8 @@ export default function RepositoryStatsModal({ isOpen, onClose, repositoryId, on
 
   if (!isOpen) return null;
 
-  // N'afficher la LoadingCard que si aucune donnée n'est disponible
-  // ou si le dépôt est vide (pas de commits)
   const shouldShowLoadingCard = (!formattedStats && loading) || isEmpty;
   
-  // Forcer l'affichage des données si disponibles, même partielles
   const forceShowData = Boolean(formattedStats && !isEmpty);
 
   return (

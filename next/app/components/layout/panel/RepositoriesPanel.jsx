@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UploadIcon, GraphIcon, DashIcon, CheckIcon, PencilIcon, ArchiveIcon, DuplicateIcon, CommentIcon, FileZipIcon, MarkGithubIcon, BeakerIcon } from '@primer/octicons-react';
+import { UploadIcon, GraphIcon, DashIcon, CheckIcon, PencilIcon, ArchiveIcon, DuplicateIcon, CommentIcon, FileZipIcon, MarkGithubIcon } from '@primer/octicons-react';
 
 import Button from '@/app/components/ui/Button';
 import CrudPanel from './CrudPanel';
@@ -69,17 +69,11 @@ export default function RepositoriesPanel() {
   const [statsErrorMessage, setStatsErrorMessage] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toArchive, setToArchive] = useState(null);
-  const [simulateMode, setSimulateMode] = useState(null);
-  const [showSimulateOptions, setShowSimulateOptions] = useState(false);
   const notify = useNotification();
   
   const handleOpenStats = (repoId) => {
-    console.log(`[Panel] Ouverture des stats pour le dépôt: ${repoId}`);
-    // Garantir une mise à jour atomique de l'état
     setStatsErrorMessage(null);
-    // On définit d'abord l'ID du repo avant d'ouvrir le modal
     setSelectedRepoId(repoId);
-    // On utilise un timeout de 0 pour garantir que l'état est bien mis à jour
     setTimeout(() => {
       setStatsModalOpen(true);
     }, 0);
@@ -98,62 +92,10 @@ export default function RepositoriesPanel() {
     setStatsErrorMessage(null);
   };
 
-  const SimulationOptions = () => {
-    if (!showSimulateOptions) return null;
-    
-    return (
-      <div className="absolute z-50 right-0 mt-2 bg-white shadow-lg rounded-md p-2 border border-gray-200 w-44">
-        <p className="text-xs font-bold mb-2 text-gray-600 px-2">Mode de simulation:</p>
-        {['complete', 'partial', 'minimal', 'empty', 'error', 'timeout'].map(mode => (
-          <button
-            key={mode}
-            onClick={() => {
-              setSimulateMode(mode);
-              setShowSimulateOptions(false);
-            }}
-            className={`block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-100 ${
-              simulateMode === mode ? 'bg-blue-50 text-blue-700' : ''
-            }`}
-          >
-            {mode.charAt(0).toUpperCase() + mode.slice(1)}
-          </button>
-        ))}
-        <hr className="my-1" />
-        <button
-          onClick={() => {
-            setSimulateMode(null);
-            setShowSimulateOptions(false);
-          }}
-          className="block w-full text-left px-2 py-1 text-sm text-red-600 rounded hover:bg-gray-100"
-        >
-          Désactiver
-        </button>
-      </div>
-    );
-  };
-
   const importBtn = (
     <Button key="import" variant="default_sq" onClick={() => setImportOpen(true)}>
       <UploadIcon size={24} className="text-white" />
     </Button>
-  );
-
-  const simulateBtn = (
-    <div className="relative" key="simulate">
-      <Button 
-        variant={simulateMode ? "warn_sq" : "default_sq"} 
-        onClick={() => setShowSimulateOptions(!showSimulateOptions)}
-        title="Mode simulation de données partielles"
-      >
-        <BeakerIcon size={24} className="text-white" />
-      </Button>
-      {simulateMode && (
-        <div className="absolute -bottom-2 -right-2 bg-yellow-500 text-white text-xs px-1 rounded-full">
-          {simulateMode.substring(0, 1).toUpperCase()}
-        </div>
-      )}
-      <SimulationOptions />
-    </div>
   );
 
   const actions = (row, helpers) => [
@@ -171,11 +113,6 @@ export default function RepositoriesPanel() {
     {
       icon: <DuplicateIcon size={16} />,
       onClick: () => console.log('Duplicate repo:', row.raw),
-      variant: 'action_sq',
-    },
-    {
-      icon: <CommentIcon size={16} />,
-      onClick: () => console.log('Comment repo:', row.raw),
       variant: 'action_sq',
     },
     {
@@ -214,7 +151,7 @@ export default function RepositoriesPanel() {
             <>Voulez-vous vraiment supprimer le dépôt <strong>{`${repo.Template?.EnseignementUnit?.Initialism} ${repo.Template?.Year}`}</strong>&nbsp;?</>
           ),
         }}
-        toolbarButtons={[importBtn, simulateBtn]}
+        toolbarButtons={[importBtn]}
         actions={actions}
       />
       {importOpen && (
@@ -255,7 +192,6 @@ export default function RepositoriesPanel() {
           onClose={handleCloseStatsModal}
           repositoryId={selectedRepoId}
           onError={handleStatsError}
-          options={{ simulateMode }}
         />
       ) : null}
     </>
