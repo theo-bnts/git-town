@@ -1,4 +1,3 @@
-// app/login/authorize/page.jsx
 'use client';
 
 import React, { Suspense } from 'react';

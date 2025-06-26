@@ -21,6 +21,7 @@ export default function FormModal({
   onSubmit,
   metadata = {},
   isLoading = false,
+  disableSubmit = false,
 }) {
   const computeInitValues = () =>
     fields.reduce((acc, { name, value }) => ({ ...acc, [name]: value }), {});
@@ -44,11 +45,11 @@ export default function FormModal({
   }, [isLoading, isOpen]);
 
   const change = (name, value) => {
-    setValues((v) => ({ ...v, [name]: value }));
+    setValues(v => ({ ...v, [name]: value }));
     if (apiError) onClearApiError();
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
@@ -57,6 +58,8 @@ export default function FormModal({
       setIsSubmitting(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <>
@@ -70,10 +73,11 @@ export default function FormModal({
           isLoading ? null : (
             <div className="flex justify-center">
               <Button
-                variant="default"
+                variant={disableSubmit ? 'disabled' : 'default'}
                 type="submit"
                 form={formKey}
                 loading={isSubmitting}
+                disabled={disableSubmit}
               >
                 <span className={textStyles.defaultWhite}>
                   {isSubmitting ? 'Enregistrement' : 'Enregistrer'}
@@ -89,11 +93,11 @@ export default function FormModal({
           </div>
         ) : (
           <form id={formKey} className="space-y-4" onSubmit={handleSubmit}>
-            {fields.map((field) => (
+            {fields.map(field => (
               <FieldWrapper
                 key={field.name}
                 label={field.name}
-                error={errors?.[field.name]}
+                error={errors[field.name]}
               >
                 <FieldRenderer
                   field={field}

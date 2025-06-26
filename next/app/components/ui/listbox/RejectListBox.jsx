@@ -1,4 +1,3 @@
-// /app/components/ui/listbox/RejectListBox.jsx
 'use client';
 
 import React from 'react';

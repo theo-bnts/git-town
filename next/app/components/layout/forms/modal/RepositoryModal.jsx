@@ -8,10 +8,10 @@ import getTemplates from '@/app/services/api/templates/getTemplates';
 import getPromotions from '@/app/services/api/promotions/getPromotions';
 import getUsers from '@/app/services/api/users/getUsers';
 import getUsersRepository from '@/app/services/api/repositories/id/getUsersRepository';
-import replicateRepository from '@/app/services/api/repositories/id/replicateRepository';
 import saveRepositories from '@/app/services/api/repositories/saveRepositories';
 import putUserRepository from '@/app/services/api/users/id/repositories/putUserRepository';
 import deleteUserRepository from '@/app/services/api/users/id/repositories/deleteUserRepository';
+import replicateRepository from '@/app/services/api/repositories/id/replicateRepository';
 
 import FormModal from '@/app/components/ui/modal/FormModal';
 import StudentListBox from '@/app/components/ui/listbox/StudentListBox';
@@ -67,7 +67,7 @@ export default function RepositoryModal({
         ]);
 
         setTemplateOpts(
-          tpls.map((t) => ({
+          tpls.map(t => ({
             id: t.Id,
             value: `${t.EnseignementUnit.Initialism} - ${t.Year}`,
             full: t,
@@ -75,7 +75,7 @@ export default function RepositoryModal({
         );
 
         setPromotionOpts(
-          proms.map((p) => ({
+          proms.map(p => ({
             id: p.Id,
             value: `${p.Diploma.Initialism} ${p.PromotionLevel.Initialism} - ${p.Year}`,
             full: p,
@@ -84,8 +84,8 @@ export default function RepositoryModal({
 
         setTutorOpts(
           users
-            .filter((u) => u.Role?.Keyword !== 'student')
-            .map((u) => ({
+            .filter(u => u.Role?.Keyword !== 'student')
+            .map(u => ({
               id: u.Id,
               value: u.FullName,
               full: u,
@@ -93,16 +93,17 @@ export default function RepositoryModal({
         );
 
         const studentOpts = users
-          .filter((u) => u.Role?.Keyword === 'student')
-          .map((u) => ({
+          .filter(u => u.Role?.Keyword === 'student')
+          .map(u => ({
             id: u.Id,
-            value: `${u.FullName} (${u.EmailAddress})`,
+            value: u.FullName,
+            label: `${u.FullName} (${u.EmailAddress})`,
             full: u,
           }));
         setStudentOptions(studentOpts);
 
         const preSelected = repoStudents
-          .map((stu) => studentOpts.find((o) => o.id === stu.Id))
+          .map(stu => studentOpts.find(o => o.id === stu.Id))
           .filter(Boolean);
         setSelectedStudents(preSelected);
         setOriginalStudents(repository.Id ? preSelected : []);
@@ -115,46 +116,44 @@ export default function RepositoryModal({
   }, [isOpen, token, repository?.Id, duplicatedFromId, notify]);
 
   const initTemplateOpt = useMemo(
-    () => templateOpts.find((o) => o.id === repository.Template?.Id) || null,
+    () => templateOpts.find(o => o.id === repository.Template?.Id) || null,
     [templateOpts, repository.Template]
   );
   const initPromotionOpt = useMemo(
-    () => promotionOpts.find((o) => o.id === repository.Promotion?.Id) || null,
+    () => promotionOpts.find(o => o.id === repository.Promotion?.Id) || null,
     [promotionOpts, repository.Promotion]
   );
   const initTutorOpt = useMemo(
-    () => tutorOpts.find((o) => o.id === repository.User?.Id) || null,
+    () => tutorOpts.find(o => o.id === repository.User?.Id) || null,
     [tutorOpts, repository.User]
   );
 
-  const fields = useMemo(
-    () => [
-      { name: 'Modèle', options: templateOpts, value: initTemplateOpt },
-      { name: 'Promotion', options: promotionOpts, value: initPromotionOpt },
-      { name: 'Tuteur', options: tutorOpts, value: initTutorOpt },
-      {
-        name: 'Étudiants',
-        value: selectedStudents,
-        render: (value, onChange) => (
-          <StudentListBox
-            items={value}
-            studentOptions={studentOptions}
-            onChange={onChange}
-          />
-        ),
-      },
-    ],
-    [
-      templateOpts,
-      promotionOpts,
-      tutorOpts,
-      studentOptions,
-      initTemplateOpt,
-      initPromotionOpt,
-      initTutorOpt,
-      selectedStudents,
-    ]
-  );
+  const fields = useMemo(() => [
+    { name: 'Modèle', options: templateOpts, value: initTemplateOpt },
+    { name: 'Promotion', options: promotionOpts, value: initPromotionOpt },
+    { name: 'Tuteur', options: tutorOpts, value: initTutorOpt },
+    {
+      name: 'Étudiants',
+      value: selectedStudents,
+      render: (value, onChange) => (
+        <StudentListBox
+          items={value}
+          onChange={onChange}
+          studentOptions={studentOptions}
+          placeholder="Ajouter un étudiant"
+        />
+      ),
+    },
+  ], [
+    templateOpts,
+    promotionOpts,
+    tutorOpts,
+    studentOptions,
+    initTemplateOpt,
+    initPromotionOpt,
+    initTutorOpt,
+    selectedStudents,
+  ]);
 
   function validate(values) {
     const errs = {};
@@ -164,7 +163,7 @@ export default function RepositoryModal({
     return errs;
   }
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async values => {
     const errs = validate(values);
     if (Object.keys(errs).length) {
       setFieldErrors(errs);
@@ -172,12 +171,9 @@ export default function RepositoryModal({
     }
     setFieldErrors({});
 
-    const modele = values['Modèle'];
-    const promotion = values['Promotion'];
-    const tuteur = values['Tuteur'];
-    const etudiants = values['Étudiants'] || [];
-
+    const { Modèle: modele, Promotion: promotion, Tuteur: tuteur, Étudiants: etudiants = [] } = values;
     let repoPayload = {};
+
     if (!repository.Id) {
       repoPayload = {
         Template: { Id: modele.id },
@@ -193,14 +189,13 @@ export default function RepositoryModal({
         repoPayload.User = { Id: tuteur.id };
     }
 
-    const origIds = originalStudents.map((s) => s.id).sort();
-    const newIds = etudiants.map((s) => s.id).sort();
-
+    const origIds = originalStudents.map(s => s.id).sort();
+    const newIds = etudiants.map(s => s.id).sort();
     const toAdd = repository.Id
-      ? newIds.filter((id) => !origIds.includes(id))
+      ? newIds.filter(id => !origIds.includes(id))
       : newIds;
     const toRemove = repository.Id
-      ? origIds.filter((id) => !newIds.includes(id))
+      ? origIds.filter(id => !newIds.includes(id))
       : [];
 
     if (
@@ -223,17 +218,17 @@ export default function RepositoryModal({
 
       if (repoId && (toAdd.length || toRemove.length)) {
         await Promise.all([
-          ...toAdd.map((userId) =>
+          ...toAdd.map(userId =>
             putUserRepository(userId, { Repository: { Id: repoId } }, token)
           ),
-          ...toRemove.map((userId) =>
+          ...toRemove.map(userId =>
             deleteUserRepository(userId, repoId, token)
           ),
         ]);
       }
 
       if (duplicatedFromId) {
-        notify('Duplication du dépôt en cours, veuillez patienter...', 'info');
+        notify('Duplication du dépôt en cours, veuillez patienter...', 'success');
         await replicateRepository(duplicatedFromId, repoId, token);
       }
 

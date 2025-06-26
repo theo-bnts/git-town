@@ -1,5 +1,3 @@
-// /app/api/cookies/set/route.js
-
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {

@@ -1,5 +1,3 @@
-// middleware.js
-
 import { NextResponse } from 'next/server';
 import { userRoute } from '@/app/services/routes';
 import { encodeUserInfo } from '@/app/services/auth';

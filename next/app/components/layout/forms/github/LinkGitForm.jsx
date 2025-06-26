@@ -1,4 +1,3 @@
-// app/components/layout/LinkGitForm.jsx
 'use client';
 
 import React from 'react';

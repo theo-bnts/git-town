@@ -1,4 +1,3 @@
-// app/services/api/repositories/id/archiveRepository.js
 'use client';
 
 import { handleApiError } from '@/app/services/errorHandler';

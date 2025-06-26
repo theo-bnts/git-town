@@ -1,4 +1,5 @@
-// /app/services/api/users/saveUser.js
+'use client';
+
 import { handleApiError } from '@/app/services/errorHandler';
 import { userRoute, usersRoute } from '@/app/services/routes';
 import saveUserPromotions from '@/app/services/api/users/saveUserPromotions';

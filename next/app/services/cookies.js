@@ -1,5 +1,3 @@
-// app/services/cookies.js
-
 export async function setCookie(key, value) {
   await fetch(`/api/cookies/set?key=${encodeURIComponent(key)}&value=${encodeURIComponent(value)}`, {
     method: 'POST',

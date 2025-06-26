@@ -1,4 +1,3 @@
-// /app/services/api/promotions/id/deletePromotion.js
 'use client';
 
 import { promotionRoute } from '@/app/services/routes';

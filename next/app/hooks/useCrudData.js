@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useCallback, useEffect } from 'react';
 
 import useAuthToken from '@/app/hooks/useAuthToken';

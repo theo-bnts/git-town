@@ -1,5 +1,3 @@
-// app/components/ui/Input.jsx
-
 'use client';
 
 import React, { useState } from 'react';

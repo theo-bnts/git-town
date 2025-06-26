@@ -1,4 +1,3 @@
-// app/components/layout/LinkOrgForm.jsx
 'use client';
 
 import React, { useState, useEffect } from 'react';

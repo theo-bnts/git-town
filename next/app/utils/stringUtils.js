@@ -1,4 +1,3 @@
-// /app/utils/stringUtils.js
 'use client';
 
 export function normalizeString(str) {

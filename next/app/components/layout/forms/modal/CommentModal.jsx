@@ -9,7 +9,13 @@ import ModalBase from '@/app/components/ui/modal/ModalBase';
 import LoadingSpinner from '@/app/components/ui/LoadingSpinner';
 import { useNotification } from '@/app/context/NotificationContext';
 
-export default function CommentModal({ repositoryId, isOpen, onClose, onSave }) {
+export default function CommentModal({ 
+  repositoryId, 
+  isOpen, 
+  onClose, 
+  onSave,
+  isArchived = false, 
+}) {
   const token = useAuthToken();
   const notify = useNotification();
 
@@ -78,6 +84,7 @@ export default function CommentModal({ repositoryId, isOpen, onClose, onSave }) 
       onClose={onClose}
       onSubmit={handleSubmit}
       isLoading={false}
+      disableSubmit={isArchived}
     />
   );
 }

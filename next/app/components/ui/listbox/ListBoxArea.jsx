@@ -1,4 +1,3 @@
-// app/components/ui/listbox/ListBoxArea.jsx
 'use client';
 
 import React from 'react';

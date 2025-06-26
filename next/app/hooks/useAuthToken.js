@@ -1,4 +1,3 @@
-// app/hooks/useAuthToken.js
 import { useState, useEffect } from 'react';
 import { getCookie } from '@/app/services/cookies';
 

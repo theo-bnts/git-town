@@ -8,6 +8,7 @@ import getDiplomas from '@/app/services/api/diplomas/getDiplomas';
 import getPromotionLevels from '@/app/services/api/promotion-levels/getPromotionLevels';
 import FormModal from '@/app/components/ui/modal/FormModal';
 import { useNotification } from '@/app/context/NotificationContext';
+import { isYearValid } from '@/app/services/validators';
 
 export default function PromotionModal({
   isOpen,
@@ -80,11 +81,14 @@ export default function PromotionModal({
 
   function validate(values) {
     const errs = {};
-    if (!values.Diplôme?.id) errs.Diplôme = 'Veuillez sélectionner un diplôme.';
-    if (!values.Niveau?.id) errs.Niveau = 'Veuillez sélectionner un niveau.';
-    if (!values.Année) errs.Année = "L'année est obligatoire.";
-    else if (!/^\d{4}$/.test(values.Année))
-      errs.Année = "L'année doit être un nombre à 4 chiffres.";
+    if (!values.Diplôme?.id) 
+      errs.Diplôme = 'Veuillez sélectionner un diplôme.';
+    if (!values.Niveau?.id) 
+      errs.Niveau = 'Veuillez sélectionner un niveau.';
+    if (!values.Année) 
+      errs.Année = "L'année est obligatoire.";
+    else if (!isYearValid(values.Année))
+      errs.Année = "L'année doit être valide (4 chiffres, entre 2000 et 2099).";
     return errs;
   }
 

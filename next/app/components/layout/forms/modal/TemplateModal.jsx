@@ -14,6 +14,8 @@ import ModalBase from '@/app/components/ui/modal/ModalBase';
 import LoadingSpinner from '@/app/components/ui/LoadingSpinner';
 import { useNotification } from '@/app/context/NotificationContext';
 
+import { isYearValid } from '@/app/services/validators';
+
 export default function TemplateModal({ isOpen, initialData = {}, duplicatedFromId = null, onClose, onSave }) {
   const token = useAuthToken();
   const notify = useNotification();
@@ -66,20 +68,23 @@ export default function TemplateModal({ isOpen, initialData = {}, duplicatedFrom
     {
       name: 'Milestones',
       value: currMilestones,
-      render: (v, setV) => <MilestoneListBox items={v} onChange={setV} />,
+      render: (values, setV) => <MilestoneListBox items={values} onChange={setV} />,
     },
   ], [unitOpts, initialData.EnseignementUnit, initialData.Year, currMilestones]);
 
-  const validate = v => {
-    const e = {};
-    if (!v.UE?.id) e.UE = 'Sélectionnez une UE';
-    if (!v.Année) e.Année = 'Année requise';
-    else if (!/^\d{4}$/.test(v.Année)) e.Année = 'Format AAAA';
-    return e;
+  const validate = values => {
+    const errs = {};
+    if (!values.UE?.id) 
+      errs.UE = 'Sélectionnez une UE';
+    if (!values.Année) 
+      errs.Année = 'Année requise';
+    else if (!isYearValid(values.Année))
+      errs.Année = "Format d'année invalide (4 chiffres, entre 2000 et 2099).";
+    return errs;
   };
 
-  const handleSubmit = async v => {
-    const errs = validate(v);
+  const handleSubmit = async values => {
+    const errs = validate(values);
     if (Object.keys(errs).length) return setFieldErrors(errs);
     setFieldErrors({});
 
@@ -87,12 +92,12 @@ export default function TemplateModal({ isOpen, initialData = {}, duplicatedFrom
       let tplId = initialData.Id;
       if (!tplId) {
         tplId = (await saveTemplate(null, {
-          EnseignementUnit: { Id: v.UE.id },
-          Year: +v.Année,
+          EnseignementUnit: { Id: values.UE.id },
+          Year: +values.Année,
         }, token)).Id;
 
         await Promise.all(
-          (v.Milestones ?? []).map(m => {
+          (values.Milestones ?? []).map(m => {
             let Title = m.Title, Date = m.Date;
             if ((!Title || !Date) && typeof m.value === 'string') {
               [Title = '', Date = ''] = m.value.split(' – ');
@@ -107,11 +112,11 @@ export default function TemplateModal({ isOpen, initialData = {}, duplicatedFrom
         );
       } else {
         const patch = {};
-        if (v.UE.id !== initialData.EnseignementUnit?.Id) patch.EnseignementUnit = { Id: v.UE.id };
-        if (+v.Année !== initialData.Year) patch.Year = +v.Année;
+        if (values.UE.id !== initialData.EnseignementUnit?.Id) patch.EnseignementUnit = { Id: values.UE.id };
+        if (+values.Année !== initialData.Year) patch.Year = +values.Année;
         if (Object.keys(patch).length) await saveTemplate(tplId, patch, token);
 
-        const all = v.Milestones ?? [];
+        const all = values.Milestones ?? [];
         const kept = all.filter(m => origMilestones.some(o => o.id === m.id));
         const added = all.filter(m => !origMilestones.some(o => o.id === m.id));
         const removed = origMilestones.filter(o => !all.some(m => m.id === o.id));
@@ -145,8 +150,8 @@ export default function TemplateModal({ isOpen, initialData = {}, duplicatedFrom
       notify(initialData.Id ? 'Modèle mis à jour' : 'Modèle créé', 'success');
       onSave();
       onClose();
-    } catch (e) {
-      notify(e.message || 'Erreur enregistrement', 'error');
+    } catch (errs) {
+      notify(errs.message || 'Erreur enregistrement', 'error');
     }
   };
 
