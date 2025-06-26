@@ -119,7 +119,7 @@ export default function UsersPanel({ role }) {
         ModalComponent={UserModal}
         modalProps={{
           confirmMessage: user => (
-            <>Voulez-vous vraiment supprimer <strong>{user.name}</strong> ?</>
+            <>Voulez-vous vraiment supprimer l'utilisateur <strong>{user.FullName}</strong> ?</>
           ),
         }}
         toolbarButtons={role === 'administrator' ? [importButton] : []}

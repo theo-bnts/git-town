@@ -24,5 +24,5 @@ export default async function getUsers(token) {
   if (res.ok)
       return data;
 
-  handleApiError(res, data);
+  throw handleApiError(res, data);
 }

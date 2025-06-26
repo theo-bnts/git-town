@@ -14,7 +14,7 @@ export default function ConfirmCard({ message, onConfirm, onCancel }) {
 
   const handleCancel = () => {
     onCancel?.();
-    notify('Action annulée', 'error');
+    notify('Action annulée', 'success');
   };
 
   return (
@@ -23,16 +23,16 @@ export default function ConfirmCard({ message, onConfirm, onCancel }) {
         <p className={`${textStyles.default} text-center`}>{message}</p>
         <div className="flex gap-4 mt-4 ml-auto">
           <button
-            onClick={handleConfirm}
-            className={`${buttonStyles.default} ${textStyles.defaultWhite}`}
-          >
-            Continuer
-          </button>
-          <button
             onClick={handleCancel}
-            className={`${buttonStyles.warn} ${textStyles.defaultWhite}`}
+            className={`${buttonStyles.outline} ${textStyles.default}`}
           >
             Annuler
+          </button>
+          <button
+            onClick={handleConfirm}
+            className={`${buttonStyles.warn} ${textStyles.defaultWhite}`}
+          >
+            Continuer
           </button>
         </div>
       </div>
