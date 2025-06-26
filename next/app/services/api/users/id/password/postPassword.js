@@ -13,18 +13,24 @@ import { handleApiError } from '@/app/services/errorHandler';
  */
 export default async function postPassword(userId, temporaryCode, newPassword) {
   const url = passwordRoute(userId);
+
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       TemporaryCode: temporaryCode.trim(),
-      Password: newPassword.trim(),
+      Password:      newPassword.trim(),
     }),
   });
 
-  const text = await res.text();
-  const data = text ? JSON.parse(text) : {};
+  let data = {};
+  try {
+    const text = await res.text();
+    data = text ? JSON.parse(text) : {};
+  } catch {
+  }
 
   if (res.ok) return data;
-  handleApiError(res, data);
+
+  throw handleApiError(res, data);
 }
