@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState } from 'react';
 import Input from '@/app/components/ui/Input';
 import Button from '@/app/components/ui/Button';
@@ -19,7 +18,7 @@ export default function MilestoneListBox({ items, onChange }) {
 }
 
 function MilestoneInner() {
-  const { addItem, updateItem } = useListBox();
+  const { addItem, updateItem, removeItem } = useListBox();
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -42,7 +41,7 @@ function MilestoneInner() {
 
   const save = () => {
     if (!validate()) return;
-    const data = { Title: title.trim(), Date: date };
+    const data = { Title: title.trim(), Date: date, value: `${title.trim()} – ${date}` };
     if (editingId) {
       updateItem(editingId, data);
     } else {
@@ -68,6 +67,7 @@ function MilestoneInner() {
           setTitle(item.Title);
           setDate(item.Date);
         }}
+        onDelete={(item) => removeItem(item.id)}
       />
 
       <Input

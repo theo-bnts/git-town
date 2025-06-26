@@ -1,57 +1,60 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
+
 import useAuthToken from '@/app/hooks/useAuthToken';
 import getEnseignementUnits from '@/app/services/api/enseignementUnit/getEnseignementUnits';
 import getTemplateMilestones from '@/app/services/api/templates/id/milestone/getTemplateMilestones';
 import saveTemplate from '@/app/services/api/templates/saveTemplate';
 import saveTemplateMilestone from '@/app/services/api/templates/id/milestone/saveTemplateMilestone';
 import deleteTemplateMilestone from '@/app/services/api/templates/id/milestone/id/deleteTemplateMilestone';
+
 import { MilestoneListBox } from '@/app/components/ui/listbox';
 import FormModal from '@/app/components/ui/modal/FormModal';
 import ModalBase from '@/app/components/ui/modal/ModalBase';
 import LoadingSpinner from '@/app/components/ui/LoadingSpinner';
 import { useNotification } from '@/app/context/NotificationContext';
 
-export default function TemplateModal({ isOpen, initialData = {}, onClose, onSave }) {
-  const token  = useAuthToken();
+export default function TemplateModal({ isOpen, initialData = {}, duplicatedFromId = null, onClose, onSave }) {
+  const token = useAuthToken();
   const notify = useNotification();
 
   const [unitOpts, setUnitOpts] = useState([]);
   const [origMilestones, setOrig] = useState([]);
   const [currMilestones, setCurr] = useState([]);
-  const [fieldErrors, setFieldErrors]= useState({});
-  const [loading, setLoading]= useState(true);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isOpen) return;
-    if (!token) return;
+    if (!isOpen || !token) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
         const calls = [getEnseignementUnits(token)];
-        if (initialData.Id) calls.push(getTemplateMilestones(initialData.Id, token));
+        const baseId = initialData.Id ?? duplicatedFromId;
+        if (baseId) calls.push(getTemplateMilestones(baseId, token));
         const [units, miles = []] = await Promise.all(calls);
 
         setUnitOpts(units.map(u => ({ id: u.Id, value: u.Initialism, full: u })));
 
-        if (initialData.Id) {
-          const norm = miles.map(m => ({
-            id: m.Id, Title: m.Title, Date: m.Date, value: `${m.Title} – ${m.Date}`,
-          }));
-          setOrig(norm);
-          setCurr(norm);
-        } else {
-          setOrig([]); setCurr([]);
-        }
-      } catch (e) {
+        const norm = miles.map(m => ({
+          id: initialData.Id ? m.Id : `local-${m.Id}`,
+          Title: m.Title,
+          Date: m.Date,
+          value: `${m.Title} – ${m.Date}`,
+        }));
+
+        setOrig(initialData.Id ? norm : []);
+        setCurr(norm);
+      } catch {
         notify('Erreur de chargement', 'error');
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
-  }, [isOpen, token, initialData.Id, notify]);
+  }, [isOpen, token, initialData.Id, duplicatedFromId, notify]);
 
   const fields = useMemo(() => [
     {
@@ -87,29 +90,38 @@ export default function TemplateModal({ isOpen, initialData = {}, onClose, onSav
           EnseignementUnit: { Id: v.UE.id },
           Year: +v.Année,
         }, token)).Id;
+
+        await Promise.all(
+          (v.Milestones ?? []).map(m => {
+            let Title = m.Title, Date = m.Date;
+            if ((!Title || !Date) && typeof m.value === 'string') {
+              [Title = '', Date = ''] = m.value.split(' – ');
+            }
+            return saveTemplateMilestone(
+              tplId,
+              null,
+              { Title: Title.trim(), Date: Date.trim() },
+              token
+            );
+          })
+        );
       } else {
         const patch = {};
-        if (v.UE.id  !== initialData.EnseignementUnit?.Id) patch.EnseignementUnit = { Id: v.UE.id };
-        if (+v.Année !== initialData.Year)                 patch.Year            = +v.Année;
-        if (Object.keys(patch).length)                     await saveTemplate(tplId, patch, token);
-      }
+        if (v.UE.id !== initialData.EnseignementUnit?.Id) patch.EnseignementUnit = { Id: v.UE.id };
+        if (+v.Année !== initialData.Year) patch.Year = +v.Année;
+        if (Object.keys(patch).length) await saveTemplate(tplId, patch, token);
 
-      if (initialData.Id) {
-        const all     = v.Milestones ?? [];
-        const kept    = all.filter(m => origMilestones.some(o => o.id === m.id));
-        const added   = all.filter(m => !origMilestones.some(o => o.id === m.id));
+        const all = v.Milestones ?? [];
+        const kept = all.filter(m => origMilestones.some(o => o.id === m.id));
+        const added = all.filter(m => !origMilestones.some(o => o.id === m.id));
         const removed = origMilestones.filter(o => !all.some(m => m.id === o.id));
 
         await Promise.all([
           ...removed.map(m => deleteTemplateMilestone(tplId, m.id, token)),
           ...added.map(m => {
-            let Title = '';
-            let Date  = '';
-            if (typeof m.value === 'string') {
+            let Title = m.Title, Date = m.Date;
+            if ((!Title || !Date) && typeof m.value === 'string') {
               [Title = '', Date = ''] = m.value.split(' – ');
-            } else {
-              Title = m.Title;
-              Date  = m.Date;
             }
             return saveTemplateMilestone(
               tplId,
@@ -122,7 +134,7 @@ export default function TemplateModal({ isOpen, initialData = {}, onClose, onSav
             const o = origMilestones.find(x => x.id === m.id);
             const diff = {};
             if (o.Title !== m.Title) diff.Title = m.Title;
-            if (o.Date  !== m.Date ) diff.Date  = m.Date;
+            if (o.Date !== m.Date) diff.Date = m.Date;
             return Object.keys(diff).length
               ? saveTemplateMilestone(tplId, m.id, diff, token)
               : Promise.resolve();
