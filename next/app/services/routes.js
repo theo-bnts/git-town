@@ -89,3 +89,12 @@ export const promotionLevelsRoute = () =>
 
 export const rolesRoute = () =>
   `${process.env.NEXT_PUBLIC_API_URL}/roles`;
+
+export const repositoryCommentRoute = (repoId) =>
+  `${process.env.NEXT_PUBLIC_API_URL}/repositories/${repoId}/comment`;
+
+export const replicateUsersPromotionRoute = (promotionId) =>
+  `${process.env.NEXT_PUBLIC_API_URL}/promotions/${promotionId}/replicate-users`;
+
+export const replicateSourceRepositoryRoute = (sourceId) =>
+  `${process.env.NEXT_PUBLIC_API_URL}/repositories/${sourceId}/replicate-source`;

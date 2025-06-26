@@ -1,199 +1,175 @@
 'use client';
-
 import { useState, useEffect, useMemo } from 'react';
+
 import useAuthToken from '@/app/hooks/useAuthToken';
 import getEnseignementUnits from '@/app/services/api/enseignementUnit/getEnseignementUnits';
 import getTemplateMilestones from '@/app/services/api/templates/id/milestone/getTemplateMilestones';
 import saveTemplate from '@/app/services/api/templates/saveTemplate';
 import saveTemplateMilestone from '@/app/services/api/templates/id/milestone/saveTemplateMilestone';
 import deleteTemplateMilestone from '@/app/services/api/templates/id/milestone/id/deleteTemplateMilestone';
+
 import { MilestoneListBox } from '@/app/components/ui/listbox';
 import FormModal from '@/app/components/ui/modal/FormModal';
+import ModalBase from '@/app/components/ui/modal/ModalBase';
+import LoadingSpinner from '@/app/components/ui/LoadingSpinner';
 import { useNotification } from '@/app/context/NotificationContext';
 
-export default function TemplateModal({
-  isOpen,
-  initialData = {},
-  onClose,
-  onSave,
-}) {
+export default function TemplateModal({ isOpen, initialData = {}, duplicatedFromId = null, onClose, onSave }) {
   const token = useAuthToken();
   const notify = useNotification();
 
-  const [unitOptions, setUnitOptions] = useState([]);
-  const [originalMilestones, setOriginalMilestones] = useState([]);
-  const [currentMilestones, setCurrentMilestones] = useState([]);
+  const [unitOpts, setUnitOpts] = useState([]);
+  const [origMilestones, setOrig] = useState([]);
+  const [currMilestones, setCurr] = useState([]);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!isOpen || !token) return;
-    (async () => {
-      try {
-        const units = await getEnseignementUnits(token);
-        setUnitOptions(
-          units.map(u => ({
-            id: u.Id,
-            value: u.Initialism,
-            full: u,
-          }))
-        );
-      } catch (err) {
-        notify('Erreur lors du chargement des UE', 'error');
-      }
-    })();
-  }, [isOpen, token, notify]);
 
-  useEffect(() => {
-    if (!isOpen || !token) {
-      setOriginalMilestones([]);
-      setCurrentMilestones([]);
-      return;
-    }
-    if (!initialData.Id) return;
-
-    (async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const list = await getTemplateMilestones(initialData.Id, token);
-        const norm = list.map(m => ({
-          id: m.Id,
+        const calls = [getEnseignementUnits(token)];
+        const baseId = initialData.Id ?? duplicatedFromId;
+        if (baseId) calls.push(getTemplateMilestones(baseId, token));
+        const [units, miles = []] = await Promise.all(calls);
+
+        setUnitOpts(units.map(u => ({ id: u.Id, value: u.Initialism, full: u })));
+
+        const norm = miles.map(m => ({
+          id: initialData.Id ? m.Id : `local-${m.Id}`,
           Title: m.Title,
           Date: m.Date,
           value: `${m.Title} – ${m.Date}`,
         }));
-        setOriginalMilestones(norm);
-        setCurrentMilestones(norm);
-      } catch (err) {
-        notify('Erreur lors du chargement des milestones', 'error');
+
+        setOrig(initialData.Id ? norm : []);
+        setCurr(norm);
+      } catch {
+        notify('Erreur de chargement', 'error');
+      } finally {
+        setLoading(false);
       }
-    })();
-  }, [isOpen, token, initialData.Id, notify]);
+    };
+
+    fetchData();
+  }, [isOpen, token, initialData.Id, duplicatedFromId, notify]);
 
   const fields = useMemo(() => [
     {
       name: 'UE',
-      options: unitOptions,
-      value:
-        unitOptions.find(o => o.id === initialData.EnseignementUnit?.Id) ||
-        null,
+      options: unitOpts,
+      value: unitOpts.find(o => o.id === initialData.EnseignementUnit?.Id) || null,
     },
-    {
-      name: 'Année',
-      value: initialData.Year?.toString() || '',
-    },
+    { name: 'Année', value: initialData.Year?.toString() || '' },
     {
       name: 'Milestones',
-      value: currentMilestones,
-      render: (value, onChange) => (
-        <MilestoneListBox items={value} onChange={onChange} />
-      ),
+      value: currMilestones,
+      render: (v, setV) => <MilestoneListBox items={v} onChange={setV} />,
     },
-  ], [initialData, unitOptions, currentMilestones]);
+  ], [unitOpts, initialData.EnseignementUnit, initialData.Year, currMilestones]);
 
-  function validate(values) {
-    const errs = {};
-    if (!values.UE?.id) errs.UE = 'Sélectionnez une UE.';
-    if (!values.Année) errs.Année = 'L’année est requise.';
-    else if (!/^\d{4}$/.test(values.Année)) errs.Année = 'Année invalide.';
-    return errs;
-  }
+  const validate = v => {
+    const e = {};
+    if (!v.UE?.id) e.UE = 'Sélectionnez une UE';
+    if (!v.Année) e.Année = 'Année requise';
+    else if (!/^\d{4}$/.test(v.Année)) e.Année = 'Format AAAA';
+    return e;
+  };
 
-  const handleSubmit = async values => {
-    const errs = validate(values);
-    if (Object.keys(errs).length) {
-      setFieldErrors(errs);
-      return;
-    }
+  const handleSubmit = async v => {
+    const errs = validate(v);
+    if (Object.keys(errs).length) return setFieldErrors(errs);
     setFieldErrors({});
 
     try {
       let tplId = initialData.Id;
       if (!tplId) {
-        const created = await saveTemplate(
-          null,
-          {
-            EnseignementUnit: { Id: values.UE.id },
-            Year: +values.Année,
-          },
-          token
+        tplId = (await saveTemplate(null, {
+          EnseignementUnit: { Id: v.UE.id },
+          Year: +v.Année,
+        }, token)).Id;
+
+        await Promise.all(
+          (v.Milestones ?? []).map(m => {
+            let Title = m.Title, Date = m.Date;
+            if ((!Title || !Date) && typeof m.value === 'string') {
+              [Title = '', Date = ''] = m.value.split(' – ');
+            }
+            return saveTemplateMilestone(
+              tplId,
+              null,
+              { Title: Title.trim(), Date: Date.trim() },
+              token
+            );
+          })
         );
-        tplId = created.Id;
       } else {
         const patch = {};
-        if (values.UE.id !== initialData.EnseignementUnit?.Id) {
-          patch.EnseignementUnit = { Id: values.UE.id };
-        }
-        if (+values.Année !== initialData.Year) {
-          patch.Year = +values.Année;
-        }
-        if (Object.keys(patch).length) {
-          await saveTemplate(tplId, patch, token);
-        }
+        if (v.UE.id !== initialData.EnseignementUnit?.Id) patch.EnseignementUnit = { Id: v.UE.id };
+        if (+v.Année !== initialData.Year) patch.Year = +v.Année;
+        if (Object.keys(patch).length) await saveTemplate(tplId, patch, token);
+
+        const all = v.Milestones ?? [];
+        const kept = all.filter(m => origMilestones.some(o => o.id === m.id));
+        const added = all.filter(m => !origMilestones.some(o => o.id === m.id));
+        const removed = origMilestones.filter(o => !all.some(m => m.id === o.id));
+
+        await Promise.all([
+          ...removed.map(m => deleteTemplateMilestone(tplId, m.id, token)),
+          ...added.map(m => {
+            let Title = m.Title, Date = m.Date;
+            if ((!Title || !Date) && typeof m.value === 'string') {
+              [Title = '', Date = ''] = m.value.split(' – ');
+            }
+            return saveTemplateMilestone(
+              tplId,
+              null,
+              { Title: Title.trim(), Date: Date.trim() },
+              token
+            );
+          }),
+          ...kept.map(m => {
+            const o = origMilestones.find(x => x.id === m.id);
+            const diff = {};
+            if (o.Title !== m.Title) diff.Title = m.Title;
+            if (o.Date !== m.Date) diff.Date = m.Date;
+            return Object.keys(diff).length
+              ? saveTemplateMilestone(tplId, m.id, diff, token)
+              : Promise.resolve();
+          }),
+        ]);
       }
 
-      const all = Array.isArray(values.Milestones) ? values.Milestones : [];
-      const kept = all.filter(m =>
-        originalMilestones.some(o => o.id === m.id)
-      );
-      const added = all.filter(
-        m => !originalMilestones.some(o => o.id === m.id)
-      );
-      const removed = originalMilestones.filter(
-        o => !all.some(m => m.id === o.id)
-      );
-
-      await Promise.all([
-        ...removed.map(m =>
-          deleteTemplateMilestone(tplId, m.id, token)
-        ),
-        ...added.map(m => {
-          const [Title = '', Date = ''] = typeof m.value === 'string'
-            ? m.value.split(' – ')
-            : [m.Title, m.Date];
-          return saveTemplateMilestone(
-            tplId,
-            null,
-            { Title: Title.trim(), Date: Date.trim() },
-            token
-          );
-        }),
-        ...kept.map(m => {
-          const orig = originalMilestones.find(o => o.id === m.id);
-          const diff = {};
-          if (orig.Title !== m.Title) diff.Title = m.Title;
-          if (orig.Date !== m.Date) diff.Date = m.Date;
-          return Object.keys(diff).length
-            ? saveTemplateMilestone(tplId, m.id, diff, token)
-            : Promise.resolve();
-        }),
-      ]);
-
-      notify(
-        initialData.Id
-          ? 'Modèle mis à jour avec succès'
-          : 'Modèle créé avec succès',
-        'success'
-      );
+      notify(initialData.Id ? 'Modèle mis à jour' : 'Modèle créé', 'success');
       onSave();
       onClose();
-    } catch (err) {
-      console.error(err);
-      notify(err.message || 'Une erreur est survenue', 'error');
+    } catch (e) {
+      notify(e.message || 'Erreur enregistrement', 'error');
     }
   };
+
+  if (!isOpen) return null;
+  if (loading || !token) {
+    return (
+      <ModalBase isOpen title="Chargement…" onClose={onClose}>
+        <div className="flex justify-center py-8"><LoadingSpinner size={40} /></div>
+      </ModalBase>
+    );
+  }
 
   return (
     <FormModal
       formKey={`${initialData.Id || 'new'}-${isOpen}`}
-      isOpen={isOpen}
-      title={initialData.Id ? 'Modifier le Modèle' : 'Nouveau modèle'}
-      metadata={{
-        createdAt: initialData.CreatedAt,
-        updatedAt: initialData.UpdatedAt,
-      }}
+      isOpen
+      title={initialData.Id ? 'Modifier le modèle' : 'Nouveau modèle'}
+      metadata={{ createdAt: initialData.CreatedAt, updatedAt: initialData.UpdatedAt }}
       fields={fields}
       errors={fieldErrors}
       onClose={onClose}
       onSubmit={handleSubmit}
+      isLoading={false}
     />
   );
 }

@@ -56,8 +56,6 @@ export default function UserModal({
       } catch (err) {
         console.error(err);
         notify(err.message || 'Erreur lors du chargement des options', 'error');
-      } finally {
-        setIsLoadingOptions(false);
       }
     })();
   }, [isOpen, token, notify]);
@@ -71,7 +69,9 @@ export default function UserModal({
     setSelectedPromos(
       promoOpts.filter((opt) => initialLabels.includes(opt.value))
     );
-  }, [isOpen, promoOpts, initialData.promotions]);
+
+    setIsLoadingOptions(false);
+  }, [isOpen, promoOpts, roleOptions, initialData.promotions]);
 
   const initialRole = useMemo(
     () =>
@@ -172,7 +172,7 @@ export default function UserModal({
       errors={fieldErrors}
       onClose={onClose}
       onSubmit={handleSubmit}
-      isLoading={isLoadingOptions}
+      isLoading={isLoadingOptions && !!initialData.Id}
     />
   );
 }

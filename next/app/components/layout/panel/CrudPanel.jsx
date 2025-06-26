@@ -17,6 +17,7 @@ export default function CrudPanel({
   modalProps = {},
   actions = () => [],
   toolbarButtons = [],
+  disableAdd = false,
 }) {
   const { data, loading, refresh, remove } = useCrudData({ fetchFn, deleteFn, mapToRow });
 
@@ -24,12 +25,18 @@ export default function CrudPanel({
   const [selected, setSelected] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toDelete, setToDelete] = useState(null);
+  const [duplicationSourceId, setDuplicationSourceId] = useState(null);
 
   const helpers = {
     edit: (row) => { setSelected(row.raw); setModalOpen(true); },
     del: (row) => { setToDelete(row.raw); setConfirmOpen(true); },
     refresh,
     remove: async (id) => { await remove(id); },
+    duplicate: (row) => {
+      setSelected({ ...row.raw, Id: undefined });
+      setDuplicationSourceId(row.raw.Id);
+      setModalOpen(true);
+    },
   };
 
   const rows = loading
@@ -43,9 +50,11 @@ export default function CrudPanel({
         data={rows}
         toolbarContents={
           <>
-            <Button variant="default_sq" onClick={() => { setSelected(null); setModalOpen(true); }}>
-              <PlusIcon size={24} className="text-white" />
-            </Button>
+            {!disableAdd && (
+              <Button variant="default_sq" onClick={() => { setSelected(null); setModalOpen(true); }}>
+                <PlusIcon size={24} className="text-white" />
+              </Button>
+            )}
             {toolbarButtons}
           </>
         }
@@ -54,8 +63,9 @@ export default function CrudPanel({
         <ModalComponent
           isOpen={modalOpen}
           initialData={selected || {}}
-          onClose={() => { refresh(); setModalOpen(false); }}
-          onSave={() => { refresh(); setModalOpen(false); }}
+          duplicatedFromId={duplicationSourceId}
+          onClose={() => { refresh(); setModalOpen(false); setDuplicationSourceId(null);}}
+          onSave={() => { refresh(); setModalOpen(false); setDuplicationSourceId(null); }}
           {...modalProps}
         />
       )}

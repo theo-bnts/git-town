@@ -72,7 +72,7 @@ export const API_ERRORS = {
     default: '(423) : Ressource verrouillée.',
   },
   423: {
-    ARCHIVED: '(423) : Le dépôt est archivé et ne peut pas être consulté.',
+    ARCHIVED: '(423) : Le dépôt est archivé et ne peut pas être consulté ni modifié.',
     default: '(423) : Ressource verrouillée.',
   },
   429: {

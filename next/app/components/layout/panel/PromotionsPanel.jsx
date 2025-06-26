@@ -36,7 +36,7 @@ const actions = (row, helpers) => [
   },
   {
     icon: <DuplicateIcon size={16} />,
-    onClick: () => console.log('Duplicate promotion:', row.raw),
+    onClick: () => helpers.duplicate(row),
     variant: 'action_sq',
   },
 ];
@@ -51,7 +51,9 @@ export default function PromotionsPanel() {
       ModalComponent={PromotionModal}
       modalProps={{
         confirmMessage: promo => (
-          <>Voulez-vous vraiment supprimer la promotion de <strong>{promo.Diploma?.Initialism} {promo.PromotionLevel?.Name} – {promo.Year}</strong> ?</>
+          <>Voulez-vous vraiment supprimer la promotion <strong>{promo.Diploma?.Initialism} {promo.PromotionLevel?.Name} </strong> 
+            de <strong> {promo.Year}</strong> ?
+          </>
         ),
       }}
       actions={actions}

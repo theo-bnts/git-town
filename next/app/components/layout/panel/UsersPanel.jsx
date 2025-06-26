@@ -27,7 +27,7 @@ const columns = [
   { key: 'orgMember', title: 'Organisation rejointe', sortable: false },
 ];
 
-const mapPromotion = (p) =>
+const mapPromotion = p =>
   p.Diploma && p.PromotionLevel
     ? `${p.Diploma.Initialism} ${p.PromotionLevel.Initialism} - ${p.Year}`
     : '';
@@ -35,7 +35,7 @@ const mapPromotion = (p) =>
 async function fetchUsersWithPromos(token) {
   const users = await getUsers(token);
   return Promise.all(
-    users.map(async (u) => {
+    users.map(async u => {
       const rawPromos = await getUserPromotions(u.Id, token);
       const promotions = Array.isArray(rawPromos)
         ? rawPromos.map(mapPromotion).sort()
@@ -57,7 +57,7 @@ async function fetchUsersWithPromos(token) {
   );
 }
 
-const mapUserToRow = (u) => ({
+const mapUserToRow = u => ({
   raw: { ...u.raw, promotions: u.promotions },
   name: u.name,
   email: u.email,
@@ -67,15 +67,10 @@ const mapUserToRow = (u) => ({
   orgMember: u.orgMember,
 });
 
-export default function UsersPanel() {
+export default function UsersPanel({ role }) {
   const notify = useNotification();
   const [importOpen, setImportOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-
-  const handleImport = () => {
-    setImportOpen(false);
-    setRefreshKey((k) => k + 1);
-  };
 
   const importButton = (
     <Button key="import" variant="default_sq" onClick={() => setImportOpen(true)}>
@@ -83,27 +78,14 @@ export default function UsersPanel() {
     </Button>
   );
 
-  const actions = (row, helpers) => [
-    {
-      icon: <PencilIcon size={16} />,
-      onClick: () => helpers.edit(row),
-      variant: 'action_sq',
-    },
-    {
-      icon: <TrashIcon size={16} />,
-      onClick: () => helpers.del(row),
-      variant: 'action_sq_warn',
-    },
-    {
+  const actions = (row, helpers) => {
+    const baseActions = {
       icon: <MarkGithubIcon size={16} />,
       onClick: row.raw.GitHubId
         ? async () => {
             try {
               const res = await fetch(`https://api.github.com/user/${row.raw.GitHubId}`);
-              if (!res.ok) {
-                notify('Erreur lors de la récupération du compte GitHub', 'error');
-                return;
-              }
+              if (!res.ok) throw new Error();
               const data = await res.json();
               window.open(`https://github.com/${data.login}`, '_blank');
             } catch {
@@ -112,9 +94,19 @@ export default function UsersPanel() {
           }
         : undefined,
       variant: row.raw.GitHubId ? 'action_sq' : 'action_sq_disabled',
-      disabled: Boolean(!row.raw.GitHubId),
-    },
-  ];
+      disabled: !row.raw.GitHubId,
+    };
+
+    if (role !== 'administrator') {
+      return [baseActions];
+    }
+
+    return [
+      { icon: <PencilIcon size={16} />, onClick: () => helpers.edit(row), variant: 'action_sq' },
+      { icon: <TrashIcon size={16} />, onClick: () => helpers.del(row), variant: 'action_sq_warn' },
+      baseActions,
+    ];
+  };
 
   return (
     <>
@@ -126,18 +118,23 @@ export default function UsersPanel() {
         mapToRow={mapUserToRow}
         ModalComponent={UserModal}
         modalProps={{
-          confirmMessage: (user) => (
+          confirmMessage: user => (
             <>Voulez-vous vraiment supprimer <strong>{user.name}</strong> ?</>
           ),
         }}
-        toolbarButtons={[importButton]}
+        toolbarButtons={role === 'administrator' ? [importButton] : []}
         actions={actions}
+        disableAdd={role !== 'administrator'}
       />
+
       {importOpen && (
         <ImportUserModal
           isOpen={importOpen}
           onClose={() => setImportOpen(false)}
-          onImport={handleImport}
+          onImport={() => {
+            setImportOpen(false);
+            setRefreshKey(k => k + 1);
+          }}
         />
       )}
     </>
