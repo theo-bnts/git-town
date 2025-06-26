@@ -42,10 +42,10 @@ export default function PromotionModal({
           getPromotionLevels(token),
         ]);
         setDiplomaOptions(
-          diplomas.map((d) => ({ id: d.Initialism, value: d.Initialism }))
+          diplomas.map(d => ({ id: d.Initialism, value: d.Initialism }))
         );
         setLevelOptions(
-          levels.map((l) => ({ id: l.Initialism, value: l.Initialism }))
+          levels.map(l => ({ id: l.Initialism, value: l.Initialism }))
         );
       } catch (err) {
         console.error(err);
@@ -60,18 +60,12 @@ export default function PromotionModal({
     {
       name: 'Diplôme',
       options: diplomaOptions,
-      value:
-        diplomaOptions.find(
-          (o) => o.id === initialData.Diploma?.Initialism
-        ) || null,
+      value: diplomaOptions.find(o => o.id === initialData.Diploma?.Initialism) || null,
     },
     {
       name: 'Niveau',
       options: levelOptions,
-      value:
-        levelOptions.find(
-          (o) => o.id === initialData.PromotionLevel?.Initialism
-        ) || null,
+      value: levelOptions.find(o => o.id === initialData.PromotionLevel?.Initialism) || null,
     },
     {
       name: 'Année',
@@ -81,18 +75,15 @@ export default function PromotionModal({
 
   function validate(values) {
     const errs = {};
-    if (!values.Diplôme?.id) 
-      errs.Diplôme = 'Veuillez sélectionner un diplôme.';
-    if (!values.Niveau?.id) 
-      errs.Niveau = 'Veuillez sélectionner un niveau.';
-    if (!values.Année) 
-      errs.Année = "L'année est obligatoire.";
+    if (!values.Diplôme?.id) errs.Diplôme = 'Veuillez sélectionner un diplôme.';
+    if (!values.Niveau?.id) errs.Niveau = 'Veuillez sélectionner un niveau.';
+    if (!values.Année) errs.Année = "L'année est obligatoire.";
     else if (!isYearValid(values.Année))
       errs.Année = "L'année doit être valide (4 chiffres, entre 2000 et 2099).";
     return errs;
   }
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async values => {
     const errs = validate(values);
     if (Object.keys(errs).length) {
       setFieldErrors(errs);
@@ -105,15 +96,11 @@ export default function PromotionModal({
 
     if (initialData.Id) {
       payload = {};
-      if (values.Diplôme.id !== initialData.Diploma.Initialism) {
+      if (values.Diplôme.id !== initialData.Diploma.Initialism)
         payload.Diploma = { Initialism: values.Diplôme.id };
-      }
-      if (values.Niveau.id !== initialData.PromotionLevel.Initialism) {
+      if (values.Niveau.id !== initialData.PromotionLevel.Initialism)
         payload.PromotionLevel = { Initialism: values.Niveau.id };
-      }
-      if (year !== initialData.Year) {
-        payload.Year = year;
-      }
+      if (year !== initialData.Year) payload.Year = year;
       if (Object.keys(payload).length === 0) {
         onClose();
         return;
@@ -130,7 +117,7 @@ export default function PromotionModal({
       const created = await savePromotions(initialData.Id || null, payload, token);
 
       if (duplicatedFromId) {
-        const targetId = created.Id || created.id;
+        const targetId = created.Id ?? created.id;
         await replicateUsersPromotion(duplicatedFromId, targetId, token);
       }
 
@@ -148,15 +135,19 @@ export default function PromotionModal({
     }
   };
 
+  if (!isOpen) return null;
+
+  const modalTitle = initialData.Id
+    ? 'Modifier la promotion'
+    : duplicatedFromId
+    ? 'Duplication promotion'
+    : 'Nouvelle promotion';
+
   return (
     <FormModal
       formKey={`${initialData.Id || 'new'}-${isOpen}`}
       isOpen={isOpen}
-      title={
-        initialData.Id
-          ? 'Modifier la promotion'
-          : 'Nouvelle promotion'
-      }
+      title={modalTitle}
       metadata={{
         createdAt: initialData.CreatedAt,
         updatedAt: initialData.UpdatedAt,

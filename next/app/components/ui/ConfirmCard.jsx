@@ -9,7 +9,7 @@ export default function ConfirmCard({ message, onConfirm, onCancel }) {
 
   const handleConfirm = () => {
     onConfirm?.();
-    notify('Action confirmée avec succès', 'success');
+    notify('En cours...', 'success');
   };
 
   const handleCancel = () => {

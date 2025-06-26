@@ -202,9 +202,39 @@ export default function RepositoriesPanel({ role, userId }) {
       {confirmOpen && toArchive && (
         <ConfirmCard
           message={
-            toArchive.ArchivedAt == null 
-              ? <>Voulez-vous archiver le dépôt …</>
-              : <>Voulez-vous désarchiver le dépôt …</>
+            toArchive.ArchivedAt == null ? (
+              <>
+                Voulez-vous archiver le dépôt{' '}
+                <strong>
+                  {toArchive.Template?.EnseignementUnit?.Initialism}
+                </strong>{' '}
+                de{' '}
+                <strong>
+                  {toArchive.Template?.Year}
+                </strong>{' '}
+                ayant comme étudiants{' '}
+                <strong>
+                  {toArchive.studentNames.join(', ')}
+                </strong>
+                ?
+              </>
+            ) : (
+              <>
+                Voulez-vous désarchiver le dépôt{' '}
+                <strong>
+                  {toArchive.Template?.EnseignementUnit?.Initialism}
+                </strong>{' '}
+                de{' '}
+                <strong>
+                  {toArchive.Template?.Year}
+                </strong>{' '}
+                ayant comme étudiants{' '}
+                <strong>
+                  {toArchive.studentNames.join(', ')}
+                </strong>
+                ?
+              </>
+            )
           }
           onConfirm={async ()=>{
             const token = await getCookie('token');
