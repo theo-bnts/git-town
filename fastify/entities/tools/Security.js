@@ -1,23 +1,19 @@
 import crypto from 'crypto';
 
 export default class Security {
-  static generateRandomIntegerFigure() {
-    return Math.floor(crypto.randomBytes(1)[0] / 25.5);
-  }
-
   static generateTemporaryCodeValue() {
     return Array(Number(process.env.TEMPORARY_CODE_LENGTH))
       .fill(0)
-      .map(() => this.generateRandomIntegerFigure())
+      .map(() => crypto.randomInt(0, 10))
       .join('');
   }
 
   static generateTokenValue() {
-    return crypto.randomBytes(process.env.TOKEN_LENGTH / 2).toString('hex');
+    return crypto.randomBytes(Number(process.env.TOKEN_LENGTH) / 2).toString('hex');
   }
 
   static generateHashSaltValue() {
-    return crypto.randomBytes(process.env.USER_PASSWORD_HASH_SALT_LENGTH / 2).toString('hex');
+    return crypto.randomBytes(Number(process.env.USER_PASSWORD_HASH_SALT_LENGTH) / 2).toString('hex');
   }
 
   static hashPassword(password, salt) {
