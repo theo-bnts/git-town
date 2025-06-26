@@ -5,7 +5,7 @@ import { InfoIcon, MailIcon } from '@primer/octicons-react';
 import postToken from '@/app/services/api/users/id/token/postToken';
 import { isPasswordValid } from '@/app/services/validators';
 import { setCookie } from '@/app/services/cookies';
-import { textStyles } from '@/app/styles/tailwindStyles';
+import { textStyles, buttonStyles } from '@/app/styles/tailwindStyles';
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import Input from '@/app/components/ui/Input';
@@ -22,6 +22,7 @@ export default function LoginForm({
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [tooltip, setTooltip] = useState(false);
+  const [mailDisabled, setMailDisabled] = useState(false);
 
   const notify = useNotification();
 
@@ -51,20 +52,18 @@ export default function LoginForm({
   };
 
   const handleMailIconClick = async () => {
+    if (mailDisabled) return;
     setError('');
-    if (!userId) {
-      setError('Identifiant utilisateur manquant.');
-    } else {
-      try {
-        await onGoToDefinePassword();
-        notify(
-          'Un code de changement de mot de passe vous a été envoyé par e-mail',
-          'success'
-        );
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-      }
+    setMailDisabled(true);
+    try {      
+      notify('Un code temporaire est en cours d\'envoi à votre adresse e-mail universitaire, patientez... ', 'success');
+      await onGoToDefinePassword();
+      notify('Le code temporaire a été envoyé à votre adresse e-mail universitaire.', 'success');
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      setTimeout(() => setMailDisabled(false), 10000);
     }
   };
 
@@ -109,11 +108,18 @@ export default function LoginForm({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <MailIcon
-              size={16}
-              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+            <button
+              type="button"
+              className={`absolute right-3 top-1/2 -translate-y-1/2 ${
+                mailDisabled
+                  ? buttonStyles.action_sq_disabled
+                  : buttonStyles.action_sq
+              }`}
               onClick={handleMailIconClick}
-            />
+              disabled={mailDisabled}
+            >
+              <MailIcon size={16} />
+            </button>
           </div>
         </div>
 
