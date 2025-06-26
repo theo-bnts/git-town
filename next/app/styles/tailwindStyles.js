@@ -6,7 +6,7 @@ const textStyles = {
   boldWhite: `text-[var(--primary-color)] font-bold`,
   hint: `text-[var(--hint-color)]`,
   warn: `text-[var(--warn-color)]`,
-  selected: `text-[var(--accent-color)]`,
+  selected: `text-[var(--accent-color)] font-bold`,
   url: `underline underline-offset-4 decoration-dotted decoration-gray-400 transition-transform duration-200 hover:scale-105 hover:text-[var(--accent-color)]`,
   sectionTitle: "text-lg font-bold leading-none",
   subtle: "text-center text-sm text-gray-600",
@@ -100,4 +100,4 @@ export {
   modalStyles,
   tagStyles,
   tooltipStyles 
- };
+};

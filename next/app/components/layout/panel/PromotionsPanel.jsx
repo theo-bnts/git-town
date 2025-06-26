@@ -51,7 +51,9 @@ export default function PromotionsPanel() {
       ModalComponent={PromotionModal}
       modalProps={{
         confirmMessage: promo => (
-          <>Voulez-vous vraiment supprimer la promotion de <strong>{promo.Diploma?.Initialism} {promo.PromotionLevel?.Name} – {promo.Year}</strong> ?</>
+          <>Voulez-vous vraiment supprimer la promotion <strong>{promo.Diploma?.Initialism} {promo.PromotionLevel?.Name} </strong> 
+            de <strong> {promo.Year}</strong> ?
+          </>
         ),
       }}
       actions={actions}

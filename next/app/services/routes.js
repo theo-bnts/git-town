@@ -95,3 +95,6 @@ export const repositoryCommentRoute = (repoId) =>
 
 export const replicateUsersPromotionRoute = (promotionId) =>
   `${process.env.NEXT_PUBLIC_API_URL}/promotions/${promotionId}/replicate-users`;
+
+export const replicateSourceRepositoryRoute = (sourceId) =>
+  `${process.env.NEXT_PUBLIC_API_URL}/repositories/${sourceId}/replicate-source`;
