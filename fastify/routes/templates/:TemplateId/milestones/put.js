@@ -85,7 +85,7 @@ export default async function route(app) {
       );
 
       const repositories = await Repository.fromTemplate(template);
-      
+
       const nonArchivedRepositories = repositories.filter((repository) => (
         repository.ArchivedAt === null
       ));
