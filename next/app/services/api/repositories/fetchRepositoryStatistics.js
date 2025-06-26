@@ -1,7 +1,6 @@
 import { fetchWithAuth } from '@/app/services/auth';
 import { repositoryStatisticsRoute } from '@/app/services/routes';
 import { handleApiError, handleNetworkError } from '@/app/services/errorHandler';
-import { API_ERRORS } from '@/app/services/errorCodes';
 
 /**
  * Récupère les statistiques d'un dépôt
@@ -11,12 +10,6 @@ import { API_ERRORS } from '@/app/services/errorCodes';
  */
 export async function fetchRepositoryStatistics(repositoryId, options = {}) {
   const { signal } = options;
-
-  if (!repositoryId) {
-    const error = new Error(API_ERRORS[400].INVALID_REPOSITORY_ID);
-    error.code = "INVALID_REPOSITORY_ID";
-    throw error;
-  }
 
   try {
     const url = repositoryStatisticsRoute(repositoryId);

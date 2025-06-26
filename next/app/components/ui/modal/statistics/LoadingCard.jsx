@@ -3,20 +3,27 @@
 import React, { useEffect, useState } from 'react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
+import Spinner from '@/app/components/ui/Spinner';
 import { XIcon } from '@primer/octicons-react';
 import PropTypes from 'prop-types';
 import { textStyles } from '@/app/styles/tailwindStyles';
+import { STATISTICS_CONFIG } from '@/app/config/config';
 
-const TIMEOUT_THRESHOLD = 30;
-const FIRST_WARNING_THRESHOLD = 15;
-const SECOND_WARNING_THRESHOLD = 22;
+const { ERROR_MESSAGES, LOADING } = STATISTICS_CONFIG;
+const { 
+  TIMEOUT_THRESHOLD, 
+  FIRST_WARNING_THRESHOLD, 
+  SECOND_WARNING_THRESHOLD,
+  MESSAGES
+} = LOADING;
 
-const ERROR_MESSAGES = {
-  GATEWAY_TIMEOUT: "Le serveur a mis trop de temps à répondre. Le dépôt est peut-être trop volumineux ou vide.",
-  LOADING_FAILED: "Le chargement des statistiques a échoué. Le dépôt est peut-être vide ou l'API GitHub n'est pas disponible."
-};
+export default function LoadingCard({ 
+  onClose, 
+  onTimeout, 
+  error, 
+  hasPartialData = false, 
+  autoRetrying = false }) {
 
-export default function LoadingCard({ onClose, onTimeout, error }) {
   const [loadingTime, setLoadingTime] = useState(0);
   
   useEffect(() => {
@@ -30,8 +37,12 @@ export default function LoadingCard({ onClose, onTimeout, error }) {
       return () => clearTimeout(closeTimer);
     }
   }, [error, onTimeout, onClose]);
-  
+
   useEffect(() => {
+    if (hasPartialData || autoRetrying) {
+      return;
+    }
+    
     const timer = setInterval(() => {
       setLoadingTime(prev => {
         const newTime = prev + 1;
@@ -40,26 +51,23 @@ export default function LoadingCard({ onClose, onTimeout, error }) {
           
           setTimeout(() => {
             onTimeout?.(ERROR_MESSAGES.LOADING_FAILED);
-            
-            setTimeout(() => {
-              onClose?.();
-            }, 500);
-          }, 0);
+            onClose?.();
+          }, 500);
         }
         return newTime;
       });
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [onTimeout, onClose]);
+  }, [onTimeout, onClose, hasPartialData, autoRetrying]);
   
   const renderWarningMessage = () => {
     if (loadingTime <= FIRST_WARNING_THRESHOLD) return null;
     
     return (
       <p className={textStyles.warning}>
-        Le chargement prend plus de temps que prévu...
-        {loadingTime > SECOND_WARNING_THRESHOLD && " Le dépôt est peut-être vide ou contient peu de commits."}
+        {MESSAGES.LONG_WAIT_WARNING}
+        {loadingTime > SECOND_WARNING_THRESHOLD && ` ${MESSAGES.VERY_LONG_WAIT_WARNING}`}
       </p>
     );
   };
@@ -76,20 +84,22 @@ export default function LoadingCard({ onClose, onTimeout, error }) {
         )}
         
         <div className="flex flex-col items-center justify-center p-8">
-          <div className="w-16 h-16 border-4 
-            border-t-[var(--accent-color)] 
-            border-[var(--primary-color)] 
-            rounded-full animate-spin mb-4"
+          <Spinner 
+            size="lg" 
+            thickness="4"
+            className="mb-4"
           />
           
           <h3 className={`text-lg font-medium ${textStyles.default}`}>
-            Chargement des statistiques...
+            {autoRetrying ? MESSAGES.AUTO_RETRYING_TITLE : MESSAGES.STANDARD_TITLE}
           </h3>
           <p className={textStyles.subtle}>
-            Veuillez patienter pendant la récupération des données.
+            {autoRetrying 
+              ? MESSAGES.AUTO_RETRYING_SUBTITLE
+              : MESSAGES.STANDARD_SUBTITLE}
           </p>
           
-          {renderWarningMessage()}
+          {!autoRetrying && renderWarningMessage()}
         </div>
       </Card>
     </div>
@@ -99,5 +109,7 @@ export default function LoadingCard({ onClose, onTimeout, error }) {
 LoadingCard.propTypes = {
   onClose: PropTypes.func,
   onTimeout: PropTypes.func,
-  error: PropTypes.object
+  error: PropTypes.object,
+  hasPartialData: PropTypes.bool,
+  autoRetrying: PropTypes.bool
 };

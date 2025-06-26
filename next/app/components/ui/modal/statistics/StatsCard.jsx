@@ -15,10 +15,11 @@ import { STATISTICS_CONFIG } from '@/app/config/config';
 /**
  * Carte principale affichant les statistiques globales du dépôt
  */
-export default function StatsCard({ formattedStats, onClose }) {
+export default function StatsCard({ formattedStats, onClose, isLoading = false }) {
   const [showInfo, setShowInfo] = useState(false);
   const { teamStats, languages, globalStats, userStats } = formattedStats || {};
-  const hasGlobalStats = Boolean(globalStats);
+  
+  const hasGlobalStats = Boolean(globalStats || languages);
 
   return (
     <Card variant="default" className="p-3 lg:p-4 w-full h-full">

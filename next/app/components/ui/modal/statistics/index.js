@@ -4,6 +4,5 @@ export { default as CommitsGraph } from './CommitsGraph';
 export { default as ContributionCard } from './ContributionCard';
 export { default as ContributionsTable } from './ContributionsTable';
 export { default as LanguagesSection } from './LanguagesSection';
-export { default as ErrorView } from './ErrorView';
 export { default as PartialDataAlert } from './PartialDataAlert';
 export { default as UserContributionsSection } from './UserContributionsSection';

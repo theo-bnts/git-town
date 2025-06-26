@@ -130,6 +130,7 @@ export default function ComboBox({
     setHighlightedIndex(-1);
     setIsOpen(true);
     onSelect?.(null);
+    onInputChange?.('');
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 

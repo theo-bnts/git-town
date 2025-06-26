@@ -105,9 +105,11 @@ export default function RepositoriesPanel({ role, userId }) {
   };
 
   const handleOpenStats = (repoId) => {
-    setSelectedRepoId(repoId);
-    setStatsModalOpen(true);
     setStatsErrorMessage(null);
+    setSelectedRepoId(repoId);
+    setTimeout(() => {
+      setStatsModalOpen(true);
+    }, 0);
   };
 
   const handleCloseStatsModal = () => {
@@ -128,6 +130,41 @@ export default function RepositoriesPanel({ role, userId }) {
     );
   }
 
+<<<<<<< 59-frontend-visualiser-une-page-de-statistiques
+  const actions = (row, helpers) => [
+    {
+      icon: <PencilIcon size={16} />,
+      onClick: () => helpers.edit(row),
+      variant: row.raw.ArchivedAt ? 'action_sq_disabled' : 'action_sq',
+      disabled: Boolean(row.raw.ArchivedAt),
+    },
+    {
+      icon: <ArchiveIcon size={16} />,
+      onClick: () => { setToArchive(row.raw); setConfirmOpen(true); },
+      variant: 'action_sq_warn',
+    },
+    {
+      icon: <DuplicateIcon size={16} />,
+      onClick: () => console.log('Duplicate repo:', row.raw),
+      variant: 'action_sq',
+    },
+    {
+      icon: <FileZipIcon size={16} />,
+      onClick: () => window.open(`https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}/archive/HEAD.zip`, '_blank'),
+      variant: 'action_sq',
+    },
+    {
+      icon: <MarkGithubIcon size={16} />,
+      onClick: () => window.open(`https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}`, '_blank'),
+      variant: 'action_sq',
+    },
+    {
+      icon: <GraphIcon size={16} />,
+      onClick: () => handleOpenStats(row.raw.Id),
+      variant: 'action_sq',
+    },
+  ];
+=======
   const actions = (row, helpers) => {
     const baseActions = [
       { icon: <GraphIcon size={16} />, onClick: () => handleOpenStats(row.raw.Id), variant: 'action_sq' },
@@ -179,6 +216,7 @@ export default function RepositoriesPanel({ role, userId }) {
       ...baseActions,
     ];
   };
+>>>>>>> master
 
   return (
     <>
@@ -245,10 +283,16 @@ export default function RepositoriesPanel({ role, userId }) {
           onCancel={() => setConfirmOpen(false)}
         />
       )}
+<<<<<<< 59-frontend-visualiser-une-page-de-statistiques
+      
+      {statsModalOpen && selectedRepoId ? (
+=======
 
 
       {statsModalOpen && selectedRepoId && (
+>>>>>>> master
         <RepositoryStatsModal
+          key={`stats-modal-${selectedRepoId}`} 
           isOpen={statsModalOpen}
           onClose={handleCloseStatsModal}
           repositoryId={selectedRepoId}
@@ -263,7 +307,7 @@ export default function RepositoriesPanel({ role, userId }) {
           onClose={() => setCommentOpen(false)}
           onSave={() => setRefreshKey((k) => k + 1)}
         />
-      )}
+      ) : null}
     </>
   );
 }

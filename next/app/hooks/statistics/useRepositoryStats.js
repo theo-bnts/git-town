@@ -1,79 +1,157 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchRepositoryStatistics } from '@/app/services/api/repositories/fetchRepositoryStatistics';
-import { useFormattedStats } from '@/app/hooks/statistics/statsHooks';
+import { formatStatistics } from '@/app/utils/statisticsFormatter';
+import { analyzeStatistics, canRefreshForMissingData } from '@/app/utils/statisticsAnalyzer';
 
-export function useRepositoryStats(repositoryId, isOpen) {
+export function useRepositoryStats(repositoryId, isOpen, options = {}) {
+  const initialLoadCompleted = useRef(false);
+  const retryTimeoutRef = useRef(null);
+  const isLoadingRef = useRef(false);
+  const requestIdRef = useRef(0);
+  const retryCountRef = useRef(0);
+  
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [analysis, setAnalysis] = useState(null);
+  const [autoRetrying, setAutoRetrying] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   
-  const formattedStats = useFormattedStats(stats);
-  const isPartialData = stats && (!Array.isArray(stats.Users) || stats.Users.length === 0);
+  const { maxRetries = 3 } = options;
   
-  const handleRetry = () => {
-    setStats(null);
-    setError(null);
-    setLoadAttempt(0);
-  };
-
-  useEffect(() => {
-    let cancelled = false;
-    let retryTimeout = null;
-
-    async function loadStats() {
-      if (cancelled) return;
-      
+  const formattedStats = stats ? formatStatistics(stats) : null;
+  
+  const fetchStats = useCallback(async (isRetry = false) => {
+    if (isLoadingRef.current) {
+      return;
+    }
+    
+    const currentRetryCount = isRetry ? retryCountRef.current : 0;
+    
+    if (!isRetry) {
+      retryCountRef.current = 0;
+      setRetryCount(0);
+    }
+    
+    if (isRetry && currentRetryCount >= maxRetries) {
+      setAutoRetrying(false);
+      return;
+    }
+    
+    if (isRetry) {
+      retryCountRef.current = currentRetryCount + 1;
+      setRetryCount(currentRetryCount + 1);
+    }
+    
+    const currentRequestId = ++requestIdRef.current;
+    isLoadingRef.current = true;
+    
+    if (!isRetry) {
       setLoading(true);
       setError(null);
+    }
+    
+    try {
+      const data = await fetchRepositoryStatistics(repositoryId);
       
-      try {
-        const data = await fetchRepositoryStatistics(repositoryId);
-        
-        if (cancelled) return;
-        
-        const hasUserData = Array.isArray(data?.Users) && data.Users.length > 0;
-        
-        if (!hasUserData && loadAttempt < 3) {
-          setLoadAttempt(prev => prev + 1);
-          retryTimeout = setTimeout(() => loadStats(), 2000);
-          return;
+      if (currentRequestId !== requestIdRef.current) {
+        return;
+      }
+      
+      const dataAnalysis = analyzeStatistics(data);
+      const canRefresh = canRefreshForMissingData(dataAnalysis);
+      
+      setStats(data);
+      setAnalysis(dataAnalysis);
+      setLoading(false);
+      
+      initialLoadCompleted.current = true;
+      
+      const shouldRetry = dataAnalysis.isPartial && 
+                        canRefresh && 
+                        retryCountRef.current < maxRetries;
+      
+      setAutoRetrying(shouldRetry);
+      
+      if (shouldRetry) {
+        if (retryTimeoutRef.current) {
+          clearTimeout(retryTimeoutRef.current);
         }
         
-        setStats(data);
-        setLoading(false);
-      } catch (err) {
-        if (cancelled) return;
-        
-        setError(err);
-        setLoading(false);
+        retryTimeoutRef.current = setTimeout(() => {
+          if (isOpen) {
+            fetchStats(true);
+          }
+        }, 5000);
       }
+    } catch (err) {
+      if (currentRequestId !== requestIdRef.current) return;
+      
+      setError(err);
+      setLoading(false);
+      setAutoRetrying(false);
+    } finally {
+      isLoadingRef.current = false;
     }
-
+  }, [repositoryId, maxRetries, isOpen]);
+  
+  const handleRetry = useCallback(() => {
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+    
+    retryCountRef.current = 0;
+    setRetryCount(0);
+    setStats(null);
+    setAnalysis(null);
+    setError(null);
+    setAutoRetrying(false);
+    initialLoadCompleted.current = false;
+    fetchStats();
+  }, [fetchStats]);
+  
+  useEffect(() => {
     if (isOpen) {
-      setStats(null);
-      setLoadAttempt(0);
-      loadStats();
+      if (!initialLoadCompleted.current) {
+        retryCountRef.current = 0;
+        setRetryCount(0);
+        fetchStats();
+      }
     } else {
-      setStats(null);
-      setError(null);
-      setLoadAttempt(0);
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
+      
+      retryCountRef.current = 0;
+      setRetryCount(0);
+      setAutoRetrying(false);
+      initialLoadCompleted.current = false;
+      requestIdRef.current = 0;
     }
-
-    return () => { 
-      cancelled = true; 
-      if (retryTimeout) clearTimeout(retryTimeout);
+    
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
     };
-  }, [isOpen, repositoryId, loadAttempt]);
+  }, [isOpen, fetchStats]);
 
   return {
-    stats,
     formattedStats,
+    stats,
+    analysis,
     loading,
     error,
-    isPartialData,
+    isPartialData: analysis?.isPartial || false,
+    canRefresh: analysis ? canRefreshForMissingData(analysis) : false,
+    missingFields: analysis?.missingFields || [],
+    isEmpty: analysis?.isEmpty || false,
+    autoRetrying,
     handleRetry
   };
 }
