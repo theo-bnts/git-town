@@ -1,6 +1,6 @@
 'use client';
-
 import { useState, useEffect, useMemo } from 'react';
+
 import useAuthToken from '@/app/hooks/useAuthToken';
 import { useNotification } from '@/app/context/NotificationContext';
 
@@ -8,6 +8,7 @@ import getTemplates from '@/app/services/api/templates/getTemplates';
 import getPromotions from '@/app/services/api/promotions/getPromotions';
 import getUsers from '@/app/services/api/users/getUsers';
 import getUsersRepository from '@/app/services/api/repositories/id/getUsersRepository';
+import replicateRepository from '@/app/services/api/repositories/id/replicateRepository';
 import saveRepositories from '@/app/services/api/repositories/saveRepositories';
 import putUserRepository from '@/app/services/api/users/id/repositories/putUserRepository';
 import deleteUserRepository from '@/app/services/api/users/id/repositories/deleteUserRepository';
@@ -18,6 +19,7 @@ import StudentListBox from '@/app/components/ui/listbox/StudentListBox';
 export default function RepositoryModal({
   isOpen,
   initialData = {},
+  duplicatedFromId = null,
   onClose,
   onSave,
 }) {
@@ -59,6 +61,8 @@ export default function RepositoryModal({
           getUsers(token),
           repository?.Id
             ? getUsersRepository(repository.Id, token)
+            : duplicatedFromId
+            ? getUsersRepository(duplicatedFromId, token)
             : Promise.resolve([]),
         ]);
 
@@ -101,15 +105,14 @@ export default function RepositoryModal({
           .map((stu) => studentOpts.find((o) => o.id === stu.Id))
           .filter(Boolean);
         setSelectedStudents(preSelected);
-        setOriginalStudents(preSelected);
+        setOriginalStudents(repository.Id ? preSelected : []);
       } catch (err) {
-        console.error(err);
         notify(err.message || 'Erreur lors du chargement des options', 'error');
       } finally {
         setIsLoadingOptions(false);
       }
     })();
-  }, [isOpen, token, repository?.Id, notify]);
+  }, [isOpen, token, repository?.Id, duplicatedFromId, notify]);
 
   const initTemplateOpt = useMemo(
     () => templateOpts.find((o) => o.id === repository.Template?.Id) || null,
@@ -155,12 +158,9 @@ export default function RepositoryModal({
 
   function validate(values) {
     const errs = {};
-    if (!values['Modèle']?.id)
-      errs['Modèle'] = 'Sélectionnez un modèle.';
-    if (!values['Promotion']?.id)
-      errs['Promotion'] = 'Sélectionnez une promotion.';
-    if (!values['Tuteur']?.id)
-      errs['Tuteur'] = 'Sélectionnez un tuteur.';
+    if (!values['Modèle']?.id) errs['Modèle'] = 'Sélectionnez un modèle.';
+    if (!values['Promotion']?.id) errs['Promotion'] = 'Sélectionnez une promotion.';
+    if (!values['Tuteur']?.id) errs['Tuteur'] = 'Sélectionnez un tuteur.';
     return errs;
   }
 
@@ -196,20 +196,24 @@ export default function RepositoryModal({
     const origIds = originalStudents.map((s) => s.id).sort();
     const newIds = etudiants.map((s) => s.id).sort();
 
-    const toAdd = newIds.filter((id) => !origIds.includes(id));
-    const toRemove = origIds.filter((id) => !newIds.includes(id));
+    const toAdd = repository.Id
+      ? newIds.filter((id) => !origIds.includes(id))
+      : newIds;
+    const toRemove = repository.Id
+      ? origIds.filter((id) => !newIds.includes(id))
+      : [];
 
     if (
       repository.Id &&
       Object.keys(repoPayload).length === 0 &&
       toAdd.length === 0 &&
-      toRemove.length === 0
+      toRemove.length === 0 &&
+      !duplicatedFromId
     ) {
       onClose();
       return;
     }
 
-    setIsLoadingOptions(true);
     try {
       let repoId = repository.Id;
       if (Object.keys(repoPayload).length > 0) {
@@ -228,19 +232,19 @@ export default function RepositoryModal({
         ]);
       }
 
+      if (duplicatedFromId) {
+        notify('Duplication du dépôt en cours, veuillez patienter...', 'info');
+        await replicateRepository(duplicatedFromId, repoId, token);
+      }
+
       notify(
-        repository.Id
-          ? 'Dépôt mis à jour avec succès'
-          : 'Nouveau dépôt créé avec succès',
+        repository.Id ? 'Dépôt mis à jour avec succès' : 'Nouveau dépôt créé avec succès',
         'success'
       );
       onSave();
       onClose();
     } catch (err) {
-      console.error(err);
       notify(err.message || 'Erreur lors de l’enregistrement du dépôt', 'error');
-    } finally {
-      setIsLoadingOptions(false);
     }
   };
 

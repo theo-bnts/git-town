@@ -50,11 +50,9 @@ async function fetchRepositoriesWithStudents(token) {
       const users = await getUsersRepository(repo.Id, token);
       return {
         ...repo,
-        studentNames: Array.isArray(users)
-          ? users.map((u) => u.FullName).sort()
-          : [],
+        studentNames: Array.isArray(users) ? users.map((u) => u.FullName).sort() : [],
       };
-    })
+    }),
   );
 }
 
@@ -65,11 +63,9 @@ async function fetchUserRepositoriesWithStudents(userId, token) {
       const users = await getUsersRepository(repo.Id, token);
       return {
         ...repo,
-        studentNames: Array.isArray(users)
-          ? users.map((u) => u.FullName).sort()
-          : [],
+        studentNames: Array.isArray(users) ? users.map((u) => u.FullName).sort() : [],
       };
-    })
+    }),
   );
 }
 
@@ -79,15 +75,13 @@ const mapRepositoryToRow = (repo) => ({
   tutor: repo.User?.FullName || '',
   ue: `${repo.Template.EnseignementUnit.Name} (${repo.Template.EnseignementUnit.Initialism})`,
   year: repo.Template.Year,
-  diploma: repo.Promotion?.Diploma
-    ? `${repo.Promotion.Diploma.Name} (${repo.Promotion.Diploma.Initialism})`
-    : '',
-  level: repo.Promotion?.PromotionLevel
-    ? `${repo.Promotion.PromotionLevel.Name} (${repo.Promotion.PromotionLevel.Initialism})`
-    : '',
-  archived: repo.ArchivedAt
-    ? <CheckIcon key={`check-${repo.Id}`} size={16} className="text-[var(--accent-color)]" />
-    : <DashIcon key={`dash-${repo.Id}`} size={16} />,
+  diploma: repo.Promotion?.Diploma ? `${repo.Promotion.Diploma.Name} (${repo.Promotion.Diploma.Initialism})` : '',
+  level: repo.Promotion?.PromotionLevel ? `${repo.Promotion.PromotionLevel.Name} (${repo.Promotion.PromotionLevel.Initialism})` : '',
+  archived: repo.ArchivedAt ? (
+    <CheckIcon key={`check-${repo.Id}`} size={16} className="text-[var(--accent-color)]" />
+  ) : (
+    <DashIcon key={`dash-${repo.Id}`} size={16} />
+  ),
 });
 
 export default function RepositoriesPanel({ role, userId }) {
@@ -130,25 +124,40 @@ export default function RepositoriesPanel({ role, userId }) {
     toolbarButtons.push(
       <Button key="import" variant="default_sq" onClick={() => setImportOpen(true)}>
         <UploadIcon size={24} className="text-white" />
-      </Button>
+      </Button>,
     );
   }
 
   const actions = (row, helpers) => {
     const baseActions = [
       { icon: <GraphIcon size={16} />, onClick: () => handleOpenStats(row.raw.Id), variant: 'action_sq' },
-      { icon: <CodeIcon size={16} />, onClick: () => window.open(
-          `https://github.dev/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}`,
-          '_blank'
-        ), variant: 'action_sq' },
-      { icon: <FileZipIcon size={16} />, onClick: () => window.open(
-          `https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}/archive/HEAD.zip`,
-          '_blank'
-      ), variant: 'action_sq' },
-      { icon: <MarkGithubIcon size={16} />, onClick: () => window.open(
-          `https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}`,
-          '_blank'
-      ), variant: 'action_sq' },
+      {
+        icon: <CodeIcon size={16} />,
+        onClick: () =>
+          window.open(
+            `https://github.dev/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}`,
+            '_blank',
+          ),
+        variant: 'action_sq',
+      },
+      {
+        icon: <FileZipIcon size={16} />,
+        onClick: () =>
+          window.open(
+            `https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}/archive/HEAD.zip`,
+            '_blank',
+          ),
+        variant: 'action_sq',
+      },
+      {
+        icon: <MarkGithubIcon size={16} />,
+        onClick: () =>
+          window.open(
+            `https://github.com/${process.env.NEXT_PUBLIC_GITHUB_ORGANIZATION_NAME}/${row.raw.Id}`,
+            '_blank',
+          ),
+        variant: 'action_sq',
+      },
     ];
 
     if (role === 'student') {
@@ -165,7 +174,7 @@ export default function RepositoriesPanel({ role, userId }) {
     return [
       { icon: <PencilIcon size={16} />, onClick: () => helpers.edit(row), variant: row.raw.ArchivedAt ? 'action_sq_disabled' : 'action_sq', disabled: Boolean(row.raw.ArchivedAt) },
       { icon: <ArchiveIcon size={16} />, onClick: () => { setToArchive(row.raw); setConfirmOpen(true); }, variant: 'action_sq_warn' },
-      { icon: <DuplicateIcon size={16} />, onClick: () => console.log('Duplicate repo:', row.raw), variant: 'action_sq' },
+      { icon: <DuplicateIcon size={16} />, onClick: () => helpers.duplicate(row), variant: 'action_sq' },
       { icon: <CommentIcon size={16} />, onClick: () => { setCommentRepoId(row.raw.Id); setCommentOpen(true); }, variant: 'action_sq' },
       ...baseActions,
     ];
@@ -180,9 +189,14 @@ export default function RepositoriesPanel({ role, userId }) {
         fetchFn={fetchFn}
         mapToRow={mapRepositoryToRow}
         ModalComponent={RepositoryModal}
-        modalProps={{ confirmMessage: (repo) => (
-          <>Voulez-vous vraiment supprimer le dépôt <strong>{`${repo.Template?.EnseignementUnit?.Initialism} ${repo.Template?.Year}`}</strong> ?</>
-        ) }}
+        modalProps={{
+          confirmMessage: (repo) => (
+            <>
+              Voulez-vous vraiment supprimer le dépôt{' '}
+              <strong>{`${repo.Template?.EnseignementUnit?.Initialism} ${repo.Template?.Year}`}</strong> ?
+            </>
+          ),
+        }}
         toolbarButtons={toolbarButtons}
         actions={actions}
         disableAdd={role !== 'administrator'}
@@ -198,9 +212,22 @@ export default function RepositoriesPanel({ role, userId }) {
 
       {confirmOpen && toArchive && (
         <ConfirmCard
-          message={toArchive.ArchivedAt == null ?
-            <>Voulez-vous <strong>archiver</strong> le dépôt <strong>{`${toArchive.Template?.EnseignementUnit?.Initialism} ${toArchive.Template?.Year}`}</strong> ?</> :
-            <>Voulez-vous <strong>désarchiver</strong> le dépôt <strong>{`${toArchive.Template?.EnseignementUnit?.Initialism} ${toArchive.Template?.Year}`}</strong> ?</>
+          message={
+            toArchive.ArchivedAt == null
+              ? (
+                <>
+                  Voulez-vous archiver le dépôt ayant comme étudiants 
+                  <strong> {toArchive.studentNames.join(', ')}</strong> de l'année 
+                  <strong> {toArchive.Template.Year}</strong> ?
+                </>
+              )
+              : (
+                <>
+                  Voulez-vous désarchiver le dépôt ayant comme étudiants 
+                  <strong> {toArchive.studentNames.join(', ')}</strong> de l'année 
+                  <strong> {toArchive.Template.Year}</strong> ?
+                </>
+              )
           }
           onConfirm={async () => {
             const token = await getCookie('token');
@@ -219,6 +246,7 @@ export default function RepositoriesPanel({ role, userId }) {
         />
       )}
 
+
       {statsModalOpen && selectedRepoId && (
         <RepositoryStatsModal
           isOpen={statsModalOpen}
@@ -229,9 +257,13 @@ export default function RepositoriesPanel({ role, userId }) {
       )}
 
       {commentOpen && commentRepoId && (
-        <CommentModal isOpen={commentOpen} repositoryId={commentRepoId} onClose={() => setCommentOpen(false)} onSave={() => setRefreshKey((k) => k + 1)} />
+        <CommentModal
+          isOpen={commentOpen}
+          repositoryId={commentRepoId}
+          onClose={() => setCommentOpen(false)}
+          onSave={() => setRefreshKey((k) => k + 1)}
+        />
       )}
     </>
   );
 }
-
