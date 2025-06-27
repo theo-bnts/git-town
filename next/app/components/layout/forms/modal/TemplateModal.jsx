@@ -55,7 +55,7 @@ export default function TemplateModal({
           id: initialData.Id ? m.Id : `local-${m.Id}`,
           Title: m.Title,
           Date: m.Date,
-          value: `${m.Title} – ${m.Date}`
+          value: `${m.Date} - ${m.Title}`
         }));
 
         setOrig(initialData.Id ? norm : []);
@@ -125,7 +125,7 @@ export default function TemplateModal({
           (values.Milestones ?? []).map(m => {
             let { Title, Date } = m;
             if ((!Title || !Date) && typeof m.value === 'string') {
-              [Title = '', Date = ''] = m.value.split(' – ');
+              [Title = '', Date = ''] = m.value.split(' - ');
             }
             return saveTemplateMilestone(
               tplId,
@@ -162,7 +162,7 @@ export default function TemplateModal({
           ...added.map(m => {
             let { Title, Date } = m;
             if ((!Title || !Date) && typeof m.value === 'string') {
-              [Title = '', Date = ''] = m.value.split(' – ');
+              [Title = '', Date = ''] = m.value.split(' - ');
             }
             return saveTemplateMilestone(
               tplId,

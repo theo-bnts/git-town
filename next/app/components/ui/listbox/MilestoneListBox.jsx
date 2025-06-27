@@ -41,7 +41,7 @@ function MilestoneInner() {
 
   const save = () => {
     if (!validate()) return;
-    const data = { Title: title.trim(), Date: date, value: `${title.trim()} – ${date}` };
+    const data = { Title: title.trim(), Date: date, value: `${date} - ${title.trim()}` };
     if (editingId) {
       updateItem(editingId, data);
     } else {
