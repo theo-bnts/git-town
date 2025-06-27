@@ -101,7 +101,7 @@ export default function UserModal({
 
   function validate(v) {
     const e = {};
-    if (!v.Nom?.trim()) e.Nom = 'Le nom est obligatoire.';
+    if (!v['Nom prénom']?.trim()) e['Nom prénom'] = 'Le nom est obligatoire.';
     if (!v.Email?.trim()) e.Email = "L'email est obligatoire.";
     else if (!isEmailValid(v.Email)) e.Email = 'Format d\'email invalide.';
     if (!v.Rôle?.id) e.Rôle = 'Veuillez sélectionner un rôle.';
@@ -128,7 +128,7 @@ export default function UserModal({
       : [];
 
     const payload = {};
-    if (v.Nom.trim() !== initialData.FullName) payload.FullName = v.Nom.trim().toUpperCase();;
+    if (v['Nom prénom'].trim() !== initialData.FullName) payload.FullName = v['Nom prénom'].trim().toUpperCase();
     if (v.Email.trim() !== initialData.EmailAddress)
       payload.EmailAddress = v.Email.trim();
     if (v.Rôle.id !== initialData.Role?.Keyword)
